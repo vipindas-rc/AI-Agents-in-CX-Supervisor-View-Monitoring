@@ -10,11 +10,6 @@ import "./vendor/ringcx-ui/icons/engage-icons/engage-icons.css";
 import { SupervisorAgentList } from "./eag/containers/SupervisorAgentList/SupervisorAgentList";
 import { DigitalInteractionTable } from "./eag/components/DigitalInteractionTable/DigitalInteractionTable";
 import AiInsightsPanel from "./eag/components/AiInsightsPanel/AiInsightsPanel";
-import {
-  PauseBargeModal,
-  DEFAULT_BARGE_SETTINGS,
-  type BargeSettings,
-} from "./PauseBargeModal";
 import { Dialer } from "./dialer/Dialer";
 import { MonitoringDialpad } from "./dialer/MonitoringDialpad";
 import { ReassignConversationModal } from "./ReassignConversationModal";
@@ -195,10 +190,11 @@ export default function AgentTablePanel({
     engagementId: string;
     agentType?: string;
   } | null>(null);
-  // Engagement the supervisor has actively taken over (AI/agent paused), and
-  // whether the pause-&-barge confirmation dialog is open.
+  // Engagement the supervisor has actively taken over (the AI/agent moves on
+  // to its next conversation).
+  // Take over is immediate and permanent for the prototype — there is no
+  // hand-back, so this only ever transitions from null to an engagement id.
   const [bargedId, setBargedId] = useState<string | null>(null);
-  const [pauseBargeOpen, setPauseBargeOpen] = useState(false);
 
   // The AI Insights panel belongs to the Interactions tab table view: navigating
   // away — to the Agents tab, or into an Interaction preview route — closes it
@@ -206,21 +202,9 @@ export default function AgentTablePanel({
   useEffect(() => {
     if (activeTab === "Interactions" && !previewEngagementId) return;
     setInsightCtx(null);
-    setPauseBargeOpen(false);
     setTransferOpen(false);
     setReassignOpen(false);
   }, [activeTab, previewEngagementId]);
-  // Supervisor's barge defaults (identity + voice handoff phrase), persisted so
-  // they act as a reusable setting across takeovers.
-  const [bargeSettings, setBargeSettings] = useState<BargeSettings>(() => {
-    try {
-      const raw = window.localStorage.getItem("eag.bargeSettings");
-      if (raw) return { ...DEFAULT_BARGE_SETTINGS, ...JSON.parse(raw) };
-    } catch {
-      /* ignore malformed/blocked storage */
-    }
-    return DEFAULT_BARGE_SETTINGS;
-  });
   const [rollup, setRollup] = useState<{
     agentId: string;
     x: number;
@@ -545,13 +529,16 @@ export default function AgentTablePanel({
       ) as any;
 
       if (type === "bargeIn") {
+        // Take over is immediate — no confirmation modal. Open the AI
+        // Insights panel onto this interaction and mark it taken over.
         setInsightCtx({
           agentName: row?.fullName ?? "Agent",
           isVoice: Boolean(row?.isVoiceInteraction),
           engagementId: uii ?? "",
           agentType: row?.agentType,
         });
-        setPauseBargeOpen(true);
+        setBargedId(uii ?? "");
+        flashRef.current(`You've taken over from ${row?.fullName ?? "Agent"}`);
         return;
       }
 
@@ -569,15 +556,24 @@ export default function AgentTablePanel({
         return;
       }
 
-      // Digital conversation handled by an AirPro (AI) agent -> open the
-      // Interaction preview popup in listening mode (URL-driven).
+      // Digital conversation handled by an AirPro (AI) agent -> toggle the
+      // Interaction preview popup in listening mode (URL-driven). Clicking
+      // Monitor again while previewing stops (closes) it — same toggle
+      // semantics as voice monitoring.
       if (
         type === "monitor" &&
         row &&
         !row.isVoiceInteraction &&
         row.agentType === "Air"
       ) {
-        onPreviewOpen?.(row.engagementId);
+        if (
+          previewEngagementId === row.engagementId &&
+          previewMode !== "takeover"
+        ) {
+          onPreviewClose?.();
+        } else {
+          onPreviewOpen?.(row.engagementId);
+        }
         return;
       }
 
@@ -589,11 +585,19 @@ export default function AgentTablePanel({
             : "Monitoring interaction",
       );
     },
-    [interactions, monitoredId, monitoredEngagementId, onPreviewOpen],
+    [
+      interactions,
+      monitoredId,
+      monitoredEngagementId,
+      previewEngagementId,
+      previewMode,
+      onPreviewOpen,
+      onPreviewClose,
+    ],
   );
 
-  // 'AI' for Air (AI) agents, 'agent' for human agents — used throughout the
-  // takeover wording (modal, banner, hand-back label).
+  // 'AI' for Air (AI) agents, 'agent' for human agents — used in the
+  // active-takeover banner wording.
   const takeoverSubject = insightCtx?.agentType === "Air" ? "AI" : "agent";
   const isBarged = Boolean(insightCtx && bargedId === insightCtx.engagementId);
 
@@ -616,34 +620,14 @@ export default function AgentTablePanel({
     [agents],
   );
 
-  // Confirm pause & barge: persist the chosen settings, mark this engagement as
-  // taken over, and surface a toast describing the takeover.
-  const handleConfirmBarge = useCallback(
-    (settings: BargeSettings) => {
-      if (!insightCtx) return;
-      setBargeSettings(settings);
-      try {
-        window.localStorage.setItem(
-          "eag.bargeSettings",
-          JSON.stringify(settings),
-        );
-      } catch {
-        /* ignore blocked storage */
-      }
-      setBargedId(insightCtx.engagementId);
-      setPauseBargeOpen(false);
-      const who = settings.anonymous ? "anonymously" : "as supervisor";
-      flashRef.current(`You've taken over from ${insightCtx.agentName} (${who})`);
-    },
-    [insightCtx],
-  );
-
-  // Hand the conversation back to the AI / agent.
-  const handleHandBack = useCallback(() => {
+  // Take over immediately marks this engagement as taken over (the AI/agent
+  // moves on to its next conversation) and surfaces a confirmation toast — no
+  // confirmation modal, no identity choice, and no hand back afterward.
+  const handleTakeOver = useCallback(() => {
     if (!insightCtx) return;
-    setBargedId(null);
-    flashRef.current(`Handed ${insightCtx.agentName} back to the ${takeoverSubject}`);
-  }, [insightCtx, takeoverSubject]);
+    setBargedId(insightCtx.engagementId);
+    flashRef.current(`You've taken over from ${insightCtx.agentName}`);
+  }, [insightCtx]);
 
   const onInteractionRollupClick = useCallback((e: any, agentId: string) => {
     const el = e?.currentTarget || e?.target;
@@ -690,11 +674,15 @@ export default function AgentTablePanel({
     insightRow &&
       (insightRow.isVoiceInteraction || insightRow.agentType === "Air"),
   );
+  // "Monitoring" is active for a voice monitoring session OR while the digital
+  // Interaction preview is open in a listening mode for this engagement.
   const insightIsMonitoring = Boolean(
     insightCtx &&
       insightRow &&
-      monitoredId === insightRow.agentId &&
-      monitoredEngagementId === insightCtx.engagementId,
+      ((monitoredId === insightRow.agentId &&
+        monitoredEngagementId === insightCtx.engagementId) ||
+        (previewEngagementId === insightCtx.engagementId &&
+          previewMode !== "takeover")),
   );
   const handleInsightMonitor = useCallback(() => {
     if (!insightCtx || !insightRow) return;
@@ -734,11 +722,19 @@ export default function AgentTablePanel({
         previewAgent.agentState === "Pending Inactive"),
   );
 
-  const handlePreviewHandBack = useCallback(() => {
-    const name = previewData?.agentName ?? "the agent";
-    flashRef.current(`You've handed the conversation back to ${name}`);
-    onPreviewClose?.();
-  }, [previewData, onPreviewClose]);
+  // Take over from the Interaction preview mirrors the AI Insights panel's
+  // Take over: immediately mark the engagement as taken over (toast included)
+  // and switch the preview to the embedded take-over view.
+  const handlePreviewTakeOver = useCallback(() => {
+    if (!previewRow) return;
+    if (bargedId !== previewRow.engagementId) {
+      setBargedId(previewRow.engagementId);
+      flashRef.current(
+        `You've taken over from ${previewRow.fullName ?? "Agent"}`,
+      );
+    }
+    onPreviewModeChange?.("takeover");
+  }, [previewRow, bargedId, onPreviewModeChange]);
 
   return (
     <RcThemeProvider>
@@ -761,8 +757,7 @@ export default function AgentTablePanel({
               takeOverDisabled={previewAgentPendingInactive}
               onClose={() => onPreviewClose?.()}
               onEnlarge={() => onPreviewModeChange?.("expanded")}
-              onTakeOver={() => onPreviewModeChange?.("takeover")}
-              onHandBack={handlePreviewHandBack}
+              onTakeOver={handlePreviewTakeOver}
             />
           ) : activeTab === "Interactions" ? (
             <DigitalInteractionTable
@@ -820,8 +815,7 @@ export default function AgentTablePanel({
               isBarged={isBarged}
               takeoverSubject={takeoverSubject}
               onTransfer={handleTransfer}
-              onTakeOver={() => setPauseBargeOpen(true)}
-              onHandBack={handleHandBack}
+              onTakeOver={handleTakeOver}
               onMonitor={handleInsightMonitor}
               monitorDisabled={!insightMonitorEnabled}
               monitorDisabledTooltip={
@@ -847,19 +841,7 @@ export default function AgentTablePanel({
             }
             onClose={() => onPreviewClose?.()}
             onEnlarge={() => onPreviewModeChange?.("expanded")}
-            onTakeOver={() => onPreviewModeChange?.("takeover")}
-            onHandBack={handlePreviewHandBack}
-          />
-        )}
-
-        {insightCtx && pauseBargeOpen && (
-          <PauseBargeModal
-            agentName={insightCtx.agentName}
-            subject={takeoverSubject}
-            isVoice={insightCtx.isVoice}
-            initial={bargeSettings}
-            onCancel={() => setPauseBargeOpen(false)}
-            onConfirm={handleConfirmBarge}
+            onTakeOver={handlePreviewTakeOver}
           />
         )}
 

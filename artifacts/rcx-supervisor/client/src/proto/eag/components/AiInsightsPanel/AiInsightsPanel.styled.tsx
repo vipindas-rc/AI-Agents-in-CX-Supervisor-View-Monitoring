@@ -459,7 +459,7 @@ const bargePulse = keyframes`
     50% { transform: scale(1.45); opacity: 0.55; }
 `;
 
-// Status banner shown while the supervisor has taken over (AI paused). Not part
+// Status banner shown while the supervisor has taken over. Not part
 // of the static Figma footer; styled to read as an active-takeover signal.
 export const BargeBanner = styled.div`
     display: flex;

@@ -538,7 +538,6 @@ export interface InteractionPreviewProps {
   onClose: () => void;
   onEnlarge: () => void;
   onTakeOver: () => void;
-  onHandBack: () => void;
 }
 
 export function InteractionPreview({
@@ -549,7 +548,6 @@ export function InteractionPreview({
   onClose,
   onEnlarge,
   onTakeOver,
-  onHandBack,
 }: InteractionPreviewProps) {
   const isFullPage = mode !== "preview";
   const isTakeover = mode === "takeover";

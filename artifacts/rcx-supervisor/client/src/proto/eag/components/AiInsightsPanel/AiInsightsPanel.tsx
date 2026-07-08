@@ -217,14 +217,14 @@ interface AiInsightsPanelProps {
   isVoice: boolean;
   sentimentScore?: number | null;
   confidenceScore?: number | null;
-  // True while the supervisor has taken over this interaction (AI paused).
+  // True while the supervisor has taken over this interaction (the AI/agent
+  // has moved on to its next conversation).
   isBarged?: boolean;
   // Label for the agent being taken over from — 'AI' for Air agents, 'agent'
   // for human agents — used in the active-takeover wording.
   takeoverSubject?: string;
   onTransfer?: () => void;
   onTakeOver?: () => void;
-  onHandBack?: () => void;
   onMonitor?: () => void;
   // Mirrors the table's hover Monitor icon gating: the button always renders
   // but is disabled (with an explanatory tooltip) when the interaction can't
@@ -246,7 +246,6 @@ const AiInsightsPanel = ({
   takeoverSubject = 'AI',
   onTransfer,
   onTakeOver,
-  onHandBack,
   onMonitor,
   monitorDisabled = false,
   monitorDisabledTooltip,
@@ -526,7 +525,8 @@ const AiInsightsPanel = ({
 
         {isBarged && (
           <BargeBanner data-testid='banner-takeover-active'>
-            You've taken over — {agentName} ({takeoverSubject}) is paused
+            You've taken over this conversation. {agentName} ({takeoverSubject})
+            has moved on to the next one.
           </BargeBanner>
         )}
 
@@ -573,15 +573,14 @@ const AiInsightsPanel = ({
             <ActionButton
               type='button'
               $active={isBarged}
-              onClick={isBarged ? onHandBack : onTakeOver}
+              disabled={isBarged}
+              onClick={isBarged ? undefined : onTakeOver}
               data-testid='button-take-over'
             >
               <ActionIcon $active={isBarged}>
                 <TakeOverGlyph />
               </ActionIcon>
-              <ActionLabel>
-                {isBarged ? `Hand back to ${takeoverSubject}` : 'Take over'}
-              </ActionLabel>
+              <ActionLabel>{isBarged ? 'Taken over' : 'Take over'}</ActionLabel>
             </ActionButton>
           </ControlRow>
         </ControlBar>
