@@ -292,6 +292,7 @@ export function MonitoringDialpad({
   const [seconds, setSeconds] = useState(0);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [supervisorUnmuted, setSupervisorUnmuted] = useState(false);
+  const [takeoverView, setTakeoverView] = useState<"call" | "transfer">("call");
   const { offset, onDragPointerDown } = useDragPosition();
 
   useEffect(() => {
@@ -320,6 +321,14 @@ export function MonitoringDialpad({
 
   const handleTakeOver = () => {
     setSnackbarVisible(false);
+    setTakeoverView("call");
+    setPhase("takenOver");
+    onToast?.(`You've taken over the call from ${agentName}`);
+  };
+
+  const handleTransfer = () => {
+    setSnackbarVisible(false);
+    setTakeoverView("transfer");
     setPhase("takenOver");
     onToast?.(`You've taken over the call from ${agentName}`);
   };
@@ -344,7 +353,7 @@ export function MonitoringDialpad({
             data-testid="monitor-drag-handle-takeover"
           />
           <Dialer
-            initialView="call"
+            initialView={takeoverView}
             caller={{ name: customerPhone, phone: "", initials: "C", avatarBg }}
             style={{ minHeight: 0, width: "auto", background: "transparent", padding: 0 }}
             assetBasePath={assetBasePath}
@@ -383,7 +392,7 @@ export function MonitoringDialpad({
               onClose={onClose}
               onDragPointerDown={onDragPointerDown}
             />
-            <div className="w-full h-[444px] flex flex-col">
+            <div className={`w-full ${isHuman ? "h-[536px]" : "h-[444px]"} flex flex-col`}>
               <div className="flex flex-col items-start px-[16px] w-full">
                 <MonitorHeaderRow timer={formatTime(seconds)} assets={assets} />
                 <MonitorProfile
@@ -473,15 +482,49 @@ export function MonitoringDialpad({
                       />
                     </>
                   ) : (
-                    <ActionButton
-                      imgSrc={assets.takeOver}
-                      imgAlt=""
-                      label="Take over"
-                      onClick={handleTakeOver}
-                      testId="button-monitor-take-over"
-                    />
+                    <>
+                      <ActionButton
+                        imgSrc={assets.takeOver}
+                        imgAlt=""
+                        label="Take over"
+                        onClick={handleTakeOver}
+                        testId="button-monitor-take-over"
+                      />
+                      <ActionButton
+                        imgSrc={assets.transfer}
+                        imgAlt=""
+                        label="Transfer"
+                        onClick={handleTransfer}
+                        testId="button-monitor-transfer"
+                      />
+                    </>
                   )}
                 </div>
+
+                {/* Row 3 (Human only): Transfer — Human row 2 is already full. */}
+                {isHuman && (
+                  <div className="flex items-start justify-center">
+                    {!isBarged ? (
+                      <UnavailableTooltip>
+                        <ActionButton
+                          imgSrc={assets.transfer}
+                          imgAlt=""
+                          label="Transfer"
+                          disabled
+                          testId="button-monitor-transfer"
+                        />
+                      </UnavailableTooltip>
+                    ) : (
+                      <ActionButton
+                        imgSrc={assets.transfer}
+                        imgAlt=""
+                        label="Transfer"
+                        onClick={handleTransfer}
+                        testId="button-monitor-transfer"
+                      />
+                    )}
+                  </div>
+                )}
               </div>
 
               <div className="mt-auto flex items-center justify-center pb-[24px] w-full">
