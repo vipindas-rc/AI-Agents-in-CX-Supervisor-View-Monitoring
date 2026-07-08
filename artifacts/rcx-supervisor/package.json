@@ -52,6 +52,7 @@
     "@radix-ui/react-tooltip": "^1.2.0",
     "@ringcentral/juno": "^2.52.0",
     "@ringcentral/juno-icon": "^1.94.0",
+    "@ringcentral/spring-icon": "^1.11.1",
     "@ringcentral/spring-theme": "^1.9.3",
     "@ringcentral/spring-ui": "^1.9.3",
     "@tanstack/react-query": "^5.60.5",

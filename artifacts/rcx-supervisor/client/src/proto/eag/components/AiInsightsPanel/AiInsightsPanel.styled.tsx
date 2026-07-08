@@ -312,34 +312,139 @@ export const TypingDots = styled.div`
 `;
 
 export const ChecklistBody = styled.div`
-    padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 14px;
 `;
 
-export const ChecklistItem = styled.div<{ $done: boolean }>`
+// Section header row — collapsible, light-gray band with hairline top/bottom
+// borders (Figma "LHeader").
+export const ChecklistSectionHeader = styled.button`
+    appearance: none;
+    border: none;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    background: #f5f6f9;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 16px;
+    text-align: left;
+`;
+
+export const ChecklistSectionTitles = styled.span`
+    flex: 1 0 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+`;
+
+export const ChecklistSectionTitle = styled.span`
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #000000;
+`;
+
+export const ChecklistSectionSubtitle = styled.span`
+    font-size: 12px;
+    line-height: 17px;
+    color: #72757a;
+`;
+
+export const ChecklistSectionCaret = styled.span<{ $open: boolean }>`
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    color: #000000;
+    transform: rotate(${({ $open }) => ($open ? '180deg' : '0deg')});
+    transition: transform 150ms ease;
+`;
+
+export const ChecklistItem = styled.div`
+    padding: 20px 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+
+    &:last-child {
+        border-bottom: none;
+    }
+`;
+
+export const ChecklistItemHead = styled.div`
     display: flex;
     align-items: flex-start;
     gap: 12px;
-    font-size: 14px;
-    line-height: 1.4;
-    color: ${({ $done }) => ($done ? '#80868b' : '#212121')};
 `;
 
-export const CheckMark = styled.span<{ $done: boolean }>`
+export const ChecklistCheckIcon = styled.span`
     flex-shrink: 0;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    margin-top: 1px;
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+    display: inline-flex;
+`;
+
+export const ChecklistItemTitle = styled.span<{ $done: boolean }>`
+    flex: 1 0 0;
+    min-width: 0;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 20px;
+    ${({ $done }) =>
+        $done
+            ? `
+        color: #9e9fa4;
+        text-decoration: line-through;
+    `
+            : `
+        color: #000000;
+    `}
+`;
+
+export const ChecklistRequiredTag = styled.span`
+    flex-shrink: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: ${({ $done }) => ($done ? '#46be59' : 'transparent')};
-    border: ${({ $done }) => ($done ? 'none' : '1.5px solid #c1c3c8')};
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 4px;
+    background: #72757a;
     color: #ffffff;
     font-size: 11px;
+    font-weight: 600;
+    line-height: 17px;
+    white-space: nowrap;
+`;
+
+export const ChecklistAnswers = styled.ul`
+    margin: 10px 0 0;
+    padding-left: 20px;
+    list-style: disc;
+    color: #323439;
+    font-size: 14px;
+    line-height: 20px;
+
+    li {
+        margin-bottom: 8px;
+        padding-left: 2px;
+    }
+    li:last-child {
+        margin-bottom: 0;
+    }
+`;
+
+export const ChecklistDisclaimer = styled.div`
+    flex-shrink: 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 12px 16px;
+    font-size: 10px;
+    line-height: 14px;
+    color: #72757a;
+    text-align: center;
 `;
 
 export const Footer = styled.div`
@@ -434,6 +539,26 @@ export const ActionButton = styled.button<{ $active?: boolean }>`
         outline: 2px solid #066fac;
         outline-offset: 2px;
     }
+
+    &:disabled {
+        cursor: default;
+        background: #ffffff;
+        border-color: rgba(0, 0, 0, 0.06);
+        box-shadow: none;
+        transform: none;
+    }
+`;
+
+/* Layout wrapper so a disabled action button can sit inside a Tooltip span
+   without breaking the equal-width control row. */
+export const ActionSlot = styled.span`
+    flex: 1 0 0;
+    min-width: 0;
+    display: flex;
+
+    & > ${ActionButton} {
+        flex: 1 0 0;
+    }
 `;
 
 export const ActionIcon = styled.span<{ $active?: boolean }>`
@@ -453,6 +578,11 @@ export const ActionIcon = styled.span<{ $active?: boolean }>`
     ${ActionButton}:hover & {
         background: ${({ $active }) => ($active ? '#055a8c' : '#cdd0d8')};
     }
+
+    ${ActionButton}:disabled & {
+        background: #eef0f3;
+        color: #9e9fa4;
+    }
 `;
 
 export const ActionLabel = styled.span`
@@ -463,4 +593,8 @@ export const ActionLabel = styled.span`
     color: #323439;
     text-align: center;
     white-space: nowrap;
+
+    ${ActionButton}:disabled & {
+        color: #9e9fa4;
+    }
 `;

@@ -670,6 +670,30 @@ export default function AgentTablePanel({
       ) as any)
     : null;
 
+  // Monitor gating for the open AI Insights panel mirrors the table's hover
+  // Monitor icon exactly: voice rows and digital rows handled by an AirPro
+  // (AI) agent are enabled (dialpad / interaction preview); digital rows
+  // handled by a human agent render the button DISABLED with the same
+  // explanatory tooltip the table uses.
+  const insightMonitorEnabled = Boolean(
+    insightRow &&
+      (insightRow.isVoiceInteraction || insightRow.agentType === "Air"),
+  );
+  const insightIsMonitoring = Boolean(
+    insightCtx &&
+      insightRow &&
+      monitoredId === insightRow.agentId &&
+      monitoredEngagementId === insightCtx.engagementId,
+  );
+  const handleInsightMonitor = useCallback(() => {
+    if (!insightCtx || !insightRow) return;
+    monitorInteractionCallback(
+      insightRow.agentId,
+      "monitor",
+      insightCtx.engagementId,
+    );
+  }, [insightCtx, insightRow, monitorInteractionCallback]);
+
   // Interaction row backing the digital "Interaction preview" popup (URL-driven).
   const previewRow = previewEngagementId
     ? (interactions.find(
@@ -787,6 +811,14 @@ export default function AgentTablePanel({
               onTransfer={handleTransfer}
               onTakeOver={() => setPauseBargeOpen(true)}
               onHandBack={handleHandBack}
+              onMonitor={handleInsightMonitor}
+              monitorDisabled={!insightMonitorEnabled}
+              monitorDisabledTooltip={
+                insightMonitorEnabled
+                  ? undefined
+                  : "You can only monitor voice calls"
+              }
+              isMonitoring={insightIsMonitoring}
               onClose={() => setInsightCtx(null)}
             />
           )}

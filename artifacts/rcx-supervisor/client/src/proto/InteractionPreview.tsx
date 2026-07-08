@@ -35,6 +35,54 @@ export type InteractionPreviewMode = "preview" | "expanded" | "takeover";
 const RC_BLUE = "#066fac";
 const FONT = "'Roboto', sans-serif";
 
+/**
+ * Makes the floating preview popup draggable by its header. Returns the
+ * current translate offset and a pointerdown handler for the drag handle —
+ * same pattern as the monitoring dialpad's title bar.
+ */
+function useDragPosition() {
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const drag = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    baseX: number;
+    baseY: number;
+  } | null>(null);
+
+  const onDragPointerDown = (e: React.PointerEvent<HTMLElement>) => {
+    if (e.button !== 0) return;
+    // Don't hijack clicks on header buttons (expand / close).
+    if ((e.target as HTMLElement).closest("button")) return;
+    e.preventDefault();
+    drag.current = {
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      startY: e.clientY,
+      baseX: offset.x,
+      baseY: offset.y,
+    };
+    const onMove = (ev: PointerEvent) => {
+      const d = drag.current;
+      if (!d || ev.pointerId !== d.pointerId) return;
+      setOffset({
+        x: d.baseX + (ev.clientX - d.startX),
+        y: d.baseY + (ev.clientY - d.startY),
+      });
+    };
+    const onUp = (ev: PointerEvent) => {
+      if (drag.current?.pointerId !== ev.pointerId) return;
+      drag.current = null;
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  };
+
+  return { offset, onDragPointerDown };
+}
+
 // ---------------------------------------------------------------------------
 // Small shared pieces
 // ---------------------------------------------------------------------------
@@ -506,6 +554,10 @@ export function InteractionPreview({
   const isFullPage = mode !== "preview";
   const isTakeover = mode === "takeover";
 
+  // Floating preview popup is movable by its header (like the monitoring
+  // dialpad); the offset persists while the popup stays mounted.
+  const { offset, onDragPointerDown } = useDragPosition();
+
   // Everything appended after the seed transcript, in arrival order: live
   // scripted messages, the take-over system line, and supervisor-sent
   // messages. Keeping one ordered feed keeps the chat chronological.
@@ -641,6 +693,7 @@ export function InteractionPreview({
       {!isTakeover && (
         <>
           <div
+            onPointerDown={mode === "preview" ? onDragPointerDown : undefined}
             style={{
               height: 73,
               flexShrink: 0,
@@ -648,7 +701,17 @@ export function InteractionPreview({
               alignItems: "center",
               padding: "0 24px",
               gap: 12,
+              ...(mode === "preview"
+                ? {
+                    cursor: "grab",
+                    touchAction: "none",
+                    userSelect: "none" as const,
+                  }
+                : null),
             }}
+            data-testid={
+              mode === "preview" ? "preview-drag-handle" : undefined
+            }
           >
             <span
               style={{
@@ -1008,35 +1071,31 @@ export function InteractionPreview({
     );
   }
 
+  // Floating, non-modal preview: no scrim behind the popup and the page
+  // underneath stays clickable. Closing is via the popup's X button.
   return (
     <div
       style={{
         position: "fixed",
         inset: 0,
         zIndex: 9990,
-        background: "rgba(0,0,0,0.35)",
+        background: "transparent",
+        pointerEvents: "none",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        animation: "rcxPreviewOverlayIn 140ms ease-out",
       }}
-      onClick={onClose}
       data-testid="overlay-interaction-preview"
     >
-      {/* Subtle open animation: quick fade on the scrim, gentle fade + lift on the popup. */}
+      {/* Subtle open animation: gentle fade + lift on the popup. */}
       <style>{`
-        @keyframes rcxPreviewOverlayIn {
+        @keyframes rcxPreviewPopupIn {
           from { opacity: 0; }
           to { opacity: 1; }
         }
-        @keyframes rcxPreviewPopupIn {
-          from { opacity: 0; transform: translateY(8px) scale(0.985); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
-        }
       `}</style>
-      {/* Exact Figma popup frame: 1030 x 700. */}
+      {/* Exact Figma popup frame: 1030 x 700, movable by its header. */}
       <div
-        onClick={(e) => e.stopPropagation()}
         style={{
           display: "flex",
           width: 1030,
@@ -1046,6 +1105,8 @@ export function InteractionPreview({
           overflow: "hidden",
           boxShadow: "0 12px 40px rgba(0,0,0,0.28)",
           background: "#fff",
+          pointerEvents: "auto",
+          transform: `translate(${offset.x}px, ${offset.y}px)`,
           animation: "rcxPreviewPopupIn 180ms cubic-bezier(0.16, 1, 0.3, 1)",
         }}
         data-testid="popup-interaction-preview"

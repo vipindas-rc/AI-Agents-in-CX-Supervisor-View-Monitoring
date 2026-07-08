@@ -1,21 +1,39 @@
 import { useEffect, useRef, useState } from 'react';
 
+import { RcIcon } from '@ringcentral/juno';
+import { MonitorCall } from '@ringcentral/juno-icon';
+import { CaretDownMd } from '@ringcentral/spring-icon';
+
 import {
-  INSIGHT_CHECKLIST,
+  getInsightChecklistSections,
   INSIGHT_NOTES,
   INSIGHT_NOTES_UPDATED_AT,
   transcriptTurnAt,
 } from '../../../mock/supervisorMock';
 import { getScoreSeverity } from '../DigitalInteractionTable/components/ScoreIndicator';
+import { AiCheckAreaChecked, AiCheckAreaUnchecked } from './ChecklistIcons';
+import { Tooltip } from '@ringcx/ui';
+
 import {
   ActionButton,
   ActionIcon,
   ActionLabel,
+  ActionSlot,
   Avatar,
   BargeBanner,
-  CheckMark,
+  ChecklistAnswers,
   ChecklistBody,
+  ChecklistCheckIcon,
+  ChecklistDisclaimer,
   ChecklistItem,
+  ChecklistItemHead,
+  ChecklistItemTitle,
+  ChecklistRequiredTag,
+  ChecklistSectionCaret,
+  ChecklistSectionHeader,
+  ChecklistSectionSubtitle,
+  ChecklistSectionTitle,
+  ChecklistSectionTitles,
   CloseButton,
   Content,
   ControlBar,
@@ -207,6 +225,15 @@ interface AiInsightsPanelProps {
   onTransfer?: () => void;
   onTakeOver?: () => void;
   onHandBack?: () => void;
+  onMonitor?: () => void;
+  // Mirrors the table's hover Monitor icon gating: the button always renders
+  // but is disabled (with an explanatory tooltip) when the interaction can't
+  // be monitored — e.g. a digital conversation handled by a human agent.
+  monitorDisabled?: boolean;
+  monitorDisabledTooltip?: string;
+  // True while a monitoring session is active for this interaction; clicking
+  // Monitor again stops it (same toggle semantics as the table icon).
+  isMonitoring?: boolean;
   onClose: () => void;
 }
 
@@ -220,10 +247,15 @@ const AiInsightsPanel = ({
   onTransfer,
   onTakeOver,
   onHandBack,
+  onMonitor,
+  monitorDisabled = false,
+  monitorDisabledTooltip,
+  isMonitoring = false,
   onClose,
 }: AiInsightsPanelProps) => {
   const [tab, setTab] = useState<InsightTab>('notes');
   const [updating, setUpdating] = useState(false);
+  const [openSections, setOpenSections] = useState<Record<number, boolean>>({ 0: true });
 
   // Low-confidence interactions stream the negative / escalating conversation so
   // the transcript content matches the row's low confidence and sinking sentiment.
@@ -426,19 +458,71 @@ const AiInsightsPanel = ({
 
           {tab === 'checklist' && (
             <ChecklistBody data-testid='body-checklist'>
-              {INSIGHT_CHECKLIST.map((item, index) => (
-                <ChecklistItem
-                  key={index}
-                  $done={item.done}
-                  data-testid={`checklist-item-${index}`}
-                >
-                  <CheckMark $done={item.done}>{item.done ? '✓' : ''}</CheckMark>
-                  {item.label}
-                </ChecklistItem>
-              ))}
+              {getInsightChecklistSections(tone).map((section, sectionIndex) => {
+                const isOpen = openSections[sectionIndex] ?? false;
+                const requiredCount = section.items.filter((item) => item.required).length;
+                return (
+                  <div key={section.heading} data-testid={`checklist-section-${sectionIndex}`}>
+                    <ChecklistSectionHeader
+                      type='button'
+                      onClick={() =>
+                        setOpenSections((prev) => ({
+                          ...prev,
+                          [sectionIndex]: !isOpen,
+                        }))
+                      }
+                      aria-expanded={isOpen}
+                      data-testid={`checklist-section-toggle-${sectionIndex}`}
+                    >
+                      <ChecklistSectionTitles>
+                        <ChecklistSectionTitle>{section.heading}</ChecklistSectionTitle>
+                        <ChecklistSectionSubtitle>
+                          {requiredCount} required
+                        </ChecklistSectionSubtitle>
+                      </ChecklistSectionTitles>
+                      <ChecklistSectionCaret $open={isOpen}>
+                        <CaretDownMd width={16} height={16} fill='currentColor' />
+                      </ChecklistSectionCaret>
+                    </ChecklistSectionHeader>
+
+                    {isOpen &&
+                      section.items.map((item, itemIndex) => (
+                        <ChecklistItem
+                          key={item.title}
+                          data-testid={`checklist-item-${sectionIndex}-${itemIndex}`}
+                        >
+                          <ChecklistItemHead>
+                            <ChecklistCheckIcon>
+                              {item.done ? <AiCheckAreaChecked /> : <AiCheckAreaUnchecked />}
+                            </ChecklistCheckIcon>
+                            <ChecklistItemTitle $done={item.done}>
+                              {item.title}
+                            </ChecklistItemTitle>
+                            {item.required && (
+                              <ChecklistRequiredTag>Required</ChecklistRequiredTag>
+                            )}
+                          </ChecklistItemHead>
+                          {item.answers.length > 0 && (
+                            <ChecklistAnswers>
+                              {item.answers.map((answer) => (
+                                <li key={answer}>{answer}</li>
+                              ))}
+                            </ChecklistAnswers>
+                          )}
+                        </ChecklistItem>
+                      ))}
+                  </div>
+                );
+              })}
             </ChecklistBody>
           )}
         </Content>
+
+        {tab === 'checklist' && (
+          <ChecklistDisclaimer data-testid='footer-checklist-disclaimer'>
+            AI outputs should not be the sole or primary basis for employment decisions.
+          </ChecklistDisclaimer>
+        )}
 
         {isBarged && (
           <BargeBanner data-testid='banner-takeover-active'>
@@ -448,6 +532,34 @@ const AiInsightsPanel = ({
 
         <ControlBar>
           <ControlRow>
+            {onMonitor &&
+              (() => {
+                const monitorButton = (
+                  <ActionButton
+                    type='button'
+                    $active={isMonitoring}
+                    disabled={monitorDisabled}
+                    onClick={monitorDisabled ? undefined : onMonitor}
+                    data-testid='button-monitor'
+                  >
+                    <ActionIcon $active={isMonitoring}>
+                      <RcIcon symbol={MonitorCall} size='small' />
+                    </ActionIcon>
+                    <ActionLabel>
+                      {isMonitoring ? 'Monitoring' : 'Monitor'}
+                    </ActionLabel>
+                  </ActionButton>
+                );
+                // Disabled buttons don't fire hover events, so the tooltip
+                // wraps a span — same pattern as the table's Monitor icon.
+                return monitorDisabled && monitorDisabledTooltip ? (
+                  <Tooltip title={monitorDisabledTooltip} placement='top'>
+                    <ActionSlot>{monitorButton}</ActionSlot>
+                  </Tooltip>
+                ) : (
+                  monitorButton
+                );
+              })()}
             <ActionButton
               type='button'
               onClick={onTransfer}

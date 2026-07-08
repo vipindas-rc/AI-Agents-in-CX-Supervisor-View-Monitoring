@@ -95,16 +95,21 @@ const HUMAN_STATES = [
   { state: 'Lunch', base: 'NOT_READY' },
 ];
 
-// AirPro (AI) agents only ever carry one of these four states:
+// AirPro (AI) agents start in one of these three states:
 //  - Engaged / Available are automatic, same as humans.
 //  - Inactive means the agent is turned off (only a supervisor can switch it
 //    back on); it still shows in the list.
-//  - Pending Inactive is the transitional drain-then-inactive state.
+// Pending Inactive is a transitional drain-then-inactive state that only
+// appears at runtime when a supervisor switches off an engaged AirPro agent —
+// no agent should ever START in it, so it is not part of this seed pool.
+// The 4th slot repeats Engaged (instead of the old Pending Inactive entry) to
+// keep the cycle length — and therefore every seeded row's state, interaction
+// mix, and the voice rows at i=2/i=14 — unchanged.
 const AIR_STATES = [
   { state: 'Engaged', base: 'ENGAGED' },
   { state: 'Available', base: 'AVAILABLE' },
   { state: 'Inactive', base: 'INACTIVE' },
-  { state: 'Pending Inactive', base: 'PENDING_INACTIVE' },
+  { state: 'Engaged', base: 'ENGAGED' },
 ];
 
 // Roles assigned to AirPro (AI) agents, cycled deterministically by index so the
@@ -302,21 +307,133 @@ export const INSIGHT_NOTES: InsightNoteSection[] = [
 
 export const INSIGHT_NOTES_UPDATED_AT = '09:38 AM';
 
-// Checklist tab — guided-selling / compliance steps the agent should cover.
+// Checklist tab — grouped, AI-verified action items covering guided-selling /
+// compliance steps the agent should complete. Two variants exist, one per
+// transcript script, and getInsightChecklistSections(tone) picks the one that
+// matches the transcript currently rendered so Checklist and Transcript always
+// read as the same interaction:
+//  - positive -> TRANSCRIPT_TURNS (Sam Carter shirt-order negotiation)
+//  - negative -> NEGATIVE_TRANSCRIPT_TURNS (escalating refund complaint)
+// Every item's answers quote or paraphrase actual lines from its script.
 export interface InsightChecklistItem {
-  label: string;
+  title: string;
+  required: boolean;
   done: boolean;
+  answers: string[];
 }
 
-export const INSIGHT_CHECKLIST: InsightChecklistItem[] = [
-  { label: 'Greet the customer and confirm their identity', done: true },
-  { label: 'Understand the reason for contact', done: true },
-  { label: 'Confirm order details and budget', done: true },
-  { label: 'Offer a tailored solution or alternative', done: true },
-  { label: 'Get manager approval for pricing changes', done: false },
-  { label: 'Send the revised quote and confirm next steps', done: false },
-  { label: 'Recap the conversation before closing', done: false },
+export interface InsightChecklistSection {
+  heading: string;
+  items: InsightChecklistItem[];
+}
+
+const POSITIVE_CHECKLIST_SECTIONS: InsightChecklistSection[] = [
+  {
+    heading: 'Order verification',
+    items: [
+      {
+        title: 'Confirm the reason for contact',
+        required: true,
+        done: true,
+        answers: [
+          '"I got your quote but honestly it\'s over our budget for the team shirts."',
+        ],
+      },
+      {
+        title: 'Confirm the target price and product option',
+        required: true,
+        done: true,
+        answers: [
+          'Sam found one-color shirts from Great Polos Inc. at about $4.8K for the whole order.',
+          'Sam confirmed the logo just needs to look clean, so a one-color design works for the team.',
+        ],
+      },
+      {
+        title: 'Set expectations for the revised quote',
+        required: true,
+        done: true,
+        answers: ['Anita said the revised quote would be ready in a couple of hours.'],
+      },
+      {
+        title: 'Get manager approval for the pricing change',
+        required: true,
+        done: false,
+        answers: [
+          'Anita still needs manager approval to update the pricing before sending the revised quote.',
+        ],
+      },
+      {
+        title: 'Send the revised quote and recap next steps',
+        required: false,
+        done: false,
+        answers: ['Anita will follow up with the new quote once approval comes through.'],
+      },
+    ],
+  },
 ];
+
+// Negative variant — grounded in NEGATIVE_TRANSCRIPT_TURNS (the escalating
+// refund complaint), shown when the panel streams the negative script.
+const NEGATIVE_CHECKLIST_SECTIONS: InsightChecklistSection[] = [
+  {
+    heading: 'Refund resolution',
+    items: [
+      {
+        title: 'Confirm the reason for contact',
+        required: true,
+        done: true,
+        answers: [
+          '"This is the third time I\'m reaching out about my refund and it\'s still not sorted."',
+        ],
+      },
+      {
+        title: 'Acknowledge the delay and apologize',
+        required: true,
+        done: true,
+        answers: [
+          'The customer has waited over a week and was promised a resolution before.',
+          'The agent apologized: "You\'re right, and I apologize."',
+        ],
+      },
+      {
+        title: 'Verify the account and refund status',
+        required: true,
+        done: false,
+        answers: [
+          'The agent pulled up the account but couldn\'t confirm why the refund didn\'t process — "it might be a system issue on our end."',
+        ],
+      },
+      {
+        title: 'Escalate to the team that owns refunds',
+        required: true,
+        done: false,
+        answers: [
+          'The agent isn\'t sure who handles it: "I think it\'s the billing team, though I\'ll have to confirm that."',
+          'The agent started an escalation but hasn\'t confirmed the owner.',
+        ],
+      },
+      {
+        title: 'Set a clear resolution timeline',
+        required: false,
+        done: false,
+        answers: [
+          'No timeline was given — "I\'m escalating this now, but I can\'t promise a timeline."',
+          'The customer says they\'re close to cancelling their account.',
+        ],
+      },
+    ],
+  },
+];
+
+// Returns the checklist variant that matches the transcript script currently
+// rendered, keyed by the same tone the panel uses to pick the script.
+export function getInsightChecklistSections(
+  tone: 'positive' | 'negative'
+): InsightChecklistSection[] {
+  return tone === 'negative'
+    ? NEGATIVE_CHECKLIST_SECTIONS
+    : POSITIVE_CHECKLIST_SECTIONS;
+}
 
 // Live transcript — replayed turn-by-turn to simulate a live conversation. type
 // mirrors the real chat Message contract ('SYSTEM' | 'CLIENT' | 'AGENT'); CLIENT
@@ -360,6 +477,43 @@ const NEGATIVE_TRANSCRIPT_TURNS: TranscriptTurn[] = [
   { type: 'CLIENT', message: "I've given you plenty of time already. This is completely unacceptable." },
   { type: 'AGENT', message: "I understand your frustration. I'm escalating this now, but I can't promise a timeline." },
 ];
+
+// Dev-only invariant: every quoted line ("...") inside a checklist answer must
+// appear verbatim in the transcript script for the same tone, so Checklist and
+// Transcript can never drift apart when either script or checklist is edited.
+// Runs once at module load in dev; throws so the drift is caught immediately.
+export function assertChecklistGroundedInTranscript(): void {
+  const variants: Array<{
+    tone: 'positive' | 'negative';
+    sections: InsightChecklistSection[];
+    script: TranscriptTurn[];
+  }> = [
+    { tone: 'positive', sections: POSITIVE_CHECKLIST_SECTIONS, script: TRANSCRIPT_TURNS },
+    { tone: 'negative', sections: NEGATIVE_CHECKLIST_SECTIONS, script: NEGATIVE_TRANSCRIPT_TURNS },
+  ];
+  for (const { tone, sections, script } of variants) {
+    for (const section of sections) {
+      for (const item of section.items) {
+        for (const answer of item.answers) {
+          const quotes = answer.match(/"([^"]+)"/g) ?? [];
+          for (const wrapped of quotes) {
+            const quote = wrapped.slice(1, -1);
+            const grounded = script.some((turn) => turn.message.includes(quote));
+            if (!grounded) {
+              throw new Error(
+                `Checklist/transcript drift (${tone}): quoted answer line not found in script — ${wrapped}`
+              );
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+if (typeof import.meta !== 'undefined' && (import.meta as any).env?.DEV) {
+  assertChecklistGroundedInTranscript();
+}
 
 // Returns the transcript turns for the monitored interaction. The opening
 // SYSTEM line reads "Agent connected" (chat) or "Call connected" (voice), and
