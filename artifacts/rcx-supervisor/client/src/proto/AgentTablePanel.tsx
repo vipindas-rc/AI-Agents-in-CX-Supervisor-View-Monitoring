@@ -163,6 +163,12 @@ export default function AgentTablePanel({
     return () => window.clearInterval(id);
   }, [activeTab]);
   const [monitoredId, setMonitoredId] = useState<string | null>(null);
+  // Engagement id of the voice interaction currently being monitored (from the
+  // Interactions tab), used only to highlight that specific row — the dialpad
+  // popup itself is keyed off monitoredId/agents, same as the Agents tab.
+  const [monitoredEngagementId, setMonitoredEngagementId] = useState<
+    string | null
+  >(null);
   // AI Insights side panel: holds the opened interaction's context (or null).
   // engagementId keys back to the live interaction row so the panel's Sentiment /
   // Confidence stay in sync with the table and the row stays highlighted.
@@ -336,6 +342,7 @@ export default function AgentTablePanel({
       }
       return null;
     });
+    setMonitoredEngagementId(null);
   }, [agents]);
 
   const monitoredAgentRow = useMemo(
@@ -480,17 +487,24 @@ export default function AgentTablePanel({
     [interactions],
   );
 
-  // Row-level hover actions on an interaction. Monitor / coach / join stay as
-  // their own (non-takeover) actions, but the legacy "barge-in" trigger must NOT
-  // fire an instant barge — it routes through the single combined Pause-&-Barge
-  // flow: open the AI Insights panel for that interaction, then the confirm
-  // modal. This keeps "take over" as one action that can't be bypassed.
+  // Row-level hover actions on an interaction. The legacy "barge-in" trigger
+  // must NOT fire an instant barge — it routes through the single combined
+  // Pause-&-Barge flow: open the AI Insights panel for that interaction, then
+  // the confirm modal. This keeps "take over" as one action that can't be
+  // bypassed, for both voice and digital.
+  //
+  // Voice Monitor and Whisper (coach) route through the same monitoring
+  // dialpad used on the Agents tab, keyed to the interaction's agent, with
+  // the row highlighted for as long as that dialpad is open. Digital Monitor
+  // keeps its current toast-only preview (a real digital monitoring/take-over
+  // experience is separate follow-up work).
   const monitorInteractionCallback = useCallback(
-    (_agentId: string, type?: string, uii?: string) => {
+    (agentId: string, type?: string, uii?: string) => {
+      const row = interactions.find(
+        (r: any) => r.engagementId === uii,
+      ) as any;
+
       if (type === "bargeIn") {
-        const row = interactions.find(
-          (r: any) => r.engagementId === uii,
-        ) as any;
         setInsightCtx({
           agentName: row?.fullName ?? "Agent",
           isVoice: Boolean(row?.isVoiceInteraction),
@@ -500,6 +514,21 @@ export default function AgentTablePanel({
         setPauseBargeOpen(true);
         return;
       }
+
+      if (row?.isVoiceInteraction && (type === "monitor" || type === "coach")) {
+        const isStopping =
+          monitoredId === agentId && monitoredEngagementId === uii;
+        if (isStopping) {
+          setMonitoredId(null);
+          setMonitoredEngagementId(null);
+          flashRef.current(`Stopped monitoring ${row?.fullName ?? agentId}`);
+        } else {
+          setMonitoredId(agentId);
+          setMonitoredEngagementId(uii ?? null);
+        }
+        return;
+      }
+
       flashRef.current(
         type === "coach"
           ? "Coaching started"
@@ -508,7 +537,7 @@ export default function AgentTablePanel({
             : "Monitoring interaction",
       );
     },
-    [interactions],
+    [interactions, monitoredId, monitoredEngagementId],
   );
 
   // 'AI' for Air (AI) agents, 'agent' for human agents — used throughout the
@@ -617,7 +646,12 @@ export default function AgentTablePanel({
               columns={visibleInteractionCols as any}
               digitalTaskList={displayInteractions as any}
               monitorAgentCallback={monitorInteractionCallback}
-              monitoredAgent={{ monitoredAgentId: "", uii: "" } as any}
+              monitoredAgent={
+                {
+                  monitoredAgentId: monitoredId ?? "",
+                  uii: monitoredEngagementId ?? "",
+                } as any
+              }
               viewInsight={viewInsightCallback}
               loggedInAgentId={"supervisor"}
               selectedIds={selectedAgentIds}

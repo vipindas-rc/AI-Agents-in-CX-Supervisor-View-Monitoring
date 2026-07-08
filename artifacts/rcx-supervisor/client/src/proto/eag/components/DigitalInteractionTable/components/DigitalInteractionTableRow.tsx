@@ -8,7 +8,7 @@ import {
     worstSeverity,
 } from './ScoreIndicator';
 import type { AIFeature } from '../../../common/services/transport/aiFeatures';
-import { INTERACTION_SOURCES, PESPECTIVE_STATE } from '../../../constants/app';
+import { INTERACTION_SOURCES } from '../../../constants/app';
 import { INTERACTION_CELL } from '../../../constants/testIds';
 import { getSourceType } from '../../../containers/Chat/TypeIcon';
 import InformationMenu from '../../../containers/SupervisorAgentList/components/Menus/InformationMenu';
@@ -107,35 +107,12 @@ export const DigitalInteractionTableRow: FC<{
         interactionSourceType === INTERACTION_SOURCES.VOICE;
     const showInformationIcon =
         !digitalAgentEnabled && !isVoiceInteraction && !isLegacyChat;
-    const showSupervisorAssist = useMemo(() => {
-        if (!shouldShowViewInsightsButton) return false;
-
-        if (isVoiceInteraction) {
-            return perspectiveRecordingMode === PESPECTIVE_STATE.ALL_AGENT_LEGS;
-        }
-
-        if (isLegacyChat) {
-            return false;
-        }
-
-        if (!isAIFeaturesEnabled) {
-            return true;
-        }
-
-        const currentAINotesFeature = aiNotesFeatures?.find(
-            ({ queueId }) => queueId === productId
-        );
-
-        return !!currentAINotesFeature?.enabled;
-    }, [
-        aiNotesFeatures,
-        isAIFeaturesEnabled,
-        isLegacyChat,
-        isVoiceInteraction,
-        perspectiveRecordingMode,
-        productId,
-        shouldShowViewInsightsButton,
-    ]);
+    // AI insights are available for every conversation now — voice, digital,
+    // and legacy chat alike — regardless of recording mode, legacy-chat
+    // status, or per-queue AI-feature flags. The only remaining gate is the
+    // page-level toggle (shouldShowViewInsightsButton) and the per-row
+    // showViewInsights flag (used below to enable/disable the icon itself).
+    const showSupervisorAssist = shouldShowViewInsightsButton;
 
     // Clicking anywhere on the row opens the AI Insights pane, but only for
     // rows where the hover "AI insights" action is available and enabled —
@@ -179,8 +156,14 @@ export const DigitalInteractionTableRow: FC<{
     );
 
     const isSelfAgent = loggedInAgentId === agentId;
+    // Matches the Agents-tab row highlight rule: a row is "currently
+    // monitoring" only when it is the specific interaction the supervisor
+    // opened the monitoring dialpad for (agent + engagement both match).
     const isCurrentlyMonitoring =
-        (!showMonitor || !showCoach || !showBargeIn) && !isSelfAgent;
+        !!monitoredAgent?.monitoredAgentId &&
+        monitoredAgent.monitoredAgentId === agentId &&
+        monitoredAgent.uii === engagementId &&
+        !isSelfAgent;
 
     // An interaction is flagged when its (real-time) confidence or sentiment
     // crosses an alert threshold — the proactive-intervention signal. The row's

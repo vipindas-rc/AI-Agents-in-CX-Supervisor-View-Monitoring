@@ -2,7 +2,6 @@ import { INTERACTION_SOURCES } from '../../../constants/app';
 import { sourceTypeMap } from '../../../containers/Chat/TypeIcon';
 import BargeInMenu from '../../../containers/SupervisorAgentList/components/Menus/BargeInMenu';
 import CoachMenu from '../../../containers/SupervisorAgentList/components/Menus/CoachMenu';
-import JoinMenu from '../../../containers/SupervisorAgentList/components/Menus/JoinMenu';
 import ViewInsightsMenu from '../../../containers/SupervisorAgentList/components/Menus/ViewInsightsMenu';
 import type { IMonitorMenuInfo } from '../../../containers/SupervisorAgentList/types/SupervisorAgentList';
 import { _getMonitorHoveredMenu } from '../../../containers/SupervisorAgentList/utils/SupervisorRowRenderUtil';
@@ -92,6 +91,9 @@ export const getDigitalInteractionHoveredItems = (
                 }),
             ];
         } else {
+            // Digital rows show exactly two hover actions: Monitor and Barge.
+            // "Join" is voice/legacy-conferencing-specific and is not offered
+            // here.
             return [
                 _getSupervisorAssistHoveredMenu({
                     agentId,
@@ -118,13 +120,6 @@ export const getDigitalInteractionHoveredItems = (
                     showBargeIn,
                     disabledTooltip: bargeInDisabledTooltip,
                     disabledTooltipPlacement,
-                }),
-                _getJoinHoveredMenu({
-                    monitorVoice,
-                    agentId,
-                    monitoredAgent,
-                    uii,
-                    interactionSourceType,
                 }),
             ];
         }
@@ -197,33 +192,6 @@ export const _getCoachHoveredMenu = ({
         />
     );
 };
-export const _getJoinHoveredMenu = ({
-    monitorVoice,
-    agentId,
-    monitoredAgent,
-    uii,
-    interactionSourceType,
-}: {
-    monitorVoice: () => void;
-    agentId: string;
-    monitoredAgent: IMonitorMenuInfo;
-    uii: string;
-    interactionSourceType: string;
-}) => {
-    monitoredAgent = { ...monitoredAgent, uii: uii };
-    return (
-        <JoinMenu
-            key={`join_${agentId}_${uii}`}
-            {...{
-                monitorVoice,
-                agentId,
-                monitoredAgent,
-                interactionSourceType,
-            }}
-        />
-    );
-};
-
 export const _getBargeInHoveredMenu = ({
     monitorVoice,
     agentId,
