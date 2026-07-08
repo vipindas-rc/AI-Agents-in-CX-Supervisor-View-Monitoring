@@ -497,3 +497,217 @@ export function makeInteractions(_agents?: unknown): any[] {
 
   return rows;
 }
+
+// ---------------------------------------------------------------------------
+// Digital "Interaction preview" popup (Figma node 4:107210) — the transcript,
+// tags, contact card, and interaction-history entries shown when a supervisor
+// monitors a digital conversation handled by an AirPro (AI) agent. The literal
+// copy mirrors the Figma design 1:1; per-row dynamics (agent identity, channel
+// label) come from the interaction row.
+// ---------------------------------------------------------------------------
+
+export interface PreviewMessage {
+  who: 'system' | 'customer' | 'agent' | 'supervisor';
+  name?: string;
+  badge?: string;
+  text: string;
+  time?: string;
+  edited?: boolean;
+  // (Edited) renders inline after short texts, on its own line otherwise.
+  editedInline?: boolean;
+  lang?: string;
+  liked?: boolean;
+}
+
+export interface PreviewTag {
+  label: string;
+  bg: string;
+  color: string;
+}
+
+export interface PreviewHistoryEntry {
+  icon: 'call-in' | 'email' | 'postcard' | 'call-out';
+  title: string;
+  summary?: string;
+  showMore?: boolean;
+  note?: string;
+  date: string;
+  duration: string;
+}
+
+export interface InteractionPreviewData {
+  channelLabel: string;
+  sourceType: string;
+  subject: string;
+  tags: PreviewTag[];
+  customerName: string;
+  agentName: string;
+  agentBadge: string;
+  connectedLine: string;
+  messages: PreviewMessage[];
+  queueName: string;
+  contactName: string;
+  contactPhone: string;
+  historyCountLabel: string;
+  history: PreviewHistoryEntry[];
+  // Messages that "arrive" one by one while the preview is open, so the
+  // supervisor sees the digital interaction progressing live. Timestamps are
+  // stamped by the component at arrival time.
+  liveScript: PreviewMessage[];
+}
+
+const PREVIEW_CUSTOMER = 'Andy Smith';
+
+const PREVIEW_HISTORY: PreviewHistoryEntry[] = [
+  {
+    icon: 'call-in',
+    title: 'Success',
+    summary:
+      'Rafael want to become our marketing partner in the next year. He has a lot of ideas for our future advertisers. This call should be discussed',
+    showMore: true,
+    note: 'Need to request a Promo materials.',
+    date: '09/25/23 10:10 AM',
+    duration: '6 min 18 sec',
+  },
+  {
+    icon: 'email',
+    title: 'Success',
+    summary:
+      'Rafael emailed us with his main profile. He mentioned that we are the best and he will be glad to have an opportunity to work with us.',
+    date: '09/24/23 10:10 AM',
+    duration: '25 min 18 sec',
+  },
+  {
+    icon: 'postcard',
+    title: 'Success',
+    note: 'Happy Birthday postcard.',
+    date: '09/03/23 09:24 AM',
+    duration: '20 min 18 sec',
+  },
+  {
+    icon: 'call-out',
+    title: 'Call sent to the Voicemail',
+    date: '09/01/23 03:38 PM',
+    duration: '5 min 18 sec',
+  },
+];
+
+// Strips the AirPro "(Role)" suffix from the agent identity for chat display.
+const displayAgentName = (fullName: string): string =>
+  String(fullName ?? '').replace(/\s*\(.*\)\s*$/, '') || 'Agent';
+
+// Initials badge for a display name ("Remy Murray" -> "RM").
+const initialsOf = (name: string): string =>
+  name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]!.toUpperCase())
+    .join('') || 'A';
+
+export function makeInteractionPreview(row: any): InteractionPreviewData {
+  // Handling agent identity comes from the row (AirPro "Name (Role)" -> "Name");
+  // transcript copy itself is the Figma-literal conversation.
+  const agentName = row?.fullName
+    ? displayAgentName(row.fullName)
+    : 'Remy Murray';
+  const agentBadge = initialsOf(agentName);
+  const sourceType = String(
+    row?.engagementSource?.initialEngagementSourceType ??
+      row?.sourceType ??
+      'WEB_CHAT',
+  );
+  const channelLabel =
+    sourceType === 'WEB_CHAT' ? 'Live chat' : String(row?.sourceName ?? 'Chat');
+
+  return {
+    channelLabel,
+    sourceType,
+    subject: 'Hello! I have a problem with account. Can you help with it?',
+    tags: [
+      { label: 'Critical issue', bg: '#fdeae5', color: '#c40c05' },
+      { label: 'Tech', bg: '#f4e7f9', color: '#9b45a0' },
+    ],
+    customerName: PREVIEW_CUSTOMER,
+    agentName,
+    agentBadge,
+    connectedLine: `${PREVIEW_CUSTOMER} is connected • 06:05 PM`,
+    messages: [
+      {
+        who: 'customer',
+        name: PREVIEW_CUSTOMER,
+        badge: 'RM',
+        text: 'Hello! I have a problem with account. Can you help with it?',
+        time: '06:06 PM',
+        edited: true,
+        lang: 'en',
+        liked: true,
+      },
+      {
+        who: 'agent',
+        name: agentName,
+        badge: agentBadge,
+        text: 'Good morning! Sure, please type me your number in system',
+        time: '06:10 PM',
+      },
+      {
+        who: 'customer',
+        name: PREVIEW_CUSTOMER,
+        badge: 'RM',
+        text: '56751',
+        time: '06:20 PM',
+        edited: true,
+        editedInline: true,
+        lang: 'en',
+      },
+      {
+        who: 'agent',
+        name: agentName,
+        badge: agentBadge,
+        text: "Thank you! It seems that your account is blocked. Give me a second, I'll find out why.",
+        time: '06:10 PM',
+        edited: true,
+        editedInline: true,
+      },
+    ],
+    queueName: 'Customer Support',
+    contactName: 'Rafael Mobley',
+    contactPhone: '(866) 929-1390',
+    historyCountLabel: '4 interactions',
+    history: PREVIEW_HISTORY,
+    liveScript: [
+      {
+        who: 'agent',
+        name: agentName,
+        badge: agentBadge,
+        text: 'I checked your account — it was flagged after several failed sign-in attempts.',
+      },
+      {
+        who: 'customer',
+        name: PREVIEW_CUSTOMER,
+        badge: 'RM',
+        text: 'Oh no. Can you unblock it for me?',
+        lang: 'en',
+      },
+      {
+        who: 'agent',
+        name: agentName,
+        badge: agentBadge,
+        text: "I've verified your identity and lifted the block. Please try signing in now.",
+      },
+      {
+        who: 'customer',
+        name: PREVIEW_CUSTOMER,
+        badge: 'RM',
+        text: 'It works now. Thank you so much!',
+        lang: 'en',
+      },
+      {
+        who: 'agent',
+        name: agentName,
+        badge: agentBadge,
+        text: "You're welcome! Is there anything else I can help you with today?",
+      },
+    ],
+  };
+}

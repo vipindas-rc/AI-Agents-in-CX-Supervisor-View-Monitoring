@@ -15,6 +15,12 @@ declare module "@proto" {
     onActiveInteractionsClick?: (agentId: string) => void;
     highlightAgentId?: string | null;
     highlightNonce?: number;
+    // Digital "Interaction preview" (URL-driven by the page).
+    previewEngagementId?: string | null;
+    previewMode?: "preview" | "expanded" | "takeover" | null;
+    onPreviewOpen?: (engagementId: string) => void;
+    onPreviewModeChange?: (mode: "preview" | "expanded" | "takeover") => void;
+    onPreviewClose?: () => void;
   }
   const AgentTablePanel: ComponentType<ProtoAgentTablePanelProps>;
   export default AgentTablePanel;

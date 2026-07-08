@@ -158,10 +158,14 @@ export const DigitalInteractionTableRow: FC<{
     const isSelfAgent = loggedInAgentId === agentId;
     // Matches the Agents-tab row highlight rule: a row is "currently
     // monitoring" only when it is the specific interaction the supervisor
-    // opened the monitoring dialpad for (agent + engagement both match).
+    // opened monitoring for (agent + engagement both match). The highlight is
+    // driven by the monitored engagement (monitoredAgent.uii), not by the
+    // per-row icon visibility flags — digital rows can have Monitor disabled
+    // (voice-only gating for human agents) without reading as monitored.
     const isCurrentlyMonitoring =
         !!monitoredAgent?.monitoredAgentId &&
         monitoredAgent.monitoredAgentId === agentId &&
+        !!monitoredAgent?.uii &&
         monitoredAgent.uii === engagementId &&
         !isSelfAgent;
 

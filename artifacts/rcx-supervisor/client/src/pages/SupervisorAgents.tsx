@@ -1,5 +1,10 @@
-import { useCallback, useState } from "react";
-import { useLocation, useSearch } from "wouter";
+import { useCallback, useEffect, useState } from "react";
+import { useLocation, useRoute, useSearch } from "wouter";
+
+// Kept in sync with the proto InteractionPreview component's mode union.
+// (Declared locally so this page doesn't pull the excluded proto tree into tsc.)
+type InteractionPreviewMode = "preview" | "expanded" | "takeover";
+
 import AgentTablePanel, {
   agentColumnMeta,
   interactionColumnMeta,
@@ -31,6 +36,7 @@ import {
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
+  ArrowLeft,
   ListFilter,
   Search as SearchIcon,
   Settings as SettingsIcon,
@@ -193,8 +199,33 @@ export const SupervisorAgents = (): JSX.Element => {
   // tab (clean URL, no param); the Agents tab is addressable via ?tab=agents.
   const search = useSearch();
   const [pathname, navigate] = useLocation();
+
+  // URL-addressable digital "Interaction preview" (deep-linkable / refresh-safe):
+  // /interactions/:engagementId/:mode with mode preview | expanded | takeover.
+  const [previewRouteMatched, previewParams] = useRoute(
+    "/interactions/:engagementId/:mode",
+  );
+  const rawPreviewMode = previewRouteMatched ? previewParams?.mode : null;
+  const previewMode: InteractionPreviewMode | null =
+    rawPreviewMode === "preview" ||
+    rawPreviewMode === "expanded" ||
+    rawPreviewMode === "takeover"
+      ? rawPreviewMode
+      : null;
+  const previewEngagementId =
+    previewRouteMatched && previewMode
+      ? (previewParams?.engagementId ?? null)
+      : null;
+
+  // Unknown mode in the URL -> restore the plain table URL.
+  useEffect(() => {
+    if (previewRouteMatched && !previewMode) navigate("/");
+  }, [previewRouteMatched, previewMode, navigate]);
+
+  // A preview deep link always belongs to the Interactions tab (preview URLs
+  // never carry ?tab=agents, so the URL-derived tab is already Interactions).
   const activeTab: "Agents" | "Interactions" =
-    new URLSearchParams(search).get("tab") === "agents"
+    !previewRouteMatched && new URLSearchParams(search).get("tab") === "agents"
       ? "Agents"
       : "Interactions";
   const isInteractions = activeTab === "Interactions";
@@ -208,10 +239,27 @@ export const SupervisorAgents = (): JSX.Element => {
         params.delete("tab");
       }
       const qs = params.toString();
-      navigate(qs ? `${pathname}?${qs}` : pathname);
+      // Leaving from a preview deep link returns to the plain table URL.
+      const base = previewRouteMatched ? "/" : pathname;
+      navigate(qs ? `${base}?${qs}` : base);
     },
-    [navigate, pathname],
+    [navigate, pathname, previewRouteMatched],
   );
+
+  const openPreview = useCallback(
+    (engagementId: string) =>
+      navigate(`/interactions/${engagementId}/preview`),
+    [navigate],
+  );
+  const changePreviewMode = useCallback(
+    (mode: InteractionPreviewMode) => {
+      if (previewEngagementId) {
+        navigate(`/interactions/${previewEngagementId}/${mode}`);
+      }
+    },
+    [previewEngagementId, navigate],
+  );
+  const closePreview = useCallback(() => navigate("/"), [navigate]);
 
   // When the supervisor clicks an agent's "Active interactions" icons we jump to
   // the Interactions tab and blink that agent's rows. The nonce re-triggers the
@@ -231,6 +279,8 @@ export const SupervisorAgents = (): JSX.Element => {
 
   const handleTabChange = useCallback(
     (value: string) => {
+      // setActiveTab already routes back to the plain table URL when a preview
+      // deep link is open, so switching tabs also closes the preview.
       setActiveTab(value as "Agents" | "Interactions");
       // Manually changing tabs clears any agent-driven row highlight.
       setHighlightAgentId(null);
@@ -532,6 +582,25 @@ export const SupervisorAgents = (): JSX.Element => {
               </TabsList>
             </Tabs>
           </div>
+          {previewMode === "takeover" ? (
+            // Embedded take-over: the Supervisor header/filters give way to a
+            // back row, and the taken-over conversation fills the area below.
+            <div
+              className="flex shrink-0 items-center border-b border-[#0000001a] px-4 py-2.5"
+              data-testid="row-takeover-back"
+            >
+              <button
+                type="button"
+                onClick={closePreview}
+                className="flex items-center gap-2 font-['Roboto',sans-serif] text-[15px] font-medium tracking-[0.15px] text-[#066fac] transition-opacity hover:opacity-80 focus-visible:underline focus-visible:outline-none"
+                data-testid="button-back-supervisor"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Supervisor
+              </button>
+            </div>
+          ) : (
+          <>
           <div className="relative flex shrink-0 items-center border-b border-[#0000001a] px-5 py-3">
             <h2 className="shrink-0 font-subtitle-mini text-[15px] font-semibold leading-[var(--subtitle-mini-line-height)] text-[#121212]">
               Supervisor
@@ -668,6 +737,8 @@ export const SupervisorAgents = (): JSX.Element => {
               )}
             </div>
           )}
+          </>
+          )}
           <div className="min-h-0 flex-1 overflow-hidden">
             <AgentTablePanel
               activeTab={activeTab}
@@ -682,6 +753,11 @@ export const SupervisorAgents = (): JSX.Element => {
               onActiveInteractionsClick={handleActiveInteractionsClick}
               highlightAgentId={highlightAgentId}
               highlightNonce={highlightNonce}
+              previewEngagementId={previewEngagementId}
+              previewMode={previewMode}
+              onPreviewOpen={openPreview}
+              onPreviewModeChange={changePreviewMode}
+              onPreviewClose={closePreview}
             />
           </div>
 

@@ -12,6 +12,12 @@ function Router() {
     <Switch>
       {/* Add pages below */}
       <Route path="/" component={SupervisorAgents} />
+      {/* Digital monitoring: Interaction preview popup / full-page take-over.
+          mode is one of preview | expanded | takeover. */}
+      <Route
+        path="/interactions/:engagementId/:mode"
+        component={SupervisorAgents}
+      />
       {/* Fallback to 404 */}
       <Route component={NotFound} />
     </Switch>

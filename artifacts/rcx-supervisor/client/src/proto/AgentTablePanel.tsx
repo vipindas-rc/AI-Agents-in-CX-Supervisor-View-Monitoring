@@ -29,8 +29,13 @@ import {
   interactionColumns,
   makeAgents,
   makeInteractions,
+  makeInteractionPreview,
   rollupColumns,
 } from "./mock/supervisorMock";
+import {
+  InteractionPreview,
+  type InteractionPreviewMode,
+} from "./InteractionPreview";
 
 // Single source of truth for the agent table column ids/labels, derived directly
 // from the proto column definitions. Consumed by the page's settings dialog so
@@ -91,6 +96,13 @@ interface AgentTablePanelProps {
   onActiveInteractionsClick?: (agentId: string) => void;
   highlightAgentId?: string | null;
   highlightNonce?: number;
+  // Digital AI-agent monitoring preview (URL-driven by the page): the engagement
+  // being previewed and the current view mode, plus navigation callbacks.
+  previewEngagementId?: string | null;
+  previewMode?: InteractionPreviewMode | null;
+  onPreviewOpen?: (engagementId: string) => void;
+  onPreviewModeChange?: (mode: InteractionPreviewMode) => void;
+  onPreviewClose?: () => void;
 }
 
 export default function AgentTablePanel({
@@ -108,6 +120,11 @@ export default function AgentTablePanel({
   onActiveInteractionsClick,
   highlightAgentId,
   highlightNonce,
+  previewEngagementId = null,
+  previewMode = null,
+  onPreviewOpen,
+  onPreviewModeChange,
+  onPreviewClose,
 }: AgentTablePanelProps) {
   const [agents, setAgents] = useState(() => makeAgents(25));
   const [interactions, setInteractions] = useState(() => makeInteractions());
@@ -270,15 +287,27 @@ export default function AgentTablePanel({
   );
 
   // Interactions are pre-filtered by Agent Type (Air/Human/All), mirroring the
-  // Agent List behavior.
+  // Agent List behavior. Monitor gating per row: voice rows keep their existing
+  // behavior; digital rows handled by an AirPro (AI) agent get an ENABLED
+  // monitor icon (opens the Interaction preview popup); digital rows handled by
+  // a human agent stay voice-only gated with the explanatory tooltip.
   const displayInteractions = useMemo(
     () =>
-      interactions.filter((it: any) => {
-        if (agentTypeFilter !== "All" && it.agentType !== agentTypeFilter) {
-          return false;
-        }
-        return true;
-      }),
+      interactions
+        .filter((it: any) => {
+          if (agentTypeFilter !== "All" && it.agentType !== agentTypeFilter) {
+            return false;
+          }
+          return true;
+        })
+        .map((it: any) => {
+          if (it.isVoiceInteraction || it.agentType === "Air") return it;
+          return {
+            ...it,
+            showMonitor: false,
+            monitorDisabledTooltip: "You can only monitor voice calls",
+          };
+        }),
     [interactions, agentTypeFilter],
   );
 
@@ -529,6 +558,18 @@ export default function AgentTablePanel({
         return;
       }
 
+      // Digital conversation handled by an AirPro (AI) agent -> open the
+      // Interaction preview popup in listening mode (URL-driven).
+      if (
+        type === "monitor" &&
+        row &&
+        !row.isVoiceInteraction &&
+        row.agentType === "Air"
+      ) {
+        onPreviewOpen?.(row.engagementId);
+        return;
+      }
+
       flashRef.current(
         type === "coach"
           ? "Coaching started"
@@ -537,7 +578,7 @@ export default function AgentTablePanel({
             : "Monitoring interaction",
       );
     },
-    [interactions, monitoredId, monitoredEngagementId],
+    [interactions, monitoredId, monitoredEngagementId, onPreviewOpen],
   );
 
   // 'AI' for Air (AI) agents, 'agent' for human agents — used throughout the
@@ -629,6 +670,41 @@ export default function AgentTablePanel({
       ) as any)
     : null;
 
+  // Interaction row backing the digital "Interaction preview" popup (URL-driven).
+  const previewRow = previewEngagementId
+    ? (interactions.find(
+        (r: any) => r.engagementId === previewEngagementId,
+      ) as any)
+    : null;
+
+  // Deep link points at an engagement that doesn't exist -> restore the table URL.
+  useEffect(() => {
+    if (previewEngagementId && !previewRow) onPreviewClose?.();
+  }, [previewEngagementId, previewRow, onPreviewClose]);
+
+  const previewData = useMemo(
+    () => (previewRow ? makeInteractionPreview(previewRow) : null),
+    [previewRow],
+  );
+
+  // Take over availability tracks the AI agent's lifecycle: a draining agent
+  // (Pending Inactive) can't accept a take-over hand-off.
+  const previewAgent = previewRow
+    ? (agents.find((a: any) => a.agentId === previewRow.agentId) as any)
+    : null;
+  const previewAgentPendingInactive = Boolean(
+    previewAgent &&
+      (previewAgent.agentBaseState === "PENDING-INACTIVE" ||
+        previewAgent.agentBaseState === "PENDING_INACTIVE" ||
+        previewAgent.agentState === "Pending Inactive"),
+  );
+
+  const handlePreviewHandBack = useCallback(() => {
+    const name = previewData?.agentName ?? "the agent";
+    flashRef.current(`You've handed the conversation back to ${name}`);
+    onPreviewClose?.();
+  }, [previewData, onPreviewClose]);
+
   return (
     <RcThemeProvider>
       <ThemeProvider theme={theme as any}>
@@ -641,15 +717,29 @@ export default function AgentTablePanel({
             position: "relative",
           }}
         >
-          {activeTab === "Interactions" ? (
+          {previewRow && previewData && previewMode === "takeover" ? (
+            // Take-over renders embedded in place of the table (the page shows
+            // a "← Supervisor" back row above this panel).
+            <InteractionPreview
+              mode="takeover"
+              data={previewData}
+              takeOverDisabled={previewAgentPendingInactive}
+              onClose={() => onPreviewClose?.()}
+              onEnlarge={() => onPreviewModeChange?.("expanded")}
+              onTakeOver={() => onPreviewModeChange?.("takeover")}
+              onHandBack={handlePreviewHandBack}
+            />
+          ) : activeTab === "Interactions" ? (
             <DigitalInteractionTable
               columns={visibleInteractionCols as any}
               digitalTaskList={displayInteractions as any}
               monitorAgentCallback={monitorInteractionCallback}
               monitoredAgent={
                 {
-                  monitoredAgentId: monitoredId ?? "",
-                  uii: monitoredEngagementId ?? "",
+                  // Voice monitoring (dialpad) takes precedence; otherwise an
+                  // open digital Interaction preview highlights its row.
+                  monitoredAgentId: monitoredId ?? previewRow?.agentId ?? "",
+                  uii: monitoredEngagementId ?? previewEngagementId ?? "",
                 } as any
               }
               viewInsight={viewInsightCallback}
@@ -701,6 +791,23 @@ export default function AgentTablePanel({
             />
           )}
         </div>
+
+        {previewRow && previewData && previewMode && previewMode !== "takeover" && (
+          <InteractionPreview
+            mode={previewMode}
+            data={previewData}
+            takeOverDisabled={previewAgentPendingInactive}
+            takeOverDisabledTooltip={
+              previewAgentPendingInactive
+                ? "You can't take over right now. This AirPro agent is pending inactive."
+                : undefined
+            }
+            onClose={() => onPreviewClose?.()}
+            onEnlarge={() => onPreviewModeChange?.("expanded")}
+            onTakeOver={() => onPreviewModeChange?.("takeover")}
+            onHandBack={handlePreviewHandBack}
+          />
+        )}
 
         {insightCtx && pauseBargeOpen && (
           <PauseBargeModal
