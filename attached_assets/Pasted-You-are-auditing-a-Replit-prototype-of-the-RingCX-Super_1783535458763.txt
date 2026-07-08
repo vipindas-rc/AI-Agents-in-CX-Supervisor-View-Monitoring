@@ -1,0 +1,71 @@
+You are auditing a Replit prototype of the RingCX Supervisor experience for AirPro / Nova AI
+("digital worker", NOVA_BOT) agents. Two initiatives are in scope:
+  - INIT-28001 — Phase 1, Observability (visibility of AI agents/interactions)
+  - INIT-28002 — Phase 2, Monitoring (live transcript + intervention)
+
+Inspect the prototype (UI, routes, components, states, mock data). For each requirement assign
+one status: DONE / PARTIAL / MISSING / EXTRA (EXTRA = built but out of committed scope).
+Cite concrete evidence (file/route/component). Report each initiative separately.
+Measure against the GROUND TRUTH below, which reflects the team's Glip decisions — NOT the
+older product-wiki spec.
+
+==== GROUND TRUTH (from Glip decisions + engineering baseline) ====
+- July-2 rescope: Phase 1 (INIT-28001) was CUT to INTERACTIONS-TAB DISPLAY ONLY. Deferred out
+  of Phase 1: Agent-Tab AI display, Change-Agent-State toggle, agent states (Inactive/
+  Pending-Inactive), agent-type/active filters. Confidence + Sentiment MOVED to Phase 2.
+- INIT-28002 executable baseline (Kaison): live transcript + Take Over + Transfer to Queue +
+  Supervisor Assist reuse. Confidence/Sentiment = PENDING PM. Pause AI + Coaching = OUT (Nova
+  has no pause/resume). Take Over = supervisor becomes a REAL participant (not barge/monitor).
+  Transfer to Queue = route to a QUEUE (not a specific agent). Actions are owned by the
+  supervisor UI, NOT the transcript/AI-assist (CCAI) panel.
+- Standalone Alerts view / threshold-alerts tab = NOT in the engineering baseline.
+
+==== INIT-28001 — PHASE 1 OBSERVABILITY ====
+Committed (Phase-1 scope = Interactions Tab only):
+  O1. AI (Nova) interactions appear in the Interactions tab in the existing format.
+  O2. Columns: Channel, Type, Agent (= AirPro/bot ID), Product (includes "Workflow"),
+      Categories, From, Interaction Duration.
+  O3. Interactions-tab filters work for AI rows (agent type Air/Human/All, channel, category, search).
+  O4. Supervisor actions on an AI interaction: Requeue, Hang up (same as human).
+Out of Phase 1 (should be ABSENT or clearly deferred; mark EXTRA if built):
+  O5. Agent-Tab AI display (AI agents as rows/cards in the Agents tab).
+  O6. Change-Agent-State toggle (Available<->Inactive) + Inactive / Pending-Inactive states.
+  O7. Agent-type / active-inactive filters on the Agents tab.
+  O8. Confidence + Sentiment columns (these belong to Phase 2 now).
+  O9. Analytics-style metrics (resolved %, hand-off %, remaining runway) — INIT-28013, not here.
+
+==== INIT-28002 — PHASE 2 MONITORING ====
+Committed v1 baseline:
+  M1. Live transcript (VOICE + DIGITAL); digital renders Customer<->Nova turns live; reuse an
+      embedded transcript/AI-assist (CCAI-style) panel, not a bespoke one-off renderer.
+  M2. Take Over — supervisor takes over the active Nova session as a REAL participant.
+      Voice: connect supervisor first, then drop AI leg. Digital: stop worker, attach supervisor,
+      fallback requeue if attach fails.
+  M3. Transfer to Queue — route to a QUEUE; validate queue BEFORE disengaging; needs a queue picker.
+  M4. Action ownership — Take Over / Transfer triggered from the supervisor UI/action row, NOT
+      from the transcript/AI-assist panel.
+  M5. Supervisor Assist — reuse the "View Insights" AI-assist panel for Nova interactions.
+  M6. Channel-aware actions: voice + digital-live = Take Over + Transfer to Queue;
+      email (async) = assign/transfer/create case (confirm if email is even in scope).
+Pending PM (present is fine; flag as unconfirmed; note the threshold/visual treatment used):
+  M7. Confidence column (real-time, AI only, "-" for human).
+  M8. Sentiment column (real-time, AI + human).
+Out of scope (should be ABSENT; mark EXTRA if built):
+  M9. Pause AI / pause-resume.
+  M10. Coaching / "Tune AI".
+  M11. Transfer to a SPECIFIC agent (baseline wants Transfer to Queue).
+  M12. Standalone Alerts view / threshold-alerts tab.
+
+==== OUTPUT (plain text only — do NOT use tables or pipe characters) ====
+For EACH initiative, output one line per requirement in this exact shape:
+  <ReqID> [STATUS] — evidence: <file/component> — note: <one line>
+Example:
+  M3 [MISSING] — evidence: ReassignConversationModal.tsx (agent picker only) — note: no queue picker; specific-agent transfer built instead
+
+Then add these short sections as plain bullet lists (use "- " bullets, no tables):
+  - Committed completion: Phase 1 = X% (O1-O4); Phase 2 = X% (M1-M6)
+  - Pending-PM status: M7, M8 — present/partial/absent + the visual/threshold treatment observed
+  - Out-of-scope leakage: list any EXTRA items built (especially transfer-to-specific-agent
+    instead of queue, actions wired into the AI-assist panel, and Phase-1 agent-tab/state items)
+  - Top gaps ranked (committed items only)
+  - Open questions: 3-5 the design still needs answered
