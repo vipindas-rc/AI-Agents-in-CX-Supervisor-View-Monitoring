@@ -127,7 +127,13 @@ const SupervisorRowRenderer: FC<ISupervisorAgentListRow> = ({
     );
 
     const isSelfAgent = loggedInAgentId === agentId;
-    const isCurrentlyMonitoring = !showMonitor && !isSelfAgent;
+    // Blue "being monitored" treatment tracks the active monitoring session
+    // only. showMonitor now means "monitor action available" (voice-only gate),
+    // so a disabled Monitor icon must NOT paint the row as monitored.
+    const isCurrentlyMonitoring =
+        !!monitoredAgent?.monitoredAgentId &&
+        monitoredAgent.monitoredAgentId === agentId &&
+        !isSelfAgent;
 
     const getColumnValue = (column: ISupervisorTableCol) => {
         switch (column.id) {

@@ -211,7 +211,11 @@ export default function AgentTablePanel({
   // Whether the "Reassign conversation" modal (digital) is open.
   const [reassignOpen, setReassignOpen] = useState(false);
 
-  // showMonitor:false ONLY for the actively-monitored agent (-> blue + left bar).
+  // Monitoring is voice-only: the Monitor icon is enabled ONLY when every one
+  // of the agent's active interactions is a voice call. Any digital interaction
+  // (alone or mixed with voice) or no interactions at all -> disabled icon with
+  // an explanatory tooltip. The monitored-row highlight is driven separately by
+  // monitoredAgent.monitoredAgentId in the row renderer (not by showMonitor).
   // Agent type + status filtering is applied here (pre-filter), while state /
   // channel / search filtering runs inside the GridList via props.
   const displayAgents = useMemo(
@@ -238,9 +242,16 @@ export default function AgentTablePanel({
         })
         .map((a: any) => {
           const { subRows, ...rest } = a; // non-expandable (avoids GridList grouped path)
+          const active: any[] = a.activeInteractions ?? [];
+          const isVoiceOnly =
+            active.length > 0 &&
+            active.every((it: any) => it.channelType === "VOICE");
           return {
             ...rest,
-            showMonitor: a.agentId !== monitoredId,
+            showMonitor: isVoiceOnly,
+            disabledTooltip: isVoiceOnly
+              ? undefined
+              : "You can only monitor voice calls",
             showLogout: true,
             // "Update agent state" is offered for every agent: AirPro agents get
             // the Inactive/Pending-Inactive lifecycle toggle, human agents get a
@@ -248,7 +259,7 @@ export default function AgentTablePanel({
             showChangeState: true,
           };
         }),
-    [agents, monitoredId, agentTypeFilter, statusFilter, selectedAgentGroups],
+    [agents, agentTypeFilter, statusFilter, selectedAgentGroups],
   );
 
   // Interactions are pre-filtered by Agent Type (Air/Human/All), mirroring the
@@ -297,14 +308,22 @@ export default function AgentTablePanel({
     [interactionCols, visibleInteractionColumnIds],
   );
 
+  // Toggle semantics: clicking Monitor on the currently-monitored agent stops
+  // monitoring (clears the blue row); clicking it on another agent switches the
+  // monitoring session to that agent.
   const monitorAgentCallback = useCallback(
     (agentId: string) => {
-      setMonitoredId(agentId);
       const a = agents.find((x: any) => x.agentId === agentId);
-      flash(`Monitoring ${a?.fullName ?? agentId}`);
+      const isStopping = monitoredId === agentId;
+      setMonitoredId(isStopping ? null : agentId);
+      flashRef.current(
+        isStopping
+          ? `Stopped monitoring ${a?.fullName ?? agentId}`
+          : `Monitoring ${a?.fullName ?? agentId}`,
+      );
       return {} as any;
     },
-    [agents],
+    [agents, monitoredId],
   );
 
   const onLogOut = useCallback(
