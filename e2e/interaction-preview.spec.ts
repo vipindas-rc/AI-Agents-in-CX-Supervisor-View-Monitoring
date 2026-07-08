@@ -11,17 +11,16 @@ import { test, expect, type Page } from "@playwright/test";
  * Seeded mock data facts this spec relies on (supervisorMock.ts):
  * - Digital AirPro engagements: eng-1011-1/2 (Mia Garcia (Retention Agent))
  *   and eng-1023-1/2 (Nina Ivanov (Sales Agent)).
- * - Both AirPro agents are "Pending Inactive" at rest, so Take over is
- *   DISABLED by default. Flipping an agent to Available via the Agents tab
- *   "Update agent state" modal enables it (in-memory; resets on reload).
+ * - Both AirPro agents seed as "Engaged", so Take over is ENABLED by default.
+ *   "Pending Inactive" (which disables Take over) is runtime-only: it appears
+ *   for ~3s while an engaged AirPro agent drains after being switched off,
+ *   which is too short a window to assert reliably end-to-end.
  */
 
 const MIA = "Mia Garcia (Retention Agent)";
 const NINA = "Nina Ivanov (Sales Agent)";
 const NINA_ENGAGEMENT = "eng-1023-1";
 const MIA_ENGAGEMENT = "eng-1011-1";
-const DISABLED_TOOLTIP =
-  "You can't take over right now. This AirPro agent is pending inactive.";
 const TAKEOVER_SYSTEM_LINE = "You have taken over this conversation";
 const STATE_SUCCESS_TOAST = "The agent's state has been updated successfully.";
 
@@ -60,13 +59,13 @@ async function setAgentAvailable(page: Page, agentName: string) {
 }
 
 test.describe("digital interaction preview flow", () => {
-  test("monitor icon opens preview popup; Take over is disabled for a Pending Inactive AirPro agent", async ({
+  test("monitor icon opens preview popup; Take over is enabled for an Engaged AirPro agent", async ({
     page,
   }) => {
     await page.goto("/");
     await openInteractionsTab(page);
 
-    // Nina Ivanov is Pending Inactive at rest — never touched in this test.
+    // Nina Ivanov seeds as Engaged — never touched in this test.
     await clickMonitorOnRow(page, NINA);
 
     const popup = page.getByTestId("popup-interaction-preview");
@@ -75,11 +74,7 @@ test.describe("digital interaction preview flow", () => {
 
     const takeOver = page.getByTestId("button-take-over");
     await expect(takeOver).toBeVisible();
-    await expect(takeOver).toBeDisabled();
-
-    // Disabled-state tooltip explains why.
-    await takeOver.hover({ force: true });
-    await expect(page.getByText(DISABLED_TOOLTIP).first()).toBeVisible();
+    await expect(takeOver).toBeEnabled();
 
     // Close returns to the supervisor view.
     await page.getByTestId("button-close-preview").click();
@@ -135,14 +130,14 @@ test.describe("digital interaction preview flow", () => {
     ).not.toBeVisible();
   });
 
-  test("deep link /interactions/:engagementId/preview restores the popup with disabled Take over", async ({
+  test("deep link /interactions/:engagementId/preview restores the popup", async ({
     page,
   }) => {
     await page.goto(`/interactions/${NINA_ENGAGEMENT}/preview`);
 
     await expect(page.getByTestId("popup-interaction-preview")).toBeVisible();
-    // Fresh page load resets in-memory agent state -> Pending Inactive again.
-    await expect(page.getByTestId("button-take-over")).toBeDisabled();
+    // Fresh page load resets in-memory agent state -> Engaged again.
+    await expect(page.getByTestId("button-take-over")).toBeEnabled();
   });
 
   test("deep link /interactions/:engagementId/expanded restores the expanded view", async ({

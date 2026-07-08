@@ -1,0 +1,57 @@
+You are auditing a Replit prototype of the RingCX Supervisor "Monitoring" experience for
+AirPro / Nova AI ("digital worker", NOVA_BOT) agents — Jira INIT-28002 "CXAIR – Monitoring
+(Voice, Digital) for Digital Workers' conversations in CX."
+
+GOAL
+Inspect the prototype (UI, screens, components, states, mock data) and report HOW COMPLETE it
+is against the requirements below. Do NOT add features — assess only. Mark each requirement:
+  ✅ Done   🟡 Partial   ❌ Missing   ➕ Extra (present but out of the committed baseline)
+Give concrete evidence (file/route/component) for each, and separate completion %s for:
+(A) Committed v1 baseline, (B) Pending-PM items, (C) Out-of-scope items.
+
+GROUND TRUTH — SCOPE TIERS (important; the eng baseline is narrower than the product wiki)
+
+TIER A — COMMITTED v1 BASELINE (this is what "done" should be measured against)
+A1. Live transcript for the monitored interaction — VOICE and DIGITAL.
+    - Digital: renders the Customer ↔ Nova AI conversation as turns, updating live.
+    - Should reuse an embedded transcript/AI-assist panel (think CCAI iframe), keyed by
+      interaction/task/session context — NOT a bespoke one-off renderer.
+A2. Take Over (disengage) — supervisor takes over an active Nova session and becomes a REAL
+    participant (not a monitor/whisper/barge session).
+    - Voice: connect supervisor first, THEN drop the AI leg (avoid dead air).
+    - Digital: stop the Nova worker, attach supervisor to the existing customer task; if
+      attach fails, fall back to requeue.
+A3. Transfer to Queue (redirect) — take the AI off and route the interaction to a QUEUE
+    (end state = queue ownership, NOT the supervisor, and NOT a specific named agent).
+    - Must VALIDATE the target queue (exists/active/subaccount/permission) BEFORE stopping
+      the AI; if invalid, reject before disengaging.
+    - Needs a queue picker.
+A4. Action ownership — Take Over and Transfer to Queue are triggered from the supervisor
+    UI/action row. The transcript/AI-assist (CCAI-style) panel must NOT be the action source.
+A5. Supervisor Assist — reuse the existing "View Insights" AI-assist panel for Nova
+    interactions (same as human); an entry point to open/close insights while monitoring.
+A6. Per-channel action model:
+    - Voice: Take Over + Transfer to Queue
+    - Digital live (chat/social/SMS/WhatsApp): Take Over + Transfer to Queue
+    - Email (async): assign / transfer / create case (NOT live take-over)
+    - The action row should be channel-aware (not a voice/digital binary).
+
+TIER B — PENDING PM (present is fine, but flag as not-yet-finalized)
+B1. Confidence score column — real-time, AI rows only, "–" for human.
+B2. Sentiment column — real-time, AI + human rows.
+    NOTE: scope, source-of-truth, real-time behavior, and AI-only-vs-blended are UNCONFIRMED
+    by PM. Report if present, but mark as "pending PM", and note the threshold/visual treatment
+    used (e.g., score bands + color).
+
+TIER C — OUT OF SCOPE for v1 (should be ABSENT or clearly deferred; flag ➕ if built)
+C1. Pause AI / pause-resume (Nova runtime doesn't support it yet).
+C2. Coaching / "Tune AI".
+C3. Transfer to a SPECIFIC agent (baseline wants Transfer to Queue; specific-agent is not v1).
+C4. Standalone Alerts view / threshold-alerts tab — NOT in the eng baseline (lives only in the
+    product wiki + Figma). If present, mark ➕ and note it; do not count it toward Tier A.
+C5. Any Agent-tab AI display / change-agent-state / agent states / agent-type filters
+    (those are INIT-28001 / deferred).
+
+OUTPUT
+A) Table: Req # | Status | Evidence | Notes
+B)

@@ -199,6 +199,17 @@ export default function AgentTablePanel({
   // whether the pause-&-barge confirmation dialog is open.
   const [bargedId, setBargedId] = useState<string | null>(null);
   const [pauseBargeOpen, setPauseBargeOpen] = useState(false);
+
+  // The AI Insights panel belongs to the Interactions tab table view: navigating
+  // away — to the Agents tab, or into an Interaction preview route — closes it
+  // along with any flows anchored to it.
+  useEffect(() => {
+    if (activeTab === "Interactions" && !previewEngagementId) return;
+    setInsightCtx(null);
+    setPauseBargeOpen(false);
+    setTransferOpen(false);
+    setReassignOpen(false);
+  }, [activeTab, previewEngagementId]);
   // Supervisor's barge defaults (identity + voice handoff phrase), persisted so
   // they act as a reusable setting across takeovers.
   const [bargeSettings, setBargeSettings] = useState<BargeSettings>(() => {
