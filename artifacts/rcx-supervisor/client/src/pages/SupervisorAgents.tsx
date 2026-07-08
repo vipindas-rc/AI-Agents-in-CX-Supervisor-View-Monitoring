@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { useLocation, useSearch } from "wouter";
 import AgentTablePanel, {
   agentColumnMeta,
   interactionColumnMeta,
@@ -188,28 +189,54 @@ export const SupervisorAgents = (): JSX.Element => {
   // Interactions-tab filters (channel is shared with the Agents tab).
   const [categoryFilter, setCategoryFilter] = useState<string>("All");
 
-  const [activeTab, setActiveTab] = useState<"Agents" | "Interactions">(
-    "Agents",
-  );
+  // URL-driven tab state (deep-linkable): Interactions is the default landing
+  // tab (clean URL, no param); the Agents tab is addressable via ?tab=agents.
+  const search = useSearch();
+  const [pathname, navigate] = useLocation();
+  const activeTab: "Agents" | "Interactions" =
+    new URLSearchParams(search).get("tab") === "agents"
+      ? "Agents"
+      : "Interactions";
   const isInteractions = activeTab === "Interactions";
+
+  const setActiveTab = useCallback(
+    (value: "Agents" | "Interactions") => {
+      const params = new URLSearchParams(window.location.search);
+      if (value === "Agents") {
+        params.set("tab", "agents");
+      } else {
+        params.delete("tab");
+      }
+      const qs = params.toString();
+      navigate(qs ? `${pathname}?${qs}` : pathname);
+    },
+    [navigate, pathname],
+  );
 
   // When the supervisor clicks an agent's "Active interactions" icons we jump to
   // the Interactions tab and blink that agent's rows. The nonce re-triggers the
-  // blink animation even if the same agent is clicked again.
+  // blink animation even if the same agent is clicked again. (Blink highlight is
+  // transient feedback, so it stays local rather than in the URL.)
   const [highlightAgentId, setHighlightAgentId] = useState<string | null>(null);
   const [highlightNonce, setHighlightNonce] = useState(0);
 
-  const handleActiveInteractionsClick = useCallback((agentId: string) => {
-    setActiveTab("Interactions");
-    setHighlightAgentId(agentId);
-    setHighlightNonce((n) => n + 1);
-  }, []);
+  const handleActiveInteractionsClick = useCallback(
+    (agentId: string) => {
+      setActiveTab("Interactions");
+      setHighlightAgentId(agentId);
+      setHighlightNonce((n) => n + 1);
+    },
+    [setActiveTab],
+  );
 
-  const handleTabChange = useCallback((value: string) => {
-    setActiveTab(value as "Agents" | "Interactions");
-    // Manually changing tabs clears any agent-driven row highlight.
-    setHighlightAgentId(null);
-  }, []);
+  const handleTabChange = useCallback(
+    (value: string) => {
+      setActiveTab(value as "Agents" | "Interactions");
+      // Manually changing tabs clears any agent-driven row highlight.
+      setHighlightAgentId(null);
+    },
+    [setActiveTab],
+  );
 
   // The State filter offers exactly the states present in the table for the
   // selected agent type (human states for Human, AirPro states for AirPro).
