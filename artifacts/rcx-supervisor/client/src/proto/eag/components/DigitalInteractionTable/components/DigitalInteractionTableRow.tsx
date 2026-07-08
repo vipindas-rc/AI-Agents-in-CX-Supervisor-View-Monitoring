@@ -38,7 +38,7 @@ export const DigitalInteractionTableRow: FC<{
     data: any;
     monitorAgentCallback: () => void;
     monitoredAgent: IMonitorMenuInfo;
-    viewInsight: () => void;
+    viewInsight: (agentId: string, uii: string) => void;
     loggedInAgentId: string;
     digitalAgentEnabled: boolean;
     shouldShowViewInsightsButton: boolean;
@@ -137,6 +137,11 @@ export const DigitalInteractionTableRow: FC<{
         shouldShowViewInsightsButton,
     ]);
 
+    // Clicking anywhere on the row opens the AI Insights pane, but only for
+    // rows where the hover "AI insights" action is available and enabled —
+    // the row click must never bypass that gating.
+    const canOpenInsights = showSupervisorAssist && showViewInsights;
+
     const supervisorRowHoverItems = useMemo(
         () =>
             getDigitalInteractionHoveredItems({
@@ -230,6 +235,12 @@ export const DigitalInteractionTableRow: FC<{
                 isHighlighted={isHighlighted}
                 isSelected={isSelected}
                 alertSeverity={alertSeverity}
+                onClick={
+                    canOpenInsights
+                        ? () => viewInsight(agentId, engagementId)
+                        : undefined
+                }
+                style={canOpenInsights ? { cursor: 'pointer' } : undefined}
             >
                 <SourceTypeIcon
                     channelType={engagementSource.initialEngagementSourceType}

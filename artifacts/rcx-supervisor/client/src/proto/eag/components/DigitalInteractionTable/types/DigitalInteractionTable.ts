@@ -12,7 +12,7 @@ export interface IDigitalInteractionTable {
     digitalTaskList: InteractionData[];
     monitorAgentCallback: () => void;
     monitoredAgent: IMonitorMenuInfo;
-    viewInsight: () => void;
+    viewInsight: (agentId: string, uii: string) => void;
     loggedInAgentId: string;
     selectedIds: string[];
     selectedChannels: string[];

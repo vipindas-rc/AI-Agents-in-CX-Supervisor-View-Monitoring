@@ -11,7 +11,7 @@ interface IGetDigitalInteractionHoveredItems {
     agentId: string;
     monitoredAgent: IMonitorMenuInfo;
     monitorVoice: () => void;
-    viewInsight: () => void;
+    viewInsight: (agentId: string, uii: string) => void;
     interactionSourceType: string;
     uii: string;
     showCoach: boolean;
@@ -140,7 +140,7 @@ export const _getSupervisorAssistHoveredMenu = ({
     uii,
 }: {
     agentId: string;
-    viewInsight: () => void;
+    viewInsight: (agentId: string, uii: string) => void;
     showSupervisorAssist: boolean;
     showViewInsights: boolean;
     uii: string;
