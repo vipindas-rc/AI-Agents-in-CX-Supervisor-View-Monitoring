@@ -187,6 +187,12 @@ function makeActiveInteractions(
 // virtual agent and yields enough AI interaction rows (confidence is AI-only) to
 // surface the full alert spread: 2 critical + 3 warning across the AI rows.
 function makeAirInteractions(i: number) {
+  // Two engaged AirPro agents (rows 2 and 14 cycle onto the Engaged state)
+  // carry a live voice-only call so the monitoring dialpad's AI flow can be
+  // exercised — the Monitor icon is only offered on voice-only rows.
+  if (i === 2 || i === 14) {
+    return [VOICE_CHANNEL].map(toInteraction);
+  }
   const a = DIGITAL_CHANNELS[i % DIGITAL_CHANNELS.length];
   const b = DIGITAL_CHANNELS[(i + 1) % DIGITAL_CHANNELS.length];
   return [a, b].map(toInteraction);

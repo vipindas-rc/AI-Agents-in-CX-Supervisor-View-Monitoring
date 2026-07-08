@@ -16,6 +16,7 @@ import {
   type BargeSettings,
 } from "./PauseBargeModal";
 import { Dialer } from "./dialer/Dialer";
+import { MonitoringDialpad } from "./dialer/MonitoringDialpad";
 import { ReassignConversationModal } from "./ReassignConversationModal";
 import { InteractionRollupModal } from "./eag/containers/SupervisorAgentList/components/InteractionRollupModal";
 import {
@@ -309,20 +310,39 @@ export default function AgentTablePanel({
   );
 
   // Toggle semantics: clicking Monitor on the currently-monitored agent stops
-  // monitoring (clears the blue row); clicking it on another agent switches the
-  // monitoring session to that agent.
+  // monitoring (clears the blue row and closes the monitoring dialpad popup);
+  // clicking it on another agent switches the monitoring session — the popup
+  // remounts (keyed by agentId) and resets to the listening state.
   const monitorAgentCallback = useCallback(
     (agentId: string) => {
       const a = agents.find((x: any) => x.agentId === agentId);
       const isStopping = monitoredId === agentId;
       setMonitoredId(isStopping ? null : agentId);
-      flashRef.current(
-        isStopping
-          ? `Stopped monitoring ${a?.fullName ?? agentId}`
-          : `Monitoring ${a?.fullName ?? agentId}`,
-      );
+      if (isStopping) {
+        flashRef.current(`Stopped monitoring ${a?.fullName ?? agentId}`);
+      }
       return {} as any;
     },
+    [agents, monitoredId],
+  );
+
+  // Closing the monitoring popup (titlebar close or End call) ends the
+  // monitoring session and clears the monitored-row highlight.
+  const stopMonitoring = useCallback(() => {
+    setMonitoredId((cur) => {
+      if (cur) {
+        const a = agents.find((x: any) => x.agentId === cur);
+        flashRef.current(`Stopped monitoring ${a?.fullName ?? cur}`);
+      }
+      return null;
+    });
+  }, [agents]);
+
+  const monitoredAgentRow = useMemo(
+    () =>
+      monitoredId
+        ? (agents.find((x: any) => x.agentId === monitoredId) as any) ?? null
+        : null,
     [agents, monitoredId],
   );
 
@@ -693,6 +713,16 @@ export default function AgentTablePanel({
               />
             </div>
           </div>
+        )}
+
+        {monitoredAgentRow && (
+          <MonitoringDialpad
+            key={monitoredAgentRow.agentId}
+            agentName={monitoredAgentRow.fullName}
+            agentType={monitoredAgentRow.agentType === "Air" ? "Air" : "Human"}
+            onClose={stopMonitoring}
+            onToast={(m) => flashRef.current(m)}
+          />
         )}
 
         {insightCtx && reassignOpen && (
