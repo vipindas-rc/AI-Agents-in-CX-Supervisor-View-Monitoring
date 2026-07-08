@@ -1,0 +1,185 @@
+{
+    "GENERICS": {
+        "ACTIONS": {
+            "DECREASE_VALUE": "Decrease value",
+            "INCREASE_VALUE": "Increase value"
+        },
+        "LABELS": {
+            "INPUT_MULTI_VALUE": "Multiple values",
+            "MULTI_VALUE": "(Multiple values)",
+            "NO_OPTIONS_TEXT": "No options",
+            "SELECTED": "selected",
+            "SELECTED_plural": "selected"
+        },
+        "MESSAGES": {
+            "SELECT_PLACEHOLDER": "Select",
+            "SELECT_ALL": "Select all",
+            "DESELECT_ALL": "Deselect all",
+            "NO_RESULTS_FOUND": "No results found",
+            "NOTHING_AVAILABLE": "Nothing available",
+            "LOADING": "Loading..."
+        }
+    },
+    "EXTERNAL_CREDENTIALS": {
+        "TITLE": "External credentials",
+        "NEW": "New credential",
+        "EDIT": "Edit credential",
+        "SAVE": "Save",
+        "CANCEL": "Cancel",
+        "OTHER_PARAMS": {
+            "TITLE": "Other parameters"
+        },
+        "FIELDS": {
+            "NAME": "Name",
+            "AUTH_TYPE": "Authentication type",
+            "DESCRIPTION": "Description",
+            "USERNAME": "Username",
+            "PASSWORD": "Password",
+            "GRANT_TYPE": "Grant type",
+            "CLIENT_ID": "Client ID",
+            "SECRET": "Secret",
+            "SUPPLY_IN": "Client credentials supply in",
+            "TOKEN_ENDPOINT": "Token endpoint",
+            "SCOPE": "Scope",
+            "API_KEY": "Key",
+            "ALGORITHM": "Algorithm",
+            "PAYLOAD": "Payload",
+            "EXPIRATION_TIME": "Expiration time (seconds)",
+            "REQUEST_HEADER_PREFIX": "Request header prefix",
+            "QUERY_PARAM_NAME": "Query param name",
+            "JWT_HEADERS": "JWT headers",
+            "PRIVATE_KEY": "Private key",
+            "INCLUDE_ISSUED_AT": "Include issued at",
+            "ADD_JWT_TOKEN_TO": "Add JWT token to",
+            "SECRET_BASE64_ENCODED": "Secret base64 encoded",
+            "SELECT_UPLOAD_FILE": "Select file to upload",
+            "ASSERTION": "Assertion",
+            "CUSTOM_TEMPLATE_PARAMS": "Authentication variables",
+            "ALLOWED_BASE_URL": "Allowed Base URL"
+        },
+        "VALIDATIONS": {
+            "REQUIRED": "This field is required"
+        },
+        "TOOLTIPS": {
+            "EDIT": "Edit details",
+            "DELETE": "Delete external credential",
+            "ALGORITHM": "Algorithm used to generate the JWT signature",
+            "SECRET": "Secret used to generate the JWT signature",
+            "PAYLOAD": "The JSON object that contains the claimed conveyed by the JWT",
+            "REQUEST_HEADER_PREFIX": "The prefix added to the authorization header in the request",
+            "QUERY_PARAM_NAME": "Parameters added to the URL",
+            "JWT_HEADERS": "These values will be appended to the JWT headers",
+            "EXPIRATION_TIME": "The time before the token is automatically refreshed",
+            "PRIVATE_KEY": "Private key to generate the JWT signature, in PKCS#1 or PKCS#8 PEM format",
+            "ALLOWED_BASE_URL": "The base URL is used to validate request URL, for example: .xxx. If you have multiple URLs, separate them with semicolons. "
+        },
+        "OPTIONS": {
+            "BASIC": "Basic",
+            "OAUTH": "OAuth2",
+            "API_KEY": "API Key",
+            "JWT": "JWT",
+            "CUSTOM_AUTH": "Custom Auth",
+            "CLIENT_CREDENTIALS": "Client credentials",
+            "JWT_BEARER": "JWT bearer",
+            "PASSWORD": "Password",
+            "BODY": "Body",
+            "QUERY_PARAMS": "Query parameters",
+            "HEADER": "Header"
+        },
+        "ALGORITHMS": {
+            "HS256": "HS256",
+            "HS384": "HS384",
+            "HS512": "HS512",
+            "RS256": "RS256",
+            "RS384": "RS384",
+            "RS512": "RS512",
+            "PS256": "PS256",
+            "PS384": "PS384",
+            "PS512": "PS512",
+            "ES256": "ES256",
+            "ES384": "ES384",
+            "ES512": "ES512"
+        },
+        "DESTINATION": {
+            "REQUEST_HEADER": "Request Header",
+            "QUERY_PARAM": "Query Param"
+        },
+        "MESSAGES": {
+            "ADD_ERROR": "We're having trouble adding the new credential. Please try again.",
+            "ADD_SUCCESS": "The new credential was added successfully.",
+            "INVALID_KEY_FORMAT": "Invalid key format. Please check.",
+            "INVALID_JSON_FORMAT": "Invalid JSON format. Please check.",
+            "MAX_SIZE_EXCEED": "Key should be less than 1M. Please check.",
+            "EXPIRATION_TIME_RANGE": "Set an expiration time between 1 second and 24 hours.",
+            "INVALID_BASE_URL_FORMAT": "Invalid base URL. Please check."
+        }
+    },
+    "FEEDBACK": {
+        "MENU_BUTTON": "Report an Issue",
+        "MODAL": {
+            "TITLE": "Report an issue",
+            "DEFAULT_INPUT_TITLE": "Issue with the RCX Agent App",
+            "DEFAULT_INPUT_TITLE_FOR_CRM": "Issue with RingCX for {{CRMPlatform}}",
+            "PLACEHOLDER_DESCRIPTION": "Enter a brief description of the issue...",
+            "REPORT_INFO": "Please report technical problems here. If you'd like to get a response from Customer Care, please <support_link>create a support case</support_link> instead.",
+            "LABEL_DESCRIPTION": "Describe the issue",
+            "WHEN": {
+                "LABEL": "When did it happen?",
+                "PLACEHOLDER": "Select when the issue occurred",
+                "OPTIONS": {
+                    "30_MIN": "In the last 30 min",
+                    "1_HOUR": "Within 1 hour",
+                    "2_HOURS": "Within 2 hours",
+                    "MORE": "More than 2 hours"
+                }
+            },
+            "FILES": {
+                "MAX_FILES_ERROR": "The total number of files exceeds {{count}}. Please select fewer files and try again.",
+                "MAX_SIZE_ERROR": "Attachment should be {{size}}MB or smaller. Please choose other files."
+            },
+            "TERMS": "By clicking Send, you agree to allow RingCentral to access certain log related information for troubleshooting and error handling purposes. For more information on how RingCentral processes personal data, please review our <tos_link>Terms of Service</tos_link> and <privacy_link>Privacy Notice</privacy_link>.",
+            "VALIDATION": {
+                "REQUIRED": "This field is required"
+            },
+            "BANNER": {
+                "SUCCESS": "Issue reported successfully",
+                "ERROR": "Failed to report an issue"
+            },
+            "INTERNAL_ERROR": "An internal error has occurred. Please try again.",
+            "BUTTON": {
+                "SEND": "Send",
+                "CANCEL": "Cancel"
+            }
+        }
+    },
+    "FILES_UPLOAD_INPUT": {
+        "SELECT_UPLOAD_FILE": "Select file to upload",
+        "DELETE": "Delete",
+        "DELETE_ALL": "Delete all",
+        "FILES_UPLOADED": "{{count}} file uploaded",
+        "FILES_UPLOADED_plural": "{{count}} files uploaded",
+        "MAX_FILES_REACHED": "Max number of files uploaded"
+    },
+    "VARIABLES_LIST": {
+        "NAME": "Name",
+        "VALUE": "Value",
+        "ADD": "Add variable",
+        "TOOLTIPS": {
+            "DELETE_VARIABLE": "Delete variable"
+        }
+    },
+    "ARIA_LABELS": {
+        "APP_SWITCHER": "Application switcher",
+        "CLEAR_DATE": "Clear date",
+        "CLEAR_TIME": "Clear time",
+        "MENU": "Menu",
+        "MAIN_NAVIGATION": "Main navigation",
+        "SUBMENU": "Submenu",
+        "CLOSE": "Close",
+        "MINUS": "Minus",
+        "PLUS": "Plus",
+        "TEXT_INPUT": "Text input",
+        "MULTI_VALUE_INPUT": "Input for multiple values",
+        "MORE_INFO": "More Info"
+    }
+}

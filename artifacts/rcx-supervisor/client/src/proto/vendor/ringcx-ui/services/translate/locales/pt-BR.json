@@ -1,0 +1,185 @@
+{
+    "GENERICS": {
+        "ACTIONS": {
+            "DECREASE_VALUE": "Diminuir valor",
+            "INCREASE_VALUE": "Aumentar valor"
+        },
+        "LABELS": {
+            "INPUT_MULTI_VALUE": "Vários valores",
+            "MULTI_VALUE": "(Vários valores)",
+            "NO_OPTIONS_TEXT": "Sem opções",
+            "SELECTED": "Selecionado",
+            "SELECTED_plural": "Selecionados"
+        },
+        "MESSAGES": {
+            "SELECT_PLACEHOLDER": "Selecionar",
+            "SELECT_ALL": "Selecionar tudo",
+            "DESELECT_ALL": "Desmarcar tudo",
+            "NO_RESULTS_FOUND": "Nenhum resultado encontrado",
+            "NOTHING_AVAILABLE": "Nada disponível",
+            "LOADING": "Carregando…"
+        }
+    },
+    "EXTERNAL_CREDENTIALS": {
+        "TITLE": "Credenciais externas",
+        "NEW": "Nova credencial",
+        "EDIT": "Editar credencial",
+        "SAVE": "Salvar",
+        "CANCEL": "Cancelar",
+        "OTHER_PARAMS": {
+            "TITLE": "Outros parâmetros"
+        },
+        "FIELDS": {
+            "NAME": "Nome",
+            "AUTH_TYPE": "Tipo de autenticação",
+            "DESCRIPTION": "Descrição",
+            "USERNAME": "Nome de usuário",
+            "PASSWORD": "Senha",
+            "GRANT_TYPE": "Tipo de concessão",
+            "CLIENT_ID": "ID do cliente",
+            "SECRET": "Segredo",
+            "SUPPLY_IN": "Fornecimento de credenciais do cliente em",
+            "TOKEN_ENDPOINT": "Endpoint de token",
+            "SCOPE": "Escopo",
+            "API_KEY": "Chave",
+            "ALGORITHM": "Algoritmo",
+            "PAYLOAD": "Carga",
+            "EXPIRATION_TIME": "Tempo de expiração (segundos)",
+            "REQUEST_HEADER_PREFIX": "Prefixo do cabeçalho da solicitação",
+            "QUERY_PARAM_NAME": "Nome do parâmetro de consulta",
+            "JWT_HEADERS": "Cabeçalhos JWT",
+            "PRIVATE_KEY": "Chave privada",
+            "INCLUDE_ISSUED_AT": "Incluir emitido em",
+            "ADD_JWT_TOKEN_TO": "Adicionar token JWT a",
+            "SECRET_BASE64_ENCODED": "Segredo codificado em Base64",
+            "SELECT_UPLOAD_FILE": "Selecionar arquivo para upload",
+            "ASSERTION": "Asserção",
+            "CUSTOM_TEMPLATE_PARAMS": "Variáveis de autenticação",
+            "ALLOWED_BASE_URL": "URL base permitida"
+        },
+        "VALIDATIONS": {
+            "REQUIRED": "Este campo é obrigatório"
+        },
+        "TOOLTIPS": {
+            "EDIT": "Editar detalhes",
+            "DELETE": "Excluir credencial externa",
+            "ALGORITHM": "Algoritmo usado para gerar a assinatura JWT",
+            "SECRET": "Segredo usado para gerar a assinatura JWT",
+            "PAYLOAD": "O objeto JSON que contém a reivindicação transmitida pelo JWT",
+            "REQUEST_HEADER_PREFIX": "O prefixo adicionado ao cabeçalho de autorização na solicitação",
+            "QUERY_PARAM_NAME": "Parâmetros adicionados à URL",
+            "JWT_HEADERS": "Estes valores serão anexados aos cabeçalhos JWT",
+            "EXPIRATION_TIME": "O tempo até que o token seja recarregado automaticamente",
+            "PRIVATE_KEY": "Chave privada para gerar a assinatura JWT no formato PEM PKCS#1 ou PKCS#8",
+            "ALLOWED_BASE_URL": "A URL base é usada para validar a URL da requisição, por exemplo: .xxx. Se você tiver várias URLs, separe-as por ponto e vírgula. "
+        },
+        "OPTIONS": {
+            "BASIC": "Básico",
+            "OAUTH": "OAuth2",
+            "API_KEY": "Chave de API",
+            "JWT": "JWT",
+            "CUSTOM_AUTH": "Autenticação personalizada",
+            "CLIENT_CREDENTIALS": "Credenciais do cliente",
+            "JWT_BEARER": "JWT Bearer",
+            "PASSWORD": "Senha",
+            "BODY": "Corpo",
+            "QUERY_PARAMS": "Parâmetros de consulta",
+            "HEADER": "Cabeçalho"
+        },
+        "ALGORITHMS": {
+            "HS256": "HS256",
+            "HS384": "HS384",
+            "HS512": "HS512",
+            "RS256": "RS256",
+            "RS384": "RS384",
+            "RS512": "RS512",
+            "PS256": "PS256",
+            "PS384": "PS384",
+            "PS512": "PS512",
+            "ES256": "ES256",
+            "ES384": "ES384",
+            "ES512": "ES512"
+        },
+        "DESTINATION": {
+            "REQUEST_HEADER": "Cabeçalho da solicitação",
+            "QUERY_PARAM": "Parâmetro da consulta"
+        },
+        "MESSAGES": {
+            "ADD_ERROR": "Estamos com problemas para adicionar a nova credencial. Tente novamente.",
+            "ADD_SUCCESS": "A nova credencial foi adicionada com sucesso.",
+            "INVALID_KEY_FORMAT": "Formato de chave inválido. Verifique.",
+            "INVALID_JSON_FORMAT": "Formato JSON inválido. Verifique.",
+            "MAX_SIZE_EXCEED": "A chave deve ser menor que um milhão. Verifique.",
+            "EXPIRATION_TIME_RANGE": "Defina um tempo de expiração entre 1 segundo e 24 horas.",
+            "INVALID_BASE_URL_FORMAT": "URL de base inválida. Verifique."
+        }
+    },
+    "FEEDBACK": {
+        "MENU_BUTTON": "Relatar um problema",
+        "MODAL": {
+            "TITLE": "Relatar problema",
+            "DEFAULT_INPUT_TITLE": "Problema com o aplicativo do agente RCX",
+            "DEFAULT_INPUT_TITLE_FOR_CRM": "Problema com o RingCX para {{CRMPlatform}}",
+            "PLACEHOLDER_DESCRIPTION": "Digite uma breve descrição do problema…",
+            "REPORT_INFO": "Relate problemas técnicos aqui. Se você quiser receber uma resposta do Atendimento ao Cliente, <support_link>crie um caso de suporte</support_link>.",
+            "LABEL_DESCRIPTION": "Descreva o problema",
+            "WHEN": {
+                "LABEL": "Quando aconteceu?",
+                "PLACEHOLDER": "Selecione quando o problema ocorreu",
+                "OPTIONS": {
+                    "30_MIN": "Nos últimos 30 minutos",
+                    "1_HOUR": "Em até 1 hora",
+                    "2_HOURS": "Em até 2 horas",
+                    "MORE": "Mais de 2 horas"
+                }
+            },
+            "FILES": {
+                "MAX_FILES_ERROR": "O número total de arquivos excede {{count}}. Selecione menos arquivos e tente novamente.",
+                "MAX_SIZE_ERROR": "O anexo deve ter {{size}} MB ou menos. Selecione outros arquivos."
+            },
+            "TERMS": "Ao clicar em Enviar, você concorda em permitir que a RingCentral acesse determinadas informações relacionadas a registros para fins de solução de problemas e tratamento de erros. Para mais informações sobre como o RingCentral processa dados pessoais, consulte nossos <tos_link>Termos de Serviço</tos_link> e <privacy_link>Aviso de privacidade</privacy_link>.",
+            "VALIDATION": {
+                "REQUIRED": "Este campo é obrigatório"
+            },
+            "BANNER": {
+                "SUCCESS": "Problema relatado com sucesso",
+                "ERROR": "Não foi possível relatar um problema"
+            },
+            "INTERNAL_ERROR": "Ocorreu um erro interno. Tente novamente.",
+            "BUTTON": {
+                "SEND": "Enviar",
+                "CANCEL": "Cancelar"
+            }
+        }
+    },
+    "FILES_UPLOAD_INPUT": {
+        "SELECT_UPLOAD_FILE": "Selecione o arquivo para carregar",
+        "DELETE": "Excluir",
+        "DELETE_ALL": "Excluir tudo",
+        "FILES_UPLOADED": "{{count}} arquivo carregado",
+        "FILES_UPLOADED_plural": "{{count}} arquivos enviados",
+        "MAX_FILES_REACHED": "Número máximo de arquivos carregados"
+    },
+    "VARIABLES_LIST": {
+        "NAME": "Nome",
+        "VALUE": "Valor",
+        "ADD": "Adicionar variável",
+        "TOOLTIPS": {
+            "DELETE_VARIABLE": "Excluir variável"
+        }
+    },
+    "ARIA_LABELS": {
+        "APP_SWITCHER": "Seletor de aplicativos",
+        "CLEAR_DATE": "Limpar data",
+        "CLEAR_TIME": "Limpar horário",
+        "MENU": "Menu",
+        "MAIN_NAVIGATION": "Navegação principal",
+        "SUBMENU": "Submenu",
+        "CLOSE": "Fechar",
+        "MINUS": "Menos",
+        "PLUS": "Mais",
+        "TEXT_INPUT": "Entrada de texto",
+        "MULTI_VALUE_INPUT": "Campo para múltiplos valores",
+        "MORE_INFO": "Mais informações"
+    }
+}

@@ -1,0 +1,1 @@
+export const SELECTED_ITEMS_MAX_WIDTH = 260;

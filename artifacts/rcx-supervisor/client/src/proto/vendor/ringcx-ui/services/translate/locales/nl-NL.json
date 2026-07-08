@@ -1,0 +1,185 @@
+{
+    "GENERICS": {
+        "ACTIONS": {
+            "DECREASE_VALUE": "Waarde verlagen",
+            "INCREASE_VALUE": "Waarde verhogen"
+        },
+        "LABELS": {
+            "INPUT_MULTI_VALUE": "Meerdere waarden",
+            "MULTI_VALUE": "(Meerdere waarden)",
+            "NO_OPTIONS_TEXT": "Geen opties",
+            "SELECTED": "Geselecteerd",
+            "SELECTED_plural": "geselecteerd"
+        },
+        "MESSAGES": {
+            "SELECT_PLACEHOLDER": "Selecteer",
+            "SELECT_ALL": "Alles selecteren",
+            "DESELECT_ALL": "Alles deselecteren",
+            "NO_RESULTS_FOUND": "Geen resultaten gevonden",
+            "NOTHING_AVAILABLE": "Niets beschikbaar",
+            "LOADING": "Laden..."
+        }
+    },
+    "EXTERNAL_CREDENTIALS": {
+        "TITLE": "Externe referenties",
+        "NEW": "Nieuwe referentie",
+        "EDIT": "Referentie bewerken",
+        "SAVE": "Opslaan",
+        "CANCEL": "Annuleren",
+        "OTHER_PARAMS": {
+            "TITLE": "Andere parameters"
+        },
+        "FIELDS": {
+            "NAME": "Naam",
+            "AUTH_TYPE": "Authenticatietype",
+            "DESCRIPTION": "Beschrijving",
+            "USERNAME": "Gebruikersnaam",
+            "PASSWORD": "Wachtwoord",
+            "GRANT_TYPE": "Toekenningstype",
+            "CLIENT_ID": "Client ID",
+            "SECRET": "Geheim",
+            "SUPPLY_IN": "Clientreferenties aanleveren in",
+            "TOKEN_ENDPOINT": "Token-eindpunt",
+            "SCOPE": "Bereik",
+            "API_KEY": "Toets",
+            "ALGORITHM": "Algoritme",
+            "PAYLOAD": "Payload",
+            "EXPIRATION_TIME": "Vervaltijd (seconden)",
+            "REQUEST_HEADER_PREFIX": "Aanvraag koptekstvoorvoegsel",
+            "QUERY_PARAM_NAME": "Queryparameternamen",
+            "JWT_HEADERS": "JWT-kopteksten",
+            "PRIVATE_KEY": "Privésleutel",
+            "INCLUDE_ISSUED_AT": "Inclusief uitgegeven op",
+            "ADD_JWT_TOKEN_TO": "JWT-token toevoegen aan",
+            "SECRET_BASE64_ENCODED": "Geheim base64 gecodeerd",
+            "SELECT_UPLOAD_FILE": "Bestand selecteren om te uploaden",
+            "ASSERTION": "Assertion",
+            "CUSTOM_TEMPLATE_PARAMS": "Authenticatievariabelen",
+            "ALLOWED_BASE_URL": "Toegestane basis-URL"
+        },
+        "VALIDATIONS": {
+            "REQUIRED": "Dit veld is verplicht"
+        },
+        "TOOLTIPS": {
+            "EDIT": "Details bewerken",
+            "DELETE": "Externe referentie verwijderen",
+            "ALGORITHM": "Algoritme gebruikt om de JWT-handtekening te genereren",
+            "SECRET": "Geheim gebruikt om de JWT-handtekening te genereren",
+            "PAYLOAD": "Het JSON-object dat de door de JWT overgebrachte claims bevat",
+            "REQUEST_HEADER_PREFIX": "Het voorvoegsel dat aan de autorisatiekoptekst in de aanvraag wordt toegevoegd",
+            "QUERY_PARAM_NAME": "Parameters toegevoegd aan de URL",
+            "JWT_HEADERS": "Deze waarden worden toegevoegd aan de JWT-koptekst",
+            "EXPIRATION_TIME": "De tijd voordat het token automatisch wordt vernieuwd",
+            "PRIVATE_KEY": "Privésleutel om de JWT-handtekening te genereren, in PKCS#1 of PKCS#8 PEM-indeling",
+            "ALLOWED_BASE_URL": "De basis-URL wordt gebruikt om de verzoek-URL te valideren, bijvoorbeeld: .xxx. Als u meerdere URL's heeft, scheid ze dan met puntkomma's. "
+        },
+        "OPTIONS": {
+            "BASIC": "Basis",
+            "OAUTH": "OAuth2",
+            "API_KEY": "API-sleutel",
+            "JWT": "JWT",
+            "CUSTOM_AUTH": "Aangepaste verificatie",
+            "CLIENT_CREDENTIALS": "Clientreferenties",
+            "JWT_BEARER": "JWT-bearer",
+            "PASSWORD": "Wachtwoord",
+            "BODY": "Tekst",
+            "QUERY_PARAMS": "Queryparameters",
+            "HEADER": "Koptekst"
+        },
+        "ALGORITHMS": {
+            "HS256": "HS256",
+            "HS384": "HS384",
+            "HS512": "HS512",
+            "RS256": "RS256",
+            "RS384": "RS384",
+            "RS512": "RS512",
+            "PS256": "PS256",
+            "PS384": "PS384",
+            "PS512": "PS512",
+            "ES256": "ES256",
+            "ES384": "ES384",
+            "ES512": "ES512"
+        },
+        "DESTINATION": {
+            "REQUEST_HEADER": "Aanvraagheader",
+            "QUERY_PARAM": "Queryparameter"
+        },
+        "MESSAGES": {
+            "ADD_ERROR": "We kunnen de nieuwe referentie niet toevoegen. Probeer het opnieuw.",
+            "ADD_SUCCESS": "De nieuwe referentie is toegevoegd.",
+            "INVALID_KEY_FORMAT": "Ongeldige sleutelindeling. Controleer.",
+            "INVALID_JSON_FORMAT": "Ongeldige JSON-indeling. Controleer.",
+            "MAX_SIZE_EXCEED": "De sleutel moet kleiner zijn dan 1M. Controleer.",
+            "EXPIRATION_TIME_RANGE": "Stel een vervaltijd in tussen 1 seconde en 24 uur.",
+            "INVALID_BASE_URL_FORMAT": "Ongeldige basis-URL. Controleer."
+        }
+    },
+    "FEEDBACK": {
+        "MENU_BUTTON": "Een probleem melden",
+        "MODAL": {
+            "TITLE": "Een probleem melden",
+            "DEFAULT_INPUT_TITLE": "Probleem met de RCX Agent-app",
+            "DEFAULT_INPUT_TITLE_FOR_CRM": "Probleem met RingCX voor {{CRMPlatform}}",
+            "PLACEHOLDER_DESCRIPTION": "Voer een korte beschrijving van het probleem in...",
+            "REPORT_INFO": "Meld technische problemen hier. Als u een reactie van de Klantenservice wilt ontvangen, maak dan in plaats daarvan <support_link>een ondersteuningscase aan</support_link>.",
+            "LABEL_DESCRIPTION": "Beschrijf het probleem",
+            "WHEN": {
+                "LABEL": "Wanneer is het gebeurd?",
+                "PLACEHOLDER": "Selecteer wanneer het probleem is opgetreden",
+                "OPTIONS": {
+                    "30_MIN": "In de afgelopen 30 minuten",
+                    "1_HOUR": "Binnen 1 uur",
+                    "2_HOURS": "Binnen 2 uur",
+                    "MORE": "Meer dan 2 uur"
+                }
+            },
+            "FILES": {
+                "MAX_FILES_ERROR": "Het totale aantal bestanden overschrijdt {{count}}. Selecteer minder bestanden en probeer het opnieuw.",
+                "MAX_SIZE_ERROR": "De bijlage mag maximaal {{size}} MB groot zijn. Kies andere bestanden."
+            },
+            "TERMS": "Door op Verzenden te klikken, gaat u ermee akkoord RingCentral toe te staan toegang te krijgen tot bepaalde logboekgerelateerde informatie voor het oplossen van problemen en het afhandelen van fouten. Voor meer informatie over hoe RingCentral persoonsgegevens verwerkt, kunt u onze <tos_link>Servicevoorwaarden</tos_link> en <privacy_link>Privacymelding</privacy_link> raadplegen.",
+            "VALIDATION": {
+                "REQUIRED": "Dit veld is verplicht"
+            },
+            "BANNER": {
+                "SUCCESS": "Probleem succesvol gemeld",
+                "ERROR": "Het melden van een probleem is mislukt"
+            },
+            "INTERNAL_ERROR": "Er is een interne fout opgetreden. Probeer het opnieuw.",
+            "BUTTON": {
+                "SEND": "Verzenden",
+                "CANCEL": "Annuleren"
+            }
+        }
+    },
+    "FILES_UPLOAD_INPUT": {
+        "SELECT_UPLOAD_FILE": "Bestand selecteren om te uploaden",
+        "DELETE": "Verwijderen",
+        "DELETE_ALL": "Alles verwijderen",
+        "FILES_UPLOADED": "{{count}} bestand geüpload",
+        "FILES_UPLOADED_plural": "{{count}} bestanden geüpload",
+        "MAX_FILES_REACHED": "Maximaal aantal bestanden geüpload"
+    },
+    "VARIABLES_LIST": {
+        "NAME": "Naam",
+        "VALUE": "Waarde",
+        "ADD": "Variabele toevoegen",
+        "TOOLTIPS": {
+            "DELETE_VARIABLE": "Variabele verwijderen"
+        }
+    },
+    "ARIA_LABELS": {
+        "APP_SWITCHER": "App-schakelaar",
+        "CLEAR_DATE": "Datum wissen",
+        "CLEAR_TIME": "Tijd wissen",
+        "MENU": "Menu",
+        "MAIN_NAVIGATION": "Hoofdnavigatie",
+        "SUBMENU": "Submenu",
+        "CLOSE": "Sluiten",
+        "MINUS": "Minus",
+        "PLUS": "Plus",
+        "TEXT_INPUT": "Tekstinvoer",
+        "MULTI_VALUE_INPUT": "Invoer voor meerdere waarden",
+        "MORE_INFO": "Meer informatie"
+    }
+}

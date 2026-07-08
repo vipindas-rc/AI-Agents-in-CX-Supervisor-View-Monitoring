@@ -1,0 +1,185 @@
+{
+    "GENERICS": {
+        "ACTIONS": {
+            "DECREASE_VALUE": "减小值",
+            "INCREASE_VALUE": "增大值"
+        },
+        "LABELS": {
+            "INPUT_MULTI_VALUE": "多个值",
+            "MULTI_VALUE": "（多个值）",
+            "NO_OPTIONS_TEXT": "无选项",
+            "SELECTED": "已选中",
+            "SELECTED_plural": "已选"
+        },
+        "MESSAGES": {
+            "SELECT_PLACEHOLDER": "选择",
+            "SELECT_ALL": "全选",
+            "DESELECT_ALL": "取消全选",
+            "NO_RESULTS_FOUND": "未找到结果",
+            "NOTHING_AVAILABLE": "无可用内容",
+            "LOADING": "正在加载..."
+        }
+    },
+    "EXTERNAL_CREDENTIALS": {
+        "TITLE": "外部凭据",
+        "NEW": "新凭据",
+        "EDIT": "编辑凭据",
+        "SAVE": "保存",
+        "CANCEL": "取消",
+        "OTHER_PARAMS": {
+            "TITLE": "其他参数"
+        },
+        "FIELDS": {
+            "NAME": "名称",
+            "AUTH_TYPE": "身份验证类型",
+            "DESCRIPTION": "描述",
+            "USERNAME": "用户名",
+            "PASSWORD": "密码",
+            "GRANT_TYPE": "授权类型",
+            "CLIENT_ID": "客户端 ID",
+            "SECRET": "密钥",
+            "SUPPLY_IN": "客户端凭据提供于",
+            "TOKEN_ENDPOINT": "令牌端点",
+            "SCOPE": "范围",
+            "API_KEY": "密钥",
+            "ALGORITHM": "算法",
+            "PAYLOAD": "有效负载",
+            "EXPIRATION_TIME": "过期时间（秒）",
+            "REQUEST_HEADER_PREFIX": "请求标头前缀",
+            "QUERY_PARAM_NAME": "查询参数名称",
+            "JWT_HEADERS": "JWT 标头",
+            "PRIVATE_KEY": "私人密钥",
+            "INCLUDE_ISSUED_AT": "包括发布时间",
+            "ADD_JWT_TOKEN_TO": "将 JWT 令牌添加到",
+            "SECRET_BASE64_ENCODED": "Base64 编码密钥",
+            "SELECT_UPLOAD_FILE": "选择要上传的文件",
+            "ASSERTION": "断言",
+            "CUSTOM_TEMPLATE_PARAMS": "身份验证变量",
+            "ALLOWED_BASE_URL": "允许的基础 URL"
+        },
+        "VALIDATIONS": {
+            "REQUIRED": "这是必填字段"
+        },
+        "TOOLTIPS": {
+            "EDIT": "编辑详细信息",
+            "DELETE": "删除外部凭据",
+            "ALGORITHM": "用于生成 JWT 签名的算法",
+            "SECRET": "用于生成 JWT 签名的密钥",
+            "PAYLOAD": "包含通过 JWT 传送的声明的 JSON 对象",
+            "REQUEST_HEADER_PREFIX": "添加到请求授权标头的前缀",
+            "QUERY_PARAM_NAME": "参数已添加到 URL",
+            "JWT_HEADERS": "这些值将附加到 JWT 标头",
+            "EXPIRATION_TIME": "自动刷新令牌前的时间",
+            "PRIVATE_KEY": "用于生成 JWT 签名的私人密钥，采用 PKCS#1 或 PKCS#8 PEM 格式",
+            "ALLOWED_BASE_URL": "基本 URL 用于验证请求 URL，例如：.xxx。如果有多个 URL，请使用分号分隔。 "
+        },
+        "OPTIONS": {
+            "BASIC": "基本",
+            "OAUTH": "OAuth2",
+            "API_KEY": "API 密钥",
+            "JWT": "JWT",
+            "CUSTOM_AUTH": "自定义身份验证",
+            "CLIENT_CREDENTIALS": "客户端凭据",
+            "JWT_BEARER": "JWT 承载令牌",
+            "PASSWORD": "密码",
+            "BODY": "正文",
+            "QUERY_PARAMS": "查询参数",
+            "HEADER": "标题"
+        },
+        "ALGORITHMS": {
+            "HS256": "HS256",
+            "HS384": "HS384",
+            "HS512": "HS512",
+            "RS256": "RS256",
+            "RS384": "RS384",
+            "RS512": "RS512",
+            "PS256": "PS256",
+            "PS384": "PS384",
+            "PS512": "PS512",
+            "ES256": "ES256",
+            "ES384": "ES384",
+            "ES512": "ES512"
+        },
+        "DESTINATION": {
+            "REQUEST_HEADER": "请求标头",
+            "QUERY_PARAM": "查询参数"
+        },
+        "MESSAGES": {
+            "ADD_ERROR": "添加新凭据时出现问题。请重试。",
+            "ADD_SUCCESS": "已成功添加新凭据。",
+            "INVALID_KEY_FORMAT": "密钥格式无效。请检查。",
+            "INVALID_JSON_FORMAT": "JSON 格式无效。请检查。",
+            "MAX_SIZE_EXCEED": "密钥应小于 1M。请检查。",
+            "EXPIRATION_TIME_RANGE": "设置介于 1 秒和 24 小时之间的到期时间。",
+            "INVALID_BASE_URL_FORMAT": "基本 URL 无效。请检查。"
+        }
+    },
+    "FEEDBACK": {
+        "MENU_BUTTON": "报告问题",
+        "MODAL": {
+            "TITLE": "报告问题",
+            "DEFAULT_INPUT_TITLE": "RCX 坐席应用问题",
+            "DEFAULT_INPUT_TITLE_FOR_CRM": "{{CRMPlatform}} 的 RingCX 问题",
+            "PLACEHOLDER_DESCRIPTION": "请输入问题的简要描述…",
+            "REPORT_INFO": "请在此报告技术问题。如果您希望获得客户支持的回复，请改为 <support_link>创建支持工单</support_link>。",
+            "LABEL_DESCRIPTION": "描述问题",
+            "WHEN": {
+                "LABEL": "什么时候发生的？",
+                "PLACEHOLDER": "选择问题发生时间",
+                "OPTIONS": {
+                    "30_MIN": "30 分钟内",
+                    "1_HOUR": "1 小时内",
+                    "2_HOURS": "2 小时内",
+                    "MORE": "超过 2 小时"
+                }
+            },
+            "FILES": {
+                "MAX_FILES_ERROR": "文件总数超过 {{count}}。请减少所选文件数量并重试。",
+                "MAX_SIZE_ERROR": "附件大小应不超过 {{size}} MB。请选择其他文件。"
+            },
+            "TERMS": "点击“发送”，即表示您同意允许 RingCentral 访问某些与日志相关的信息，用于故障排查和错误处理。如需了解 RingCentral 如何处理个人数据的更多信息，请查阅我们的 <tos_link>《服务条款》</tos_link> 和 <privacy_link>《隐私声明》</privacy_link>。",
+            "VALIDATION": {
+                "REQUIRED": "这是必填字段"
+            },
+            "BANNER": {
+                "SUCCESS": "问题已成功报告",
+                "ERROR": "报告问题失败"
+            },
+            "INTERNAL_ERROR": "发生内部错误。请重试。",
+            "BUTTON": {
+                "SEND": "发送",
+                "CANCEL": "取消"
+            }
+        }
+    },
+    "FILES_UPLOAD_INPUT": {
+        "SELECT_UPLOAD_FILE": "选择要上传的文件",
+        "DELETE": "删除",
+        "DELETE_ALL": "全部删除",
+        "FILES_UPLOADED": "已上传 {{count}} 个文件",
+        "FILES_UPLOADED_plural": "已上传 {{count}} 个文件",
+        "MAX_FILES_REACHED": "已达到可上传的最大文件数量"
+    },
+    "VARIABLES_LIST": {
+        "NAME": "名称",
+        "VALUE": "值",
+        "ADD": "添加变量",
+        "TOOLTIPS": {
+            "DELETE_VARIABLE": "删除变量"
+        }
+    },
+    "ARIA_LABELS": {
+        "APP_SWITCHER": "应用切换器",
+        "CLEAR_DATE": "清除日期",
+        "CLEAR_TIME": "清除时间",
+        "MENU": "菜单",
+        "MAIN_NAVIGATION": "主导航",
+        "SUBMENU": "子菜单",
+        "CLOSE": "关闭",
+        "MINUS": "减号",
+        "PLUS": "加号",
+        "TEXT_INPUT": "文本输入框",
+        "MULTI_VALUE_INPUT": "多值输入",
+        "MORE_INFO": "更多信息"
+    }
+}

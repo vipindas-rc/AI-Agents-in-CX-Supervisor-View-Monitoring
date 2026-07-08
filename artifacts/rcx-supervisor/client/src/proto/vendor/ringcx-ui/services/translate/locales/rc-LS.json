@@ -1,0 +1,185 @@
+{
+    "GENERICS": {
+        "ACTIONS": {
+            "DECREASE_VALUE": "Diminuer la valeur",
+            "INCREASE_VALUE": "Augmenter la valeur"
+        },
+        "LABELS": {
+            "INPUT_MULTI_VALUE": "Meerdere waarden",
+            "MULTI_VALUE": "(Meerdere waarden)",
+            "NO_OPTIONS_TEXT": "Nessuna opzione",
+            "SELECTED": "selezione effettuata:  ",
+            "SELECTED_plural": "selezione effettuata:  "
+        },
+        "MESSAGES": {
+            "SELECT_PLACEHOLDER": "Sélectionner",
+            "SELECT_ALL": "Sélectionner tout",
+            "DESELECT_ALL": "Cancelar la selección de todo",
+            "NO_RESULTS_FOUND": "Não foram encontrados resultados",
+            "NOTHING_AVAILABLE": "Aucun élément disponible",
+            "LOADING": "Chargement en cours…"
+        }
+    },
+    "EXTERNAL_CREDENTIALS": {
+        "TITLE": "Credenciales externas",
+        "NEW": "Neue Anmeldedaten",
+        "EDIT": "Anmeldedaten bearbeiten",
+        "SAVE": "Enregistrer",
+        "CANCEL": "Abbrechen",
+        "OTHER_PARAMS": {
+            "TITLE": "Andere parameters"
+        },
+        "FIELDS": {
+            "NAME": "Nombre",
+            "AUTH_TYPE": "Type d’authentification",
+            "DESCRIPTION": "Beschreibung",
+            "USERNAME": "Nombre de usuario",
+            "PASSWORD": "Palavra-passe",
+            "GRANT_TYPE": "Tipo di concessione",
+            "CLIENT_ID": "ID do cliente",
+            "SECRET": "Clé secrète",
+            "SUPPLY_IN": "Las credenciales del cliente se proporcionan en",
+            "TOKEN_ENDPOINT": "Point de terminaison du jeton",
+            "SCOPE": "Champ d’application",
+            "API_KEY": "Schlüssel",
+            "ALGORITHM": "Algorithmus",
+            "PAYLOAD": "Données utiles",
+            "EXPIRATION_TIME": "Tiempo de vencimiento (segundos)",
+            "REQUEST_HEADER_PREFIX": "Prefixo do cabeçalho da solicitação",
+            "QUERY_PARAM_NAME": "Nombre del parámetro de consulta",
+            "JWT_HEADERS": "Encabezados JWT",
+            "PRIVATE_KEY": "Privater Schlüssel",
+            "INCLUDE_ISSUED_AT": "\"Ausgestellt am\" einschließen",
+            "ADD_JWT_TOKEN_TO": "JWT-Token hinzufügen zu",
+            "SECRET_BASE64_ENCODED": "Segredo codificado em Base64",
+            "SELECT_UPLOAD_FILE": "Sélectionner un fichier à téléverser",
+            "ASSERTION": "Asserzione",
+            "CUSTOM_TEMPLATE_PARAMS": "Variables d’authentification",
+            "ALLOWED_BASE_URL": "URL di base consentito"
+        },
+        "VALIDATIONS": {
+            "REQUIRED": "Dieses Feld ist erforderlich"
+        },
+        "TOOLTIPS": {
+            "EDIT": "Modifier les détails",
+            "DELETE": "Externe referentie verwijderen",
+            "ALGORITHM": "Zum Generieren der JWT-Signatur verwendeter Algorithmus",
+            "SECRET": "Geheim gebruikt om de JWT-handtekening te genereren",
+            "PAYLOAD": "Das JSON-Objekt, das die vom JWT übermittelten beanspruchten Elemente enthält",
+            "REQUEST_HEADER_PREFIX": "Het voorvoegsel dat aan de autorisatiekoptekst in de aanvraag wordt toegevoegd",
+            "QUERY_PARAM_NAME": "Parameters toegevoegd aan de URL",
+            "JWT_HEADERS": "Deze waarden worden toegevoegd aan de JWT-koptekst",
+            "EXPIRATION_TIME": "Le temps avant que le jeton ne soit automatiquement actualisé",
+            "PRIVATE_KEY": "Privater Schlüssel zum Generieren der JWT-Signatur im PKCS#1- oder PKCS#8-PEM-Format",
+            "ALLOWED_BASE_URL": "Die Basis-URL wird zur Validierung der Anforderungs-URL verwendet, zum Beispiel: .xxx. Wenn Sie mehrere URLs verwenden, trennen Sie diese durch Semikolons. "
+        },
+        "OPTIONS": {
+            "BASIC": "Standard",
+            "OAUTH": "OAuth2",
+            "API_KEY": "Clave de la API",
+            "JWT": "JWT",
+            "CUSTOM_AUTH": "Benutzerdefinierte Authentifizierung",
+            "CLIENT_CREDENTIALS": "Credenciales del cliente",
+            "JWT_BEARER": "Portador de JWT",
+            "PASSWORD": "Palavra-passe",
+            "BODY": "Hauptteil",
+            "QUERY_PARAMS": "Paramètres des requêtes",
+            "HEADER": "Encabezamiento"
+        },
+        "ALGORITHMS": {
+            "HS256": "HS256",
+            "HS384": "HS384",
+            "HS512": "HS512",
+            "RS256": "RS256",
+            "RS384": "RS384",
+            "RS512": "RS512",
+            "PS256": "PS256",
+            "PS384": "PS384",
+            "PS512": "PS512",
+            "ES256": "ES256",
+            "ES384": "ES384",
+            "ES512": "ES512"
+        },
+        "DESTINATION": {
+            "REQUEST_HEADER": "Cabeçalho da solicitação",
+            "QUERY_PARAM": "Parámetros de consulta"
+        },
+        "MESSAGES": {
+            "ADD_ERROR": "Nous éprouvons des difficultés à ajouter votre nouvel identifiant. Veuillez réessayer.",
+            "ADD_SUCCESS": "A nova credencial foi adicionada com sucesso.",
+            "INVALID_KEY_FORMAT": "Format de clé non valide. Veuillez vérifier.",
+            "INVALID_JSON_FORMAT": "Format JSON non valide. Merci de vérifier.",
+            "MAX_SIZE_EXCEED": "La clé doit être inférieure à 1 million. Veuillez vérifier.",
+            "EXPIRATION_TIME_RANGE": "Legen Sie eine Ablaufzeit zwischen 1 Sekunde und 24 Stunden fest.",
+            "INVALID_BASE_URL_FORMAT": "URL de base non valide. Veuillez vérifier."
+        }
+    },
+    "FEEDBACK": {
+        "MENU_BUTTON": "Informar de un problema",
+        "MODAL": {
+            "TITLE": "Informar de un problema",
+            "DEFAULT_INPUT_TITLE": "Problema com o aplicativo do agente RCX",
+            "DEFAULT_INPUT_TITLE_FOR_CRM": "Problema com o RingCX para {{CRMPlatform}}",
+            "PLACEHOLDER_DESCRIPTION": "Geben Sie eine kurze Beschreibung des Problems ein …",
+            "REPORT_INFO": "Veuillez signaler les problèmes techniques ici. Si vous souhaitez obtenir une réponse de la part du service client, veuillez <support_link>créer un dossier d’assistance</support_link>.",
+            "LABEL_DESCRIPTION": "Beschreiben Sie das Problem",
+            "WHEN": {
+                "LABEL": "Moment où le problème est survenu?",
+                "PLACEHOLDER": "Sélectionnez à quel moment le problème s’est produit",
+                "OPTIONS": {
+                    "30_MIN": "Durante los últimos 30 minutos",
+                    "1_HOUR": "Il y a moins d’une heure",
+                    "2_HOURS": "Dans les deux dernières heures",
+                    "MORE": "Il y a plus de deux heures"
+                }
+            },
+            "FILES": {
+                "MAX_FILES_ERROR": "Die Gesamtzahl der Dateien überschreitet {{count}}. Wählen Sie weniger Dateien aus und versuchen Sie es erneut.",
+                "MAX_SIZE_ERROR": "La taille de la pièce jointe doit être inférieure ou égale à {{size}} Mo. Veuillez choisir d’autres fichiers."
+            },
+            "TERMS": "En cliquant sur Envoyer, vous acceptez d’autoriser RingCentral à accéder à certaines informations relatives aux journaux à des fins de dépannage et de gestion des erreurs. Pour obtenir plus de renseignements sur la manière dont RingCentral traite les données personnelles, veuillez consulter nos <tos_link>Conditions d’utilisation</tos_link> et <privacy_link>Avis de confidentialité</privacy_link>.",
+            "VALIDATION": {
+                "REQUIRED": "Dieses Feld ist erforderlich"
+            },
+            "BANNER": {
+                "SUCCESS": "El problema se informó correctamente.",
+                "ERROR": "Het melden van een probleem is mislukt"
+            },
+            "INTERNAL_ERROR": "Ein interner Fehler ist aufgetreten. Versuchen Sie es erneut.",
+            "BUTTON": {
+                "SEND": "Verzenden",
+                "CANCEL": "Abbrechen"
+            }
+        }
+    },
+    "FILES_UPLOAD_INPUT": {
+        "SELECT_UPLOAD_FILE": "Sélectionner un fichier à téléverser",
+        "DELETE": "Verwijderen",
+        "DELETE_ALL": "Alles verwijderen",
+        "FILES_UPLOADED": "{{count}} ficheiro carregado",
+        "FILES_UPLOADED_plural": "{{count}} ficheiros carregados",
+        "MAX_FILES_REACHED": "Maximale Anzahl an hochgeladenen Dateien"
+    },
+    "VARIABLES_LIST": {
+        "NAME": "Nombre",
+        "VALUE": "Waarde",
+        "ADD": "Ajouter une variable",
+        "TOOLTIPS": {
+            "DELETE_VARIABLE": "Supprimer la variable"
+        }
+    },
+    "ARIA_LABELS": {
+        "APP_SWITCHER": "Conmutador de aplicaciones",
+        "CLEAR_DATE": "Effacer la date",
+        "CLEAR_TIME": "Effacer l’heure",
+        "MENU": "Menü",
+        "MAIN_NAVIGATION": "Navigation principale",
+        "SUBMENU": "Sous-menu",
+        "CLOSE": "Schließen",
+        "MINUS": "Menos",
+        "PLUS": "加号",
+        "TEXT_INPUT": "Entrada de texto",
+        "MULTI_VALUE_INPUT": "Campo de entrada para vários valores",
+        "MORE_INFO": "Plus de renseignements"
+    }
+}

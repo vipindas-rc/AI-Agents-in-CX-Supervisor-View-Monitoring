@@ -1,0 +1,3 @@
+export const DEFAULT_MAX_LENGTH = 12;
+export const DEFAULT_MIN_VALUE = 0;
+export const DEFAULT_MAX_VALUE = 999999999999;

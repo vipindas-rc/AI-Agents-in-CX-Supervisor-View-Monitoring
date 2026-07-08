@@ -1,0 +1,1246 @@
+{
+  "agents": [
+    {
+      "fullName": "Jane Doe",
+      "glId": "1000",
+      "agentId": "1000",
+      "rcUserId": "700000",
+      "originalAgentBaseState": "ENGAGED",
+      "originalAgentStateLabel": "ENGAGED",
+      "agentState": "ENGAGED",
+      "stateDuration": 259245,
+      "pendingDispTime": 0,
+      "activeInteractions": [
+        {
+          "channelType": "WEB_CHAT",
+          "sourceColor": "0",
+          "sourceName": "Web Chat"
+        }
+      ],
+      "longestEngagement": {
+        "agentDurationMs": 22613
+      },
+      "longestActiveInteraction": 22613,
+      "interactionsRollup": 19,
+      "interactions24hRollupData": [
+        {
+          "engagementId": "eng-1000-1",
+          "engagementSource": {
+            "initialEngagementSourceType": "WEB_CHAT",
+            "initialEngagementSourceColor": "#1684E5",
+            "initialEngagementSourceName": "Web Chat"
+          },
+          "agentDurationMs": 22613,
+          "contactIdentityE164": "+14085555018",
+          "categoryIds": "",
+          "sourceColor": "0"
+        }
+      ],
+      "interactions24hRollupTotalCount": 19,
+      "talkTime": 146683,
+      "averageTimePerCall": 164502,
+      "login": 7292650,
+      "skill": "Sales",
+      "utilization": 32,
+      "engagements": [
+        {
+          "engagementId": "eng-1000-1",
+          "engagementSource": {
+            "initialEngagementSourceType": "VOICE",
+            "initialEngagementSourceColor": "#1684E5",
+            "initialEngagementSourceName": "Inbound Sales"
+          },
+          "agentDurationMs": 22613,
+          "contactIdentityE164": "+14085555018",
+          "categoryIds": ""
+        }
+      ],
+      "agentBaseState": "ENGAGED",
+      "agentStateLabel": "ENGAGED",
+      "activeInteractionsSearchCols": [
+        {
+          "channelType": "WEB_CHAT",
+          "sourceColor": "0",
+          "sourceName": "Inbound Sales"
+        }
+      ]
+    },
+    {
+      "fullName": "John Rossi",
+      "glId": "1001",
+      "agentId": "1001",
+      "rcUserId": "700001",
+      "originalAgentBaseState": "ENGAGED",
+      "originalAgentStateLabel": "ENGAGED",
+      "agentState": "ENGAGED",
+      "stateDuration": 164351,
+      "pendingDispTime": 0,
+      "activeInteractions": [
+        {
+          "channelType": "EMAIL",
+          "sourceColor": "1",
+          "sourceName": "Support Inbox"
+        }
+      ],
+      "longestEngagement": {
+        "agentDurationMs": 81930
+      },
+      "longestActiveInteraction": 81930,
+      "interactionsRollup": 42,
+      "interactions24hRollupData": [
+        {
+          "engagementId": "eng-1001-2",
+          "engagementSource": {
+            "initialEngagementSourceType": "EMAIL",
+            "initialEngagementSourceColor": "#1684E5",
+            "initialEngagementSourceName": "Support Inbox"
+          },
+          "agentDurationMs": 81930,
+          "contactIdentityE164": "+14085558169",
+          "categoryIds": "",
+          "sourceColor": "1"
+        }
+      ],
+      "interactions24hRollupTotalCount": 42,
+      "talkTime": 150535,
+      "averageTimePerCall": 146753,
+      "login": 16873811,
+      "skill": "Support",
+      "utilization": 99,
+      "engagements": [
+        {
+          "engagementId": "eng-1001-2",
+          "engagementSource": {
+            "initialEngagementSourceType": "VOICE",
+            "initialEngagementSourceColor": "#1684E5",
+            "initialEngagementSourceName": "Inbound Sales"
+          },
+          "agentDurationMs": 81930,
+          "contactIdentityE164": "+14085558169",
+          "categoryIds": ""
+        }
+      ],
+      "agentBaseState": "ENGAGED",
+      "agentStateLabel": "ENGAGED",
+      "activeInteractionsSearchCols": [
+        {
+          "channelType": "EMAIL",
+          "sourceColor": "1",
+          "sourceName": "Inbound Sales"
+        }
+      ]
+    },
+    {
+      "fullName": "Maria Brown",
+      "glId": "1002",
+      "agentId": "1002",
+      "rcUserId": "700002",
+      "originalAgentBaseState": "ENGAGED",
+      "originalAgentStateLabel": "ENGAGED",
+      "agentState": "ENGAGED",
+      "stateDuration": 560966,
+      "pendingDispTime": 0,
+      "activeInteractions": [
+        {
+          "channelType": "TWITTER",
+          "sourceColor": "2",
+          "sourceName": "Twitter"
+        }
+      ],
+      "longestEngagement": {
+        "agentDurationMs": 14584
+      },
+      "longestActiveInteraction": 14584,
+      "interactionsRollup": 43,
+      "interactions24hRollupData": [
+        {
+          "engagementId": "eng-1002-3",
+          "engagementSource": {
+            "initialEngagementSourceType": "TWITTER",
+            "initialEngagementSourceColor": "#7C4DFF",
+            "initialEngagementSourceName": "Twitter"
+          },
+          "agentDurationMs": 14584,
+          "contactIdentityE164": "",
+          "categoryIds": "",
+          "sourceColor": "2"
+        }
+      ],
+      "interactions24hRollupTotalCount": 43,
+      "talkTime": 228507,
+      "averageTimePerCall": 122010,
+      "login": 1903454,
+      "skill": "Billing",
+      "utilization": 74,
+      "engagements": [
+        {
+          "engagementId": "eng-1002-3",
+          "engagementSource": {
+            "initialEngagementSourceType": "WEB_CHAT",
+            "initialEngagementSourceColor": "#7C4DFF",
+            "initialEngagementSourceName": "Web Chat"
+          },
+          "agentDurationMs": 14584,
+          "contactIdentityE164": "",
+          "categoryIds": ""
+        }
+      ],
+      "agentBaseState": "ENGAGED",
+      "agentStateLabel": "ENGAGED",
+      "activeInteractionsSearchCols": [
+        {
+          "channelType": "TWITTER",
+          "sourceColor": "2",
+          "sourceName": "Web Chat"
+        }
+      ]
+    },
+    {
+      "fullName": "Liam Khan",
+      "glId": "1003",
+      "agentId": "1003",
+      "rcUserId": "700003",
+      "originalAgentBaseState": "ENGAGED",
+      "originalAgentStateLabel": "ENGAGED",
+      "agentState": "ENGAGED",
+      "stateDuration": 426698,
+      "pendingDispTime": 0,
+      "activeInteractions": [
+        {
+          "channelType": "FACEBOOK",
+          "sourceColor": "3",
+          "sourceName": "Facebook Page"
+        }
+      ],
+      "longestEngagement": {
+        "agentDurationMs": 14426
+      },
+      "longestActiveInteraction": 14426,
+      "interactionsRollup": 33,
+      "interactions24hRollupData": [
+        {
+          "engagementId": "eng-1003-4",
+          "engagementSource": {
+            "initialEngagementSourceType": "FACEBOOK",
+            "initialEngagementSourceColor": "#FF8A00",
+            "initialEngagementSourceName": "Facebook Page"
+          },
+          "agentDurationMs": 14426,
+          "contactIdentityE164": "",
+          "categoryIds": "",
+          "sourceColor": "3"
+        }
+      ],
+      "interactions24hRollupTotalCount": 33,
+      "talkTime": 196739,
+      "averageTimePerCall": 112030,
+      "login": 4083976,
+      "skill": "Retention",
+      "utilization": 67,
+      "engagements": [
+        {
+          "engagementId": "eng-1003-4",
+          "engagementSource": {
+            "initialEngagementSourceType": "EMAIL",
+            "initialEngagementSourceColor": "#FF8A00",
+            "initialEngagementSourceName": "Support Inbox"
+          },
+          "agentDurationMs": 14426,
+          "contactIdentityE164": "",
+          "categoryIds": ""
+        }
+      ],
+      "agentBaseState": "ENGAGED",
+      "agentStateLabel": "ENGAGED",
+      "activeInteractionsSearchCols": [
+        {
+          "channelType": "FACEBOOK",
+          "sourceColor": "3",
+          "sourceName": "Support Inbox"
+        }
+      ]
+    },
+    {
+      "fullName": "Olivia Lopez",
+      "glId": "1004",
+      "agentId": "1004",
+      "rcUserId": "700004",
+      "originalAgentBaseState": "ENGAGED",
+      "originalAgentStateLabel": "ENGAGED",
+      "agentState": "ENGAGED",
+      "stateDuration": 41779,
+      "pendingDispTime": 0,
+      "activeInteractions": [
+        {
+          "channelType": "INSTAGRAM",
+          "sourceColor": "4",
+          "sourceName": "Instagram"
+        }
+      ],
+      "longestEngagement": {
+        "agentDurationMs": 108268
+      },
+      "longestActiveInteraction": 108268,
+      "interactionsRollup": 36,
+      "interactions24hRollupData": [
+        {
+          "engagementId": "eng-1004-5",
+          "engagementSource": {
+            "initialEngagementSourceType": "INSTAGRAM",
+            "initialEngagementSourceColor": "#1684E5",
+            "initialEngagementSourceName": "Instagram"
+          },
+          "agentDurationMs": 108268,
+          "contactIdentityE164": "+14085559414",
+          "categoryIds": "",
+          "sourceColor": "4"
+        }
+      ],
+      "interactions24hRollupTotalCount": 36,
+      "talkTime": 292478,
+      "averageTimePerCall": 173016,
+      "login": 9863723,
+      "skill": "Tier 2",
+      "utilization": 91,
+      "engagements": [
+        {
+          "engagementId": "eng-1004-5",
+          "engagementSource": {
+            "initialEngagementSourceType": "VOICE",
+            "initialEngagementSourceColor": "#1684E5",
+            "initialEngagementSourceName": "Inbound Sales"
+          },
+          "agentDurationMs": 108268,
+          "contactIdentityE164": "+14085559414",
+          "categoryIds": ""
+        }
+      ],
+      "agentBaseState": "ENGAGED",
+      "agentStateLabel": "ENGAGED",
+      "activeInteractionsSearchCols": [
+        {
+          "channelType": "INSTAGRAM",
+          "sourceColor": "4",
+          "sourceName": "Inbound Sales"
+        }
+      ]
+    },
+    {
+      "fullName": "Noah Nguyen",
+      "glId": "1005",
+      "agentId": "1005",
+      "rcUserId": "700005",
+      "originalAgentBaseState": "ENGAGED",
+      "originalAgentStateLabel": "ENGAGED",
+      "agentState": "ENGAGED",
+      "stateDuration": 574933,
+      "pendingDispTime": 0,
+      "activeInteractions": [
+        {
+          "channelType": "DIGITAL_SMS",
+          "sourceColor": "5",
+          "sourceName": "SMS"
+        }
+      ],
+      "longestEngagement": {
+        "agentDurationMs": 71547
+      },
+      "longestActiveInteraction": 71547,
+      "interactionsRollup": 34,
+      "interactions24hRollupData": [
+        {
+          "engagementId": "eng-1005-6",
+          "engagementSource": {
+            "initialEngagementSourceType": "DIGITAL_SMS",
+            "initialEngagementSourceColor": "#1684E5",
+            "initialEngagementSourceName": "SMS"
+          },
+          "agentDurationMs": 71547,
+          "contactIdentityE164": "+14085551192",
+          "categoryIds": "",
+          "sourceColor": "5"
+        }
+      ],
+      "interactions24hRollupTotalCount": 34,
+      "talkTime": 252439,
+      "averageTimePerCall": 165034,
+      "login": 11373754,
+      "skill": "VIP",
+      "utilization": 75,
+      "engagements": [
+        {
+          "engagementId": "eng-1005-6",
+          "engagementSource": {
+            "initialEngagementSourceType": "VOICE",
+            "initialEngagementSourceColor": "#1684E5",
+            "initialEngagementSourceName": "Inbound Sales"
+          },
+          "agentDurationMs": 71547,
+          "contactIdentityE164": "+14085551192",
+          "categoryIds": ""
+        }
+      ],
+      "agentBaseState": "ENGAGED",
+      "agentStateLabel": "ENGAGED",
+      "activeInteractionsSearchCols": [
+        {
+          "channelType": "DIGITAL_SMS",
+          "sourceColor": "5",
+          "sourceName": "Inbound Sales"
+        }
+      ]
+    },
+    {
+      "fullName": "Emma Tanaka",
+      "glId": "1006",
+      "agentId": "1006",
+      "rcUserId": "700006",
+      "originalAgentBaseState": "ENGAGED",
+      "originalAgentStateLabel": "ENGAGED",
+      "agentState": "ENGAGED",
+      "stateDuration": 33125,
+      "pendingDispTime": 0,
+      "activeInteractions": [
+        {
+          "channelType": "WHATS_APP",
+          "sourceColor": "6",
+          "sourceName": "WhatsApp"
+        }
+      ],
+      "longestEngagement": {
+        "agentDurationMs": 15666
+      },
+      "longestActiveInteraction": 15666,
+      "interactionsRollup": 33,
+      "interactions24hRollupData": [
+        {
+          "engagementId": "eng-1006-7",
+          "engagementSource": {
+            "initialEngagementSourceType": "WHATS_APP",
+            "initialEngagementSourceColor": "#FF8A00",
+            "initialEngagementSourceName": "WhatsApp"
+          },
+          "agentDurationMs": 15666,
+          "contactIdentityE164": "",
+          "categoryIds": "",
+          "sourceColor": "6"
+        }
+      ],
+      "interactions24hRollupTotalCount": 33,
+      "talkTime": 228991,
+      "averageTimePerCall": 151681,
+      "login": 18624430,
+      "skill": "Sales",
+      "utilization": 44,
+      "engagements": [
+        {
+          "engagementId": "eng-1006-7",
+          "engagementSource": {
+            "initialEngagementSourceType": "EMAIL",
+            "initialEngagementSourceColor": "#FF8A00",
+            "initialEngagementSourceName": "Support Inbox"
+          },
+          "agentDurationMs": 15666,
+          "contactIdentityE164": "",
+          "categoryIds": ""
+        }
+      ],
+      "agentBaseState": "ENGAGED",
+      "agentStateLabel": "ENGAGED",
+      "activeInteractionsSearchCols": [
+        {
+          "channelType": "WHATS_APP",
+          "sourceColor": "6",
+          "sourceName": "Support Inbox"
+        }
+      ]
+    },
+    {
+      "fullName": "Ava Patel",
+      "glId": "1007",
+      "agentId": "1007",
+      "rcUserId": "700007",
+      "originalAgentBaseState": "ENGAGED",
+      "originalAgentStateLabel": "ENGAGED",
+      "agentState": "ENGAGED",
+      "stateDuration": 376343,
+      "pendingDispTime": 0,
+      "activeInteractions": [
+        {
+          "channelType": "CHAT",
+          "sourceColor": "7",
+          "sourceName": "Live Chat"
+        }
+      ],
+      "longestEngagement": {
+        "agentDurationMs": 104502
+      },
+      "longestActiveInteraction": 104502,
+      "interactionsRollup": 12,
+      "interactions24hRollupData": [
+        {
+          "engagementId": "eng-1007-8",
+          "engagementSource": {
+            "initialEngagementSourceType": "CHAT",
+            "initialEngagementSourceColor": "#7C4DFF",
+            "initialEngagementSourceName": "Live Chat"
+          },
+          "agentDurationMs": 104502,
+          "contactIdentityE164": "",
+          "categoryIds": "",
+          "sourceColor": "7"
+        }
+      ],
+      "interactions24hRollupTotalCount": 12,
+      "talkTime": 248990,
+      "averageTimePerCall": 98150,
+      "login": 3351197,
+      "skill": "Support",
+      "utilization": 44,
+      "engagements": [
+        {
+          "engagementId": "eng-1007-8",
+          "engagementSource": {
+            "initialEngagementSourceType": "WEB_CHAT",
+            "initialEngagementSourceColor": "#7C4DFF",
+            "initialEngagementSourceName": "Web Chat"
+          },
+          "agentDurationMs": 104502,
+          "contactIdentityE164": "",
+          "categoryIds": ""
+        }
+      ],
+      "agentBaseState": "ENGAGED",
+      "agentStateLabel": "ENGAGED",
+      "activeInteractionsSearchCols": [
+        {
+          "channelType": "CHAT",
+          "sourceColor": "7",
+          "sourceName": "Web Chat"
+        }
+      ]
+    },
+    {
+      "fullName": "Lucas Ivanov",
+      "glId": "1008",
+      "agentId": "1008",
+      "rcUserId": "700008",
+      "originalAgentBaseState": "LUNCH",
+      "originalAgentStateLabel": "LUNCH",
+      "agentState": "LUNCH",
+      "stateDuration": 445834,
+      "pendingDispTime": 0,
+      "activeInteractions": [],
+      "longestEngagement": {
+        "agentDurationMs": 0
+      },
+      "longestActiveInteraction": 0,
+      "interactionsRollup": 9,
+      "interactions24hRollupData": [],
+      "interactions24hRollupTotalCount": 9,
+      "talkTime": 280068,
+      "averageTimePerCall": 169815,
+      "login": 18387949,
+      "skill": "Billing",
+      "utilization": 52,
+      "engagements": [],
+      "agentBaseState": "LUNCH",
+      "agentStateLabel": "LUNCH",
+      "activeInteractionsSearchCols": []
+    },
+    {
+      "fullName": "Sophia Chen",
+      "glId": "1009",
+      "agentId": "1009",
+      "rcUserId": "700009",
+      "originalAgentBaseState": "ON-BREAK",
+      "originalAgentStateLabel": "ON-BREAK",
+      "agentState": "ON-BREAK",
+      "stateDuration": 344929,
+      "pendingDispTime": 0,
+      "activeInteractions": [],
+      "longestEngagement": {
+        "agentDurationMs": 0
+      },
+      "longestActiveInteraction": 0,
+      "interactionsRollup": 21,
+      "interactions24hRollupData": [],
+      "interactions24hRollupTotalCount": 21,
+      "talkTime": 214816,
+      "averageTimePerCall": 194738,
+      "login": 7034753,
+      "skill": "Retention",
+      "utilization": 52,
+      "engagements": [],
+      "agentBaseState": "ON-BREAK",
+      "agentStateLabel": "ON-BREAK",
+      "activeInteractionsSearchCols": []
+    },
+    {
+      "fullName": "Mateo Okafor",
+      "glId": "1010",
+      "agentId": "1010",
+      "rcUserId": "700010",
+      "originalAgentBaseState": "AWAY",
+      "originalAgentStateLabel": "AWAY",
+      "agentState": "AWAY",
+      "stateDuration": 214081,
+      "pendingDispTime": 0,
+      "activeInteractions": [],
+      "longestEngagement": {
+        "agentDurationMs": 0
+      },
+      "longestActiveInteraction": 0,
+      "interactionsRollup": 37,
+      "interactions24hRollupData": [],
+      "interactions24hRollupTotalCount": 37,
+      "talkTime": 216625,
+      "averageTimePerCall": 191627,
+      "login": 11830769,
+      "skill": "Tier 2",
+      "utilization": 44,
+      "engagements": [],
+      "agentBaseState": "AWAY",
+      "agentStateLabel": "AWAY",
+      "activeInteractionsSearchCols": []
+    },
+    {
+      "fullName": "Mia Garcia",
+      "glId": "1011",
+      "agentId": "1011",
+      "rcUserId": "700011",
+      "originalAgentBaseState": "LUNCH",
+      "originalAgentStateLabel": "LUNCH",
+      "agentState": "LUNCH",
+      "stateDuration": 251761,
+      "pendingDispTime": 0,
+      "activeInteractions": [],
+      "longestEngagement": {
+        "agentDurationMs": 0
+      },
+      "longestActiveInteraction": 0,
+      "interactionsRollup": 10,
+      "interactions24hRollupData": [],
+      "interactions24hRollupTotalCount": 10,
+      "talkTime": 137488,
+      "averageTimePerCall": 123848,
+      "login": 6802165,
+      "skill": "VIP",
+      "utilization": 67,
+      "engagements": [],
+      "agentBaseState": "LUNCH",
+      "agentStateLabel": "LUNCH",
+      "activeInteractionsSearchCols": []
+    },
+    {
+      "fullName": "Ethan Silva",
+      "glId": "1012",
+      "agentId": "1012",
+      "rcUserId": "700012",
+      "originalAgentBaseState": "AWAY",
+      "originalAgentStateLabel": "AWAY",
+      "agentState": "AWAY",
+      "stateDuration": 278465,
+      "pendingDispTime": 0,
+      "activeInteractions": [],
+      "longestEngagement": {
+        "agentDurationMs": 0
+      },
+      "longestActiveInteraction": 0,
+      "interactionsRollup": 29,
+      "interactions24hRollupData": [],
+      "interactions24hRollupTotalCount": 29,
+      "talkTime": 234618,
+      "averageTimePerCall": 179430,
+      "login": 16173910,
+      "skill": "Sales",
+      "utilization": 66,
+      "engagements": [],
+      "agentBaseState": "AWAY",
+      "agentStateLabel": "AWAY",
+      "activeInteractionsSearchCols": []
+    },
+    {
+      "fullName": "Isabella Smith",
+      "glId": "1013",
+      "agentId": "1013",
+      "rcUserId": "700013",
+      "originalAgentBaseState": "AVAILABLE",
+      "originalAgentStateLabel": "AVAILABLE",
+      "agentState": "AVAILABLE",
+      "stateDuration": 359635,
+      "pendingDispTime": 0,
+      "activeInteractions": [],
+      "longestEngagement": {
+        "agentDurationMs": 0
+      },
+      "longestActiveInteraction": 0,
+      "interactionsRollup": 16,
+      "interactions24hRollupData": [],
+      "interactions24hRollupTotalCount": 16,
+      "talkTime": 254903,
+      "averageTimePerCall": 130912,
+      "login": 3739520,
+      "skill": "Support",
+      "utilization": 56,
+      "engagements": [],
+      "agentBaseState": "AVAILABLE",
+      "agentStateLabel": "AVAILABLE",
+      "activeInteractionsSearchCols": []
+    },
+    {
+      "fullName": "James Müller",
+      "glId": "1014",
+      "agentId": "1014",
+      "rcUserId": "700014",
+      "originalAgentBaseState": "AWAY",
+      "originalAgentStateLabel": "AWAY",
+      "agentState": "AWAY",
+      "stateDuration": 210264,
+      "pendingDispTime": 0,
+      "activeInteractions": [],
+      "longestEngagement": {
+        "agentDurationMs": 0
+      },
+      "longestActiveInteraction": 0,
+      "interactionsRollup": 39,
+      "interactions24hRollupData": [],
+      "interactions24hRollupTotalCount": 39,
+      "talkTime": 199264,
+      "averageTimePerCall": 200890,
+      "login": 16399438,
+      "skill": "Billing",
+      "utilization": 94,
+      "engagements": [],
+      "agentBaseState": "AWAY",
+      "agentStateLabel": "AWAY",
+      "activeInteractionsSearchCols": []
+    },
+    {
+      "fullName": "Amara Doe",
+      "glId": "1015",
+      "agentId": "1015",
+      "rcUserId": "700015",
+      "originalAgentBaseState": "ON-BREAK",
+      "originalAgentStateLabel": "ON-BREAK",
+      "agentState": "ON-BREAK",
+      "stateDuration": 524729,
+      "pendingDispTime": 0,
+      "activeInteractions": [],
+      "longestEngagement": {
+        "agentDurationMs": 0
+      },
+      "longestActiveInteraction": 0,
+      "interactionsRollup": 6,
+      "interactions24hRollupData": [],
+      "interactions24hRollupTotalCount": 6,
+      "talkTime": 136737,
+      "averageTimePerCall": 202895,
+      "login": 15308060,
+      "skill": "Retention",
+      "utilization": 92,
+      "engagements": [],
+      "agentBaseState": "ON-BREAK",
+      "agentStateLabel": "ON-BREAK",
+      "activeInteractionsSearchCols": []
+    },
+    {
+      "fullName": "Wei Rossi",
+      "glId": "1016",
+      "agentId": "1016",
+      "rcUserId": "700016",
+      "originalAgentBaseState": "AWAY",
+      "originalAgentStateLabel": "AWAY",
+      "agentState": "AWAY",
+      "stateDuration": 534943,
+      "pendingDispTime": 0,
+      "activeInteractions": [],
+      "longestEngagement": {
+        "agentDurationMs": 0
+      },
+      "longestActiveInteraction": 0,
+      "interactionsRollup": 14,
+      "interactions24hRollupData": [],
+      "interactions24hRollupTotalCount": 14,
+      "talkTime": 129818,
+      "averageTimePerCall": 102672,
+      "login": 15317401,
+      "skill": "Tier 2",
+      "utilization": 88,
+      "engagements": [],
+      "agentBaseState": "AWAY",
+      "agentStateLabel": "AWAY",
+      "activeInteractionsSearchCols": []
+    },
+    {
+      "fullName": "Priya Brown",
+      "glId": "1017",
+      "agentId": "1017",
+      "rcUserId": "700017",
+      "originalAgentBaseState": "AWAY",
+      "originalAgentStateLabel": "AWAY",
+      "agentState": "AWAY",
+      "stateDuration": 438617,
+      "pendingDispTime": 0,
+      "activeInteractions": [],
+      "longestEngagement": {
+        "agentDurationMs": 0
+      },
+      "longestActiveInteraction": 0,
+      "interactionsRollup": 28,
+      "interactions24hRollupData": [],
+      "interactions24hRollupTotalCount": 28,
+      "talkTime": 113755,
+      "averageTimePerCall": 204361,
+      "login": 14998255,
+      "skill": "VIP",
+      "utilization": 86,
+      "engagements": [],
+      "agentBaseState": "AWAY",
+      "agentStateLabel": "AWAY",
+      "activeInteractionsSearchCols": []
+    },
+    {
+      "fullName": "Diego Khan",
+      "glId": "1018",
+      "agentId": "1018",
+      "rcUserId": "700018",
+      "originalAgentBaseState": "ENGAGED",
+      "originalAgentStateLabel": "ENGAGED",
+      "agentState": "ENGAGED",
+      "stateDuration": 502473,
+      "pendingDispTime": 0,
+      "activeInteractions": [
+        {
+          "channelType": "WEB_CHAT",
+          "sourceColor": "8",
+          "sourceName": "Web Chat"
+        }
+      ],
+      "longestEngagement": {
+        "agentDurationMs": 33926
+      },
+      "longestActiveInteraction": 33926,
+      "interactionsRollup": 26,
+      "interactions24hRollupData": [
+        {
+          "engagementId": "eng-1018-9",
+          "engagementSource": {
+            "initialEngagementSourceType": "WEB_CHAT",
+            "initialEngagementSourceColor": "#FF8A00",
+            "initialEngagementSourceName": "Web Chat"
+          },
+          "agentDurationMs": 33926,
+          "contactIdentityE164": "",
+          "categoryIds": "",
+          "sourceColor": "8"
+        }
+      ],
+      "interactions24hRollupTotalCount": 26,
+      "talkTime": 184844,
+      "averageTimePerCall": 172992,
+      "login": 1288505,
+      "skill": "Sales",
+      "utilization": 31,
+      "engagements": [
+        {
+          "engagementId": "eng-1018-9",
+          "engagementSource": {
+            "initialEngagementSourceType": "EMAIL",
+            "initialEngagementSourceColor": "#FF8A00",
+            "initialEngagementSourceName": "Support Inbox"
+          },
+          "agentDurationMs": 33926,
+          "contactIdentityE164": "",
+          "categoryIds": ""
+        }
+      ],
+      "agentBaseState": "ENGAGED",
+      "agentStateLabel": "ENGAGED",
+      "activeInteractionsSearchCols": [
+        {
+          "channelType": "WEB_CHAT",
+          "sourceColor": "8",
+          "sourceName": "Support Inbox"
+        }
+      ]
+    },
+    {
+      "fullName": "Yuki Lopez",
+      "glId": "1019",
+      "agentId": "1019",
+      "rcUserId": "700019",
+      "originalAgentBaseState": "ON-BREAK",
+      "originalAgentStateLabel": "ON-BREAK",
+      "agentState": "ON-BREAK",
+      "stateDuration": 144087,
+      "pendingDispTime": 0,
+      "activeInteractions": [],
+      "longestEngagement": {
+        "agentDurationMs": 0
+      },
+      "longestActiveInteraction": 0,
+      "interactionsRollup": 37,
+      "interactions24hRollupData": [],
+      "interactions24hRollupTotalCount": 37,
+      "talkTime": 200239,
+      "averageTimePerCall": 201050,
+      "login": 4920610,
+      "skill": "Support",
+      "utilization": 37,
+      "engagements": [],
+      "agentBaseState": "ON-BREAK",
+      "agentStateLabel": "ON-BREAK",
+      "activeInteractionsSearchCols": []
+    },
+    {
+      "fullName": "Omar Nguyen",
+      "glId": "1020",
+      "agentId": "1020",
+      "rcUserId": "700020",
+      "originalAgentBaseState": "AVAILABLE",
+      "originalAgentStateLabel": "AVAILABLE",
+      "agentState": "AVAILABLE",
+      "stateDuration": 51434,
+      "pendingDispTime": 0,
+      "activeInteractions": [],
+      "longestEngagement": {
+        "agentDurationMs": 0
+      },
+      "longestActiveInteraction": 0,
+      "interactionsRollup": 17,
+      "interactions24hRollupData": [],
+      "interactions24hRollupTotalCount": 17,
+      "talkTime": 217773,
+      "averageTimePerCall": 174622,
+      "login": 4911488,
+      "skill": "Billing",
+      "utilization": 83,
+      "engagements": [],
+      "agentBaseState": "AVAILABLE",
+      "agentStateLabel": "AVAILABLE",
+      "activeInteractionsSearchCols": []
+    },
+    {
+      "fullName": "Chloe Tanaka",
+      "glId": "1021",
+      "agentId": "1021",
+      "rcUserId": "700021",
+      "originalAgentBaseState": "LUNCH",
+      "originalAgentStateLabel": "LUNCH",
+      "agentState": "LUNCH",
+      "stateDuration": 89017,
+      "pendingDispTime": 0,
+      "activeInteractions": [],
+      "longestEngagement": {
+        "agentDurationMs": 0
+      },
+      "longestActiveInteraction": 0,
+      "interactionsRollup": 16,
+      "interactions24hRollupData": [],
+      "interactions24hRollupTotalCount": 16,
+      "talkTime": 266596,
+      "averageTimePerCall": 238624,
+      "login": 11057047,
+      "skill": "Retention",
+      "utilization": 98,
+      "engagements": [],
+      "agentBaseState": "LUNCH",
+      "agentStateLabel": "LUNCH",
+      "activeInteractionsSearchCols": []
+    },
+    {
+      "fullName": "Hassan Patel",
+      "glId": "1022",
+      "agentId": "1022",
+      "rcUserId": "700022",
+      "originalAgentBaseState": "ON-BREAK",
+      "originalAgentStateLabel": "ON-BREAK",
+      "agentState": "ON-BREAK",
+      "stateDuration": 611969,
+      "pendingDispTime": 0,
+      "activeInteractions": [],
+      "longestEngagement": {
+        "agentDurationMs": 0
+      },
+      "longestActiveInteraction": 0,
+      "interactionsRollup": 20,
+      "interactions24hRollupData": [],
+      "interactions24hRollupTotalCount": 20,
+      "talkTime": 111777,
+      "averageTimePerCall": 217361,
+      "login": 8376462,
+      "skill": "Tier 2",
+      "utilization": 93,
+      "engagements": [],
+      "agentBaseState": "ON-BREAK",
+      "agentStateLabel": "ON-BREAK",
+      "activeInteractionsSearchCols": []
+    },
+    {
+      "fullName": "Nina Ivanov",
+      "glId": "1023",
+      "agentId": "1023",
+      "rcUserId": "700023",
+      "originalAgentBaseState": "WORKING",
+      "originalAgentStateLabel": "WORKING",
+      "agentState": "WORKING",
+      "stateDuration": 100299,
+      "pendingDispTime": 0,
+      "activeInteractions": [],
+      "longestEngagement": {
+        "agentDurationMs": 0
+      },
+      "longestActiveInteraction": 0,
+      "interactionsRollup": 14,
+      "interactions24hRollupData": [],
+      "interactions24hRollupTotalCount": 14,
+      "talkTime": 130444,
+      "averageTimePerCall": 117192,
+      "login": 6266050,
+      "skill": "VIP",
+      "utilization": 74,
+      "engagements": [],
+      "agentBaseState": "WORKING",
+      "agentStateLabel": "WORKING",
+      "activeInteractionsSearchCols": []
+    },
+    {
+      "fullName": "Tomas Chen",
+      "glId": "1024",
+      "agentId": "1024",
+      "rcUserId": "700024",
+      "originalAgentBaseState": "AWAY",
+      "originalAgentStateLabel": "AWAY",
+      "agentState": "AWAY",
+      "stateDuration": 504419,
+      "pendingDispTime": 0,
+      "activeInteractions": [],
+      "longestEngagement": {
+        "agentDurationMs": 0
+      },
+      "longestActiveInteraction": 0,
+      "interactionsRollup": 25,
+      "interactions24hRollupData": [],
+      "interactions24hRollupTotalCount": 25,
+      "talkTime": 181476,
+      "averageTimePerCall": 232735,
+      "login": 7854325,
+      "skill": "Sales",
+      "utilization": 57,
+      "engagements": [],
+      "agentBaseState": "AWAY",
+      "agentStateLabel": "AWAY",
+      "activeInteractionsSearchCols": []
+    }
+  ],
+  "interactions": [
+    {
+      "engagementId": "eng-1000-1",
+      "engagementSource": {
+        "initialEngagementSourceType": "WEB_CHAT",
+        "initialEngagementSourceColor": "0",
+        "initialEngagementSourceName": "Web Chat"
+      },
+      "agentDurationMs": 22613,
+      "contactIdentityE164": "+14085555018",
+      "categoryIds": "",
+      "glId": "eng-1000-1",
+      "agentId": "1000",
+      "fullName": "Jane Doe",
+      "sourceName": "Web Chat",
+      "sourceColor": "0",
+      "sourceType": "WEB_CHAT",
+      "initialEngagementSourceName": "Web Chat",
+      "productName": "Sales",
+      "contactIdentity": "+14085555018",
+      "threadTitle": "Billing question",
+      "pendingDispositionMs": 0,
+      "categoryNames": ""
+    },
+    {
+      "engagementId": "eng-1001-2",
+      "engagementSource": {
+        "initialEngagementSourceType": "EMAIL",
+        "initialEngagementSourceColor": "1",
+        "initialEngagementSourceName": "Support Inbox"
+      },
+      "agentDurationMs": 81930,
+      "contactIdentityE164": "+14085558169",
+      "categoryIds": "",
+      "glId": "eng-1001-2",
+      "agentId": "1001",
+      "fullName": "John Rossi",
+      "sourceName": "Support Inbox",
+      "sourceColor": "1",
+      "sourceType": "EMAIL",
+      "initialEngagementSourceName": "Support Inbox",
+      "productName": "Support",
+      "contactIdentity": "+14085558169",
+      "threadTitle": "Refund request",
+      "pendingDispositionMs": 0,
+      "categoryNames": ""
+    },
+    {
+      "engagementId": "eng-1002-3",
+      "engagementSource": {
+        "initialEngagementSourceType": "TWITTER",
+        "initialEngagementSourceColor": "2",
+        "initialEngagementSourceName": "Twitter"
+      },
+      "agentDurationMs": 14584,
+      "contactIdentityE164": "",
+      "categoryIds": "",
+      "glId": "eng-1002-3",
+      "agentId": "1002",
+      "fullName": "Maria Brown",
+      "sourceName": "Twitter",
+      "sourceColor": "2",
+      "sourceType": "TWITTER",
+      "initialEngagementSourceName": "Twitter",
+      "productName": "Billing",
+      "contactIdentity": "+14085551002",
+      "threadTitle": "Tech support",
+      "pendingDispositionMs": 0,
+      "categoryNames": ""
+    },
+    {
+      "engagementId": "eng-1003-4",
+      "engagementSource": {
+        "initialEngagementSourceType": "FACEBOOK",
+        "initialEngagementSourceColor": "3",
+        "initialEngagementSourceName": "Facebook Page"
+      },
+      "agentDurationMs": 14426,
+      "contactIdentityE164": "",
+      "categoryIds": "",
+      "glId": "eng-1003-4",
+      "agentId": "1003",
+      "fullName": "Liam Khan",
+      "sourceName": "Facebook Page",
+      "sourceColor": "3",
+      "sourceType": "FACEBOOK",
+      "initialEngagementSourceName": "Facebook Page",
+      "productName": "Retention",
+      "contactIdentity": "+14085551003",
+      "threadTitle": "Order status",
+      "pendingDispositionMs": 0,
+      "categoryNames": ""
+    },
+    {
+      "engagementId": "eng-1004-5",
+      "engagementSource": {
+        "initialEngagementSourceType": "INSTAGRAM",
+        "initialEngagementSourceColor": "4",
+        "initialEngagementSourceName": "Instagram"
+      },
+      "agentDurationMs": 108268,
+      "contactIdentityE164": "+14085559414",
+      "categoryIds": "",
+      "glId": "eng-1004-5",
+      "agentId": "1004",
+      "fullName": "Olivia Lopez",
+      "sourceName": "Instagram",
+      "sourceColor": "4",
+      "sourceType": "INSTAGRAM",
+      "initialEngagementSourceName": "Instagram",
+      "productName": "Sales",
+      "contactIdentity": "+14085559414",
+      "threadTitle": "Account help",
+      "pendingDispositionMs": 0,
+      "categoryNames": ""
+    },
+    {
+      "engagementId": "eng-1005-6",
+      "engagementSource": {
+        "initialEngagementSourceType": "DIGITAL_SMS",
+        "initialEngagementSourceColor": "5",
+        "initialEngagementSourceName": "SMS"
+      },
+      "agentDurationMs": 71547,
+      "contactIdentityE164": "+14085551192",
+      "categoryIds": "",
+      "glId": "eng-1005-6",
+      "agentId": "1005",
+      "fullName": "Noah Nguyen",
+      "sourceName": "SMS",
+      "sourceColor": "5",
+      "sourceType": "DIGITAL_SMS",
+      "initialEngagementSourceName": "SMS",
+      "productName": "Support",
+      "contactIdentity": "+14085551192",
+      "threadTitle": "Upgrade plan",
+      "pendingDispositionMs": 0,
+      "categoryNames": ""
+    },
+    {
+      "engagementId": "eng-1006-7",
+      "engagementSource": {
+        "initialEngagementSourceType": "WHATS_APP",
+        "initialEngagementSourceColor": "6",
+        "initialEngagementSourceName": "WhatsApp"
+      },
+      "agentDurationMs": 15666,
+      "contactIdentityE164": "",
+      "categoryIds": "",
+      "glId": "eng-1006-7",
+      "agentId": "1006",
+      "fullName": "Emma Tanaka",
+      "sourceName": "WhatsApp",
+      "sourceColor": "6",
+      "sourceType": "WHATS_APP",
+      "initialEngagementSourceName": "WhatsApp",
+      "productName": "Billing",
+      "contactIdentity": "+14085551006",
+      "threadTitle": "Cant log in",
+      "pendingDispositionMs": 0,
+      "categoryNames": ""
+    },
+    {
+      "engagementId": "eng-1007-8",
+      "engagementSource": {
+        "initialEngagementSourceType": "CHAT",
+        "initialEngagementSourceColor": "7",
+        "initialEngagementSourceName": "Live Chat"
+      },
+      "agentDurationMs": 104502,
+      "contactIdentityE164": "",
+      "categoryIds": "",
+      "glId": "eng-1007-8",
+      "agentId": "1007",
+      "fullName": "Ava Patel",
+      "sourceName": "Live Chat",
+      "sourceColor": "7",
+      "sourceType": "CHAT",
+      "initialEngagementSourceName": "Live Chat",
+      "productName": "Retention",
+      "contactIdentity": "+14085551007",
+      "threadTitle": "Shipping delay",
+      "pendingDispositionMs": 0,
+      "categoryNames": ""
+    },
+    {
+      "engagementId": "eng-1018-9",
+      "engagementSource": {
+        "initialEngagementSourceType": "MESSENGER",
+        "initialEngagementSourceColor": "8",
+        "initialEngagementSourceName": "Messenger"
+      },
+      "agentDurationMs": 33926,
+      "contactIdentityE164": "",
+      "categoryIds": "",
+      "glId": "eng-1018-9",
+      "agentId": "1018",
+      "fullName": "Diego Khan",
+      "sourceName": "Messenger",
+      "sourceColor": "8",
+      "sourceType": "MESSENGER",
+      "initialEngagementSourceName": "Messenger",
+      "productName": "Sales",
+      "contactIdentity": "+14085551008",
+      "threadTitle": "Billing question",
+      "pendingDispositionMs": 0,
+      "categoryNames": ""
+    }
+  ]
+}

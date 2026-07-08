@@ -1,0 +1,793 @@
+import { useCallback, useState } from "react";
+import AgentTablePanel, {
+  agentColumnMeta,
+  interactionColumnMeta,
+  agentStateOptions,
+  agentFilterOptions,
+} from "@proto";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  ListFilter,
+  Search as SearchIcon,
+  Settings as SettingsIcon,
+  ExternalLink,
+  Menu as DragHandleIcon,
+} from "lucide-react";
+
+// The header/tabs/Filters blue, reused in the table settings dialogs so the
+// whole page shares one accent color.
+const RC_BLUE = "#066fac";
+
+// Mirrors CATEGORIES_MAP in client/src/proto/eag/helpers/injector. The id is
+// what the interactions table filters on (categoryIds), the label is shown.
+const CATEGORY_OPTIONS = [
+  { id: "1", label: "Billing" },
+  { id: "2", label: "Refund" },
+  { id: "3", label: "Technical" },
+  { id: "4", label: "VIP" },
+  { id: "5", label: "Escalation" },
+  { id: "6", label: "Feedback" },
+];
+
+// Shared agent-type options, used on both the Agents and Interactions tabs.
+const AGENT_TYPE_OPTIONS = [
+  { value: "Air", label: "AirPro agents" },
+  { value: "Human", label: "Human agents" },
+];
+
+const CHANNEL_OPTIONS = [
+  "Web Chat",
+  "Support Inbox",
+  "Twitter",
+  "Facebook",
+  "Instagram",
+  "WhatsApp",
+  "SMS",
+  "Voice",
+];
+
+// Inline filter-row dropdown matching the Figma design: white field, light-gray
+// border, gray ghost text for the default "All …" value, dark text once a real
+// option is chosen.
+function FilterDropdown({
+  value,
+  onValueChange,
+  allValue = "All",
+  allLabel,
+  options,
+  testId,
+}: {
+  value: string;
+  onValueChange: (value: string) => void;
+  allValue?: string;
+  allLabel: string;
+  options: { value: string; label: string }[];
+  testId: string;
+}): JSX.Element {
+  const isAll = value === allValue;
+  return (
+    <Select value={value} onValueChange={onValueChange}>
+      <SelectTrigger
+        className={`h-10 w-[300px] shrink-0 rounded border-[#e0e0e0] bg-white px-3 font-main-text text-[14px] ${
+          isAll ? "text-[#a1a1a1]" : "text-[#212121]"
+        }`}
+        data-testid={testId}
+      >
+        <SelectValue placeholder={allLabel} />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value={allValue}>{allLabel}</SelectItem>
+        {options.map((o) => (
+          <SelectItem key={o.value} value={o.value}>
+            {o.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
+const topTabs = [
+  "Active calls",
+  "Active messages",
+  "All messages",
+  "History",
+  "Callbacks",
+  "Scripts",
+  "Stats",
+  "Supervisor",
+];
+
+const supervisorFilters = ["Agents", "Interactions"];
+
+const sidePrimaryNav = [
+  {
+    label: "Message",
+    icon: "/figmaAssets/icon-bubble-lines-border.svg",
+    active: false,
+    badge: "6",
+  },
+  {
+    label: "Video",
+    icon: "/figmaAssets/icon-videocam-border.svg",
+    active: false,
+  },
+  {
+    label: "Phone",
+    icon: "/figmaAssets/icon-phone-border.svg",
+    active: false,
+  },
+  {
+    label: "Agent",
+    icon: "/figmaAssets/icon-engage-border-1.svg",
+    active: true,
+  },
+  {
+    label: "Contacts",
+    icon: "/figmaAssets/phone-inbox-border-1.svg",
+    active: false,
+  },
+  {
+    label: "More",
+    icon: "/figmaAssets/icon-more-horiz.svg",
+    active: false,
+  },
+];
+
+const sideSecondaryNav = [
+  {
+    label: "Apps",
+    icon: "/figmaAssets/icon-default-integration-border.svg",
+  },
+  {
+    label: "Settings",
+    icon: "/figmaAssets/icon-settings-border.svg",
+  },
+  {
+    label: "Help",
+    icon: "/figmaAssets/icon-help-border.svg",
+  },
+];
+
+export const SupervisorAgents = (): JSX.Element => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [agentTypeFilter, setAgentTypeFilter] = useState<"All" | "Air" | "Human">(
+    "All",
+  );
+  const [channelFilter, setChannelFilter] = useState<string>("All");
+  const [stateFilter, setStateFilter] = useState<string>("All");
+  // Interactions-tab "All agents" picker: narrows the table to one chosen agent.
+  const [agentFilter, setAgentFilter] = useState<string>("All");
+
+  // The filter row is closed by default; the "Filters" button toggles it open.
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
+  // Interactions-tab filters (channel is shared with the Agents tab).
+  const [categoryFilter, setCategoryFilter] = useState<string>("All");
+
+  const [activeTab, setActiveTab] = useState<"Agents" | "Interactions">(
+    "Agents",
+  );
+  const isInteractions = activeTab === "Interactions";
+
+  // When the supervisor clicks an agent's "Active interactions" icons we jump to
+  // the Interactions tab and blink that agent's rows. The nonce re-triggers the
+  // blink animation even if the same agent is clicked again.
+  const [highlightAgentId, setHighlightAgentId] = useState<string | null>(null);
+  const [highlightNonce, setHighlightNonce] = useState(0);
+
+  const handleActiveInteractionsClick = useCallback((agentId: string) => {
+    setActiveTab("Interactions");
+    setHighlightAgentId(agentId);
+    setHighlightNonce((n) => n + 1);
+  }, []);
+
+  const handleTabChange = useCallback((value: string) => {
+    setActiveTab(value as "Agents" | "Interactions");
+    // Manually changing tabs clears any agent-driven row highlight.
+    setHighlightAgentId(null);
+  }, []);
+
+  // The State filter offers exactly the states present in the table for the
+  // selected agent type (human states for Human, AirPro states for AirPro).
+  const stateOptionsForType = agentStateOptions[agentTypeFilter] ?? [];
+
+  // Agent-type filter (shared by both tabs). Changing it also clamps the Agents
+  // tab State selection to a value valid for the new type.
+  const handleAgentTypeChange = useCallback(
+    (value: string) => {
+      const next = value as "All" | "Air" | "Human";
+      setAgentTypeFilter(next);
+      const valid = agentStateOptions[next] ?? [];
+      if (stateFilter !== "All" && !valid.includes(stateFilter)) {
+        setStateFilter("All");
+      }
+    },
+    [stateFilter],
+  );
+
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [visibleCols, setVisibleCols] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(agentColumnMeta.map((c) => [c.id, true])),
+  );
+  const [visibleInteractionCols, setVisibleInteractionCols] = useState<
+    Record<string, boolean>
+  >(() => Object.fromEntries(interactionColumnMeta.map((c) => [c.id, true])));
+  const [colOrder, setColOrder] = useState<string[]>(() =>
+    agentColumnMeta.map((c) => c.id),
+  );
+  const [draftCols, setDraftCols] = useState<Record<string, boolean>>(
+    visibleCols,
+  );
+  const [draftOrder, setDraftOrder] = useState<string[]>(colOrder);
+  const [dragId, setDragId] = useState<string | null>(null);
+
+  const lockedColId = isInteractions ? "sourceName" : "fullName";
+  const activeVisibleCols = isInteractions ? visibleInteractionCols : visibleCols;
+
+  const colLabelById = Object.fromEntries(
+    agentColumnMeta.map((c) => [c.id, c.label]),
+  );
+
+  const openSettings = (open: boolean) => {
+    if (open) {
+      setDraftCols(activeVisibleCols);
+      setDraftOrder(colOrder);
+    }
+    setSettingsOpen(open);
+  };
+
+  // Reorders draftOrder by moving fromId to the slot occupied by toId. The locked
+  // Agent (fullName) column stays pinned first and cannot be dragged or displaced.
+  const moveColumn = (fromId: string, toId: string) => {
+    if (fromId === toId || fromId === "fullName" || toId === "fullName") return;
+    setDraftOrder((prev) => {
+      const next = [...prev];
+      const from = next.indexOf(fromId);
+      const to = next.indexOf(toId);
+      if (from === -1 || to === -1) return prev;
+      next.splice(from, 1);
+      next.splice(to, 0, fromId);
+      return next;
+    });
+  };
+
+  const selectedStates = stateFilter !== "All" ? [stateFilter] : [];
+  const selectedChannels = channelFilter !== "All" ? [channelFilter] : [];
+  const selectedCategories =
+    categoryFilter !== "All" ? [categoryFilter] : [];
+  const selectedAgentIds = agentFilter !== "All" ? [agentFilter] : [];
+  // Order matters: columns render in the saved drag order, Agent column first.
+  const visibleColumnIds = colOrder.filter(
+    (id) => id === "fullName" || visibleCols[id],
+  );
+  const visibleInteractionColumnIds = interactionColumnMeta
+    .filter((c) => c.id === "sourceName" || visibleInteractionCols[c.id])
+    .map((c) => c.id);
+
+  // The settings dialog lists agent columns in their draggable saved order and
+  // interaction columns in their fixed order (drag-reorder is agent-only).
+  const dialogColumnOrder = isInteractions
+    ? interactionColumnMeta.map((c) => c.id)
+    : draftOrder;
+  const dialogLabelById = isInteractions
+    ? Object.fromEntries(interactionColumnMeta.map((c) => [c.id, c.label]))
+    : colLabelById;
+  const dragEnabled = !isInteractions;
+
+  return (
+    <main className="flex h-screen w-full flex-col overflow-hidden bg-white">
+      <header className="flex h-14 w-full shrink-0 items-center border-b border-[#0000001f] bg-white">
+        <div className="relative flex h-full w-full items-center bg-[url('/figmaAssets/appbar-bg.svg')] bg-cover bg-center px-4 pl-5">
+          <div className="flex items-center gap-4">
+            <button type="button" className="relative">
+              <div className="relative h-10 w-10 overflow-hidden rounded-full bg-white">
+                <img
+                  className="h-full w-full object-cover"
+                  alt="Image"
+                  src="/figmaAssets/image-1-1.png"
+                />
+              </div>
+              <img
+                className="absolute bottom-0 right-0 h-3.5 w-3.5"
+                alt="Presence"
+                src="/figmaAssets/presence.svg"
+              />
+            </button>
+            <h1 className="font-headline-2 text-[length:var(--headline-2-font-size)] font-[number:var(--headline-2-font-weight)] leading-[var(--headline-2-line-height)] tracking-[var(--headline-2-letter-spacing)] text-headertext [font-style:var(--headline-2-font-style)]">
+              RingCentral, Inc.
+            </h1>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                className="h-8 w-8 rounded-full bg-[#ffffff29] p-0 hover:bg-[#ffffff40]"
+              >
+                <img
+                  className="h-4 w-4"
+                  alt="Icon chevron left"
+                  src="/figmaAssets/icon-chevron-left.svg"
+                />
+              </Button>
+              <Button
+                variant="ghost"
+                className="h-8 w-8 rounded-full bg-[#ffffff14] p-0 hover:bg-[#ffffff29]"
+              >
+                <img
+                  className="h-4 w-4"
+                  alt="Icon chevron right"
+                  src="/figmaAssets/icon-chevron-right.svg"
+                />
+              </Button>
+            </div>
+          </div>
+          <div className="flex flex-1 px-2 pl-3 pr-3">
+            <div className="relative w-full max-w-[468px]">
+              <div className="pointer-events-none absolute inset-0 rounded-full bg-[#ffffff29]" />
+              <div className="relative flex h-8 items-center gap-2 px-3">
+                <img
+                  className="h-4 w-4"
+                  alt="Icon search nav"
+                  src="/figmaAssets/icon-search-nav.svg"
+                />
+                <span className="font-button text-[length:var(--button-font-size)] font-[number:var(--button-font-weight)] leading-[var(--button-line-height)] tracking-[var(--button-letter-spacing)] text-headertexthint [font-style:var(--button-font-style)]">
+                  Search
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className="flex h-8 w-[164px] items-center gap-1 rounded-2xl bg-white px-3"
+            >
+              <img
+                className="h-3.5 w-3.5"
+                alt="Presence"
+                src="/figmaAssets/presence.svg"
+              />
+              <img
+                className="h-4 w-4"
+                alt="Icon engage border"
+                src="/figmaAssets/icon-engage-border.svg"
+              />
+              <div className="flex flex-1 items-center justify-between gap-1">
+                <span className="font-caption-1 text-[length:var(--caption-1-font-size)] font-[number:var(--caption-1-font-weight)] leading-[var(--caption-1-line-height)] tracking-[var(--caption-1-letter-spacing)] text-[#121212] [font-style:var(--caption-1-font-style)]">
+                  Available
+                </span>
+                <span className="whitespace-nowrap font-caption-1 text-[length:var(--caption-1-font-size)] font-[number:var(--caption-1-font-weight)] leading-[var(--caption-1-line-height)] tracking-[var(--caption-1-letter-spacing)] text-[#121212] [font-style:var(--caption-1-font-style)]">
+                  21:01
+                </span>
+              </div>
+              <img
+                className="h-4 w-4"
+                alt="Icon arrow down"
+                src="/figmaAssets/icon-arrow-down.svg"
+              />
+            </button>
+            <Button
+              variant="secondary"
+              className="h-8 w-8 rounded-full bg-white p-0 shadow-none hover:bg-white"
+            >
+              <img
+                className="h-4 w-4"
+                alt="Icon dialer s"
+                src="/figmaAssets/icon-dialer-s.svg"
+              />
+            </Button>
+            <Button
+              variant="secondary"
+              className="h-8 w-8 rounded-full bg-white p-0 shadow-none hover:bg-white"
+            >
+              <img
+                className="h-4 w-4"
+                alt="Icon call add"
+                src="/figmaAssets/icon-call-add.svg"
+              />
+            </Button>
+          </div>
+        </div>
+      </header>
+      <div className="flex min-h-0 flex-1">
+        <aside className="flex w-20 shrink-0 flex-col justify-between border-r border-neutral-200 bg-navb-02 py-4">
+          <nav className="flex flex-col">
+            {sidePrimaryNav.map((item) => (
+              <button
+                key={item.label}
+                type="button"
+                className={`relative flex min-h-10 w-20 flex-col items-center justify-center px-0 py-[5px] ${
+                  item.active ? "bg-[#066fac1f]" : ""
+                }`}
+              >
+                <img className="relative" alt={item.label} src={item.icon} />
+                <span
+                  className={`mt-0.5 flex h-4 items-center justify-center self-stretch text-center font-caption-2 text-[length:var(--caption-2-font-size)] font-[number:var(--caption-2-font-weight)] leading-[var(--caption-2-line-height)] tracking-[var(--caption-2-letter-spacing)] [font-style:var(--caption-2-font-style)] ${
+                    item.active ? "text-[#066fac]" : "text-[#121212]"
+                  }`}
+                >
+                  {item.label}
+                </span>
+                {item.badge ? (
+                  <span className="absolute right-[22px] top-0.5 flex h-[18px] w-[18px] items-center justify-center rounded-full border border-white bg-[#ff8800] font-caption-1 text-[length:var(--caption-1-font-size)] font-[number:var(--caption-1-font-weight)] leading-[var(--caption-1-line-height)] tracking-[var(--caption-1-letter-spacing)] text-white [font-style:var(--caption-1-font-style)]">
+                    {item.badge}
+                  </span>
+                ) : null}
+              </button>
+            ))}
+          </nav>
+          <nav className="flex flex-col">
+            {sideSecondaryNav.map((item) => (
+              <button
+                key={item.label}
+                type="button"
+                className="flex min-h-10 w-20 flex-col items-center justify-center px-0 py-[5px]"
+              >
+                <img className="relative" alt={item.label} src={item.icon} />
+                <span
+                  className={`mt-0.5 flex h-4 items-center justify-center self-stretch text-center ${
+                    item.label === "Help"
+                      ? "[font-family:'Lato',Helvetica] text-xs font-bold leading-4 tracking-[0]"
+                      : "font-caption-2 text-[length:var(--caption-2-font-size)] font-[number:var(--caption-2-font-weight)] leading-[var(--caption-2-line-height)] tracking-[var(--caption-2-letter-spacing)] [font-style:var(--caption-2-font-style)]"
+                  } text-[#121212]`}
+                >
+                  {item.label}
+                </span>
+              </button>
+            ))}
+          </nav>
+        </aside>
+        <section className="flex min-w-0 flex-1 flex-col overflow-hidden">
+          <div className="shrink-0 border-b border-neutral-200 bg-white">
+            <div className="flex h-[60px] items-center px-3 py-0.5">
+              <div className="flex flex-1 items-center gap-2 pr-3">
+                <span className="font-descriptor-mini text-[length:var(--descriptor-mini-font-size)] font-[number:var(--descriptor-mini-font-weight)] leading-[var(--descriptor-mini-line-height)] tracking-[var(--descriptor-mini-letter-spacing)] text-neutralf-06 [font-style:var(--descriptor-mini-font-style)]">
+                  RingCX Agent
+                </span>
+              </div>
+              <Button
+                variant="ghost"
+                className="h-8 rounded-2xl px-3 shadow-none hover:bg-[#66666614]"
+              >
+                <img
+                  className="mr-1 h-4 w-4"
+                  alt="Icon"
+                  src="/figmaAssets/--icon.svg"
+                />
+                <span className="font-descriptor-mini text-[length:var(--descriptor-mini-font-size)] font-[number:var(--descriptor-mini-font-weight)] leading-[var(--descriptor-mini-line-height)] tracking-[var(--descriptor-mini-letter-spacing)] text-[#666666] [font-style:var(--descriptor-mini-font-style)]">
+                  Session info
+                </span>
+              </Button>
+              <Separator
+                orientation="vertical"
+                className="ml-3 mr-2 h-4 bg-neutral-200"
+              />
+              <Button variant="ghost" className="h-8 w-8 p-0 shadow-none">
+                <img
+                  className="h-4 w-4"
+                  alt="Icon help border"
+                  src="/figmaAssets/icon-help-border.svg"
+                />
+              </Button>
+            </div>
+            <Tabs defaultValue="Supervisor" className="w-full">
+              <TabsList className="h-auto justify-start rounded-none border-0 bg-transparent p-0">
+                {topTabs.map((tab) => (
+                  <TabsTrigger
+                    key={tab}
+                    value={tab}
+                    className="rounded-none border-b-2 border-transparent px-3 py-1.5 font-descriptor-mini text-[length:var(--descriptor-mini-font-size)] font-[number:var(--descriptor-mini-font-weight)] leading-[var(--descriptor-mini-line-height)] tracking-[var(--descriptor-mini-letter-spacing)] text-[#121212] shadow-none ring-offset-0 [font-style:var(--descriptor-mini-font-style)] focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=active]:border-[#066fac] data-[state=active]:bg-transparent data-[state=active]:text-[#066fac] data-[state=active]:shadow-none"
+                  >
+                    {tab}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
+          </div>
+          <div className="relative flex shrink-0 items-center border-b border-[#0000001a] px-5 py-3">
+            <h2 className="shrink-0 font-subtitle-mini text-[15px] font-semibold leading-[var(--subtitle-mini-line-height)] text-[#121212]">
+              Supervisor
+            </h2>
+            <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-3">
+              <Tabs
+                value={activeTab}
+                onValueChange={handleTabChange}
+                className="w-auto"
+              >
+                <TabsList className="h-10 items-stretch gap-0 rounded-[4px] bg-[#f9f9f9] p-1">
+                  {supervisorFilters.map((tab) => (
+                    <TabsTrigger
+                      key={tab}
+                      value={tab}
+                      className="h-full w-[148px] rounded-[4px] px-6 font-['Roboto',sans-serif] text-[14px] tracking-[0.15px] text-[#212121] shadow-none ring-offset-0 transition-colors focus-visible:ring-0 focus-visible:ring-offset-0 data-[state=active]:bg-white data-[state=active]:font-medium data-[state=active]:text-[#212121] data-[state=active]:shadow-[0px_2px_3px_0px_rgba(173,173,173,0.2)] data-[state=inactive]:bg-transparent data-[state=inactive]:font-normal data-[state=inactive]:text-[#212121]"
+                      data-testid={`tab-supervisor-${tab.toLowerCase()}`}
+                    >
+                      {tab}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
+              <div className="relative w-[500px]">
+                <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#a1a1a1]" />
+                <Input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-10 rounded-[4px] border-[#e0e0e0] pl-11 pr-[96px] font-['Roboto',sans-serif] text-[14px] tracking-[0.25px] text-[#212121] placeholder:text-[#a1a1a1]"
+                  placeholder={
+                    isInteractions ? "Search interactions" : "Search agents"
+                  }
+                  data-testid="input-search"
+                />
+                <button
+                  type="button"
+                  onClick={() => setFiltersOpen((o) => !o)}
+                  aria-pressed={filtersOpen}
+                  className={`absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1.5 font-['Roboto',sans-serif] text-[14px] font-medium tracking-[0.15px] transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:underline ${filtersOpen ? "text-[#066fac]" : "text-[#666666]"}`}
+                  data-testid="button-filters"
+                >
+                  <ListFilter className="h-4 w-4" />
+                  Filters
+                </button>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              aria-label="Table settings"
+              onClick={() => openSettings(true)}
+              className="ml-auto h-10 w-10 rounded-full p-0 text-[#666666] shadow-none hover:bg-[#66666614]"
+              data-testid="button-settings"
+            >
+              <SettingsIcon className="h-6 w-6" />
+            </Button>
+          </div>
+          {filtersOpen && (
+            <div
+              className="flex shrink-0 items-center gap-3 border-b border-[#0000001a] bg-white px-5 py-3"
+              data-testid="filter-row"
+            >
+              {/* Agents tab: exactly 3 dropdowns — Channel, Agent type, State.
+                  The State options are conditional on the selected Agent type. */}
+              {!isInteractions && (
+                <>
+                  <FilterDropdown
+                    value={channelFilter}
+                    onValueChange={setChannelFilter}
+                    allLabel="All channels"
+                    options={CHANNEL_OPTIONS.map((c) => ({
+                      value: c,
+                      label: c,
+                    }))}
+                    testId="select-channel"
+                  />
+                  <FilterDropdown
+                    value={agentTypeFilter}
+                    onValueChange={handleAgentTypeChange}
+                    allLabel="All agent types"
+                    options={AGENT_TYPE_OPTIONS}
+                    testId="select-agent-type"
+                  />
+                  <FilterDropdown
+                    value={stateFilter}
+                    onValueChange={setStateFilter}
+                    allLabel="All states"
+                    options={stateOptionsForType.map((s) => ({
+                      value: s,
+                      label: s,
+                    }))}
+                    testId="select-state"
+                  />
+                </>
+              )}
+              {/* Interactions tab: All agents, All channels, All categories,
+                  All agent types (in that exact order). */}
+              {isInteractions && (
+                <>
+                  <FilterDropdown
+                    value={agentFilter}
+                    onValueChange={setAgentFilter}
+                    allLabel="All agents"
+                    options={agentFilterOptions}
+                    testId="select-agent"
+                  />
+                  <FilterDropdown
+                    value={channelFilter}
+                    onValueChange={setChannelFilter}
+                    allLabel="All channels"
+                    options={CHANNEL_OPTIONS.map((c) => ({
+                      value: c,
+                      label: c,
+                    }))}
+                    testId="select-channel"
+                  />
+                  <FilterDropdown
+                    value={categoryFilter}
+                    onValueChange={setCategoryFilter}
+                    allLabel="All categories"
+                    options={CATEGORY_OPTIONS.map((c) => ({
+                      value: c.id,
+                      label: c.label,
+                    }))}
+                    testId="select-category"
+                  />
+                  <FilterDropdown
+                    value={agentTypeFilter}
+                    onValueChange={handleAgentTypeChange}
+                    allLabel="All agent types"
+                    options={AGENT_TYPE_OPTIONS}
+                    testId="select-agent-type"
+                  />
+                </>
+              )}
+            </div>
+          )}
+          <div className="min-h-0 flex-1 overflow-hidden">
+            <AgentTablePanel
+              activeTab={activeTab}
+              searchValue={searchQuery}
+              selectedStates={selectedStates}
+              selectedChannels={selectedChannels}
+              agentTypeFilter={agentTypeFilter}
+              visibleColumnIds={visibleColumnIds}
+              selectedAgentIds={selectedAgentIds}
+              selectedCategories={selectedCategories}
+              visibleInteractionColumnIds={visibleInteractionColumnIds}
+              onActiveInteractionsClick={handleActiveInteractionsClick}
+              highlightAgentId={highlightAgentId}
+              highlightNonce={highlightNonce}
+            />
+          </div>
+
+          <Dialog open={settingsOpen} onOpenChange={openSettings}>
+            <DialogContent
+              className="max-w-3xl gap-0 p-0"
+              data-testid="dialog-settings"
+            >
+              <DialogHeader className="px-8 pt-7">
+                <DialogTitle
+                  className="text-2xl font-semibold"
+                  style={{ color: RC_BLUE }}
+                >
+                  {isInteractions
+                    ? "Interactions table settings"
+                    : "Agent table settings"}
+                </DialogTitle>
+              </DialogHeader>
+              <div className="px-8 pb-2 pt-4">
+                <p className="mb-5 text-[15px] text-[#121212]">
+                  For more information visit{" "}
+                  <a
+                    href="https://support.ringcentral.com"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 font-medium"
+                    style={{ color: RC_BLUE }}
+                    data-testid="link-support"
+                  >
+                    RingCentral Support
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
+                </p>
+                {!isInteractions && (
+                  <p className="mb-3 text-[13px] text-[#666666]">
+                    Drag the handle to reorder columns. Changes apply to the
+                    table when you save.
+                  </p>
+                )}
+                <div className="grid grid-cols-3 gap-3">
+                  {dialogColumnOrder.map((colId) => {
+                    const locked = colId === lockedColId;
+                    const checked = locked ? true : !!draftCols[colId];
+                    const dragging = dragId === colId;
+                    return (
+                      <label
+                        key={colId}
+                        htmlFor={`col-${colId}`}
+                        draggable={dragEnabled && !locked}
+                        onDragStart={() => {
+                          if (dragEnabled && !locked) setDragId(colId);
+                        }}
+                        onDragOver={(e) => {
+                          if (dragEnabled && !locked && dragId) e.preventDefault();
+                        }}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          if (dragId) moveColumn(dragId, colId);
+                          setDragId(null);
+                        }}
+                        onDragEnd={() => setDragId(null)}
+                        className={`flex items-center justify-between gap-2 rounded-md bg-[#f4f5f7] px-3 py-2.5 text-[15px] transition-opacity ${
+                          locked
+                            ? "cursor-default text-[#9aa0a6]"
+                            : "cursor-pointer text-[#121212]"
+                        } ${dragging ? "opacity-40 ring-2 ring-[#066fac]" : ""}`}
+                        data-testid={`col-row-${colId}`}
+                      >
+                        <span className="flex min-w-0 items-center gap-3">
+                          <Checkbox
+                            id={`col-${colId}`}
+                            checked={checked}
+                            disabled={locked}
+                            onCheckedChange={(value) =>
+                              setDraftCols((prev) => ({
+                                ...prev,
+                                [colId]: value === true,
+                              }))
+                            }
+                            className={`h-5 w-5 rounded border-[#c4c8cd] disabled:opacity-100 ${
+                              locked
+                                ? "data-[state=checked]:border-[#aeb3ba] data-[state=checked]:bg-[#aeb3ba]"
+                                : "data-[state=checked]:border-[#066fac] data-[state=checked]:bg-[#066fac]"
+                            }`}
+                            data-testid={`checkbox-col-${colId}`}
+                          />
+                          <span className="truncate">
+                            {dialogLabelById[colId]}
+                          </span>
+                        </span>
+                        {dragEnabled && (
+                          <DragHandleIcon
+                            className={`h-4 w-4 shrink-0 text-[#9aa0a6] ${
+                              locked ? "" : "cursor-grab active:cursor-grabbing"
+                            }`}
+                          />
+                        )}
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+              <DialogFooter className="px-8 pb-7 pt-6 sm:justify-end">
+                <Button
+                  variant="ghost"
+                  onClick={() => openSettings(false)}
+                  className="font-semibold hover:bg-transparent"
+                  style={{ color: RC_BLUE }}
+                  data-testid="button-settings-cancel"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (isInteractions) {
+                      setVisibleInteractionCols(draftCols);
+                    } else {
+                      setVisibleCols(draftCols);
+                      setColOrder(draftOrder);
+                    }
+                    setSettingsOpen(false);
+                  }}
+                  className="font-semibold text-white hover:opacity-90"
+                  style={{ backgroundColor: RC_BLUE }}
+                  data-testid="button-settings-save"
+                >
+                  Save
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </section>
+      </div>
+    </main>
+  );
+};

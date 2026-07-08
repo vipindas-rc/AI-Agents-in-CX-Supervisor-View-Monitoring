@@ -1,0 +1,335 @@
+@font-face {
+    font-family: 'engage-icons';
+    src: url('fonts/engage-icons.eot?po8poo');
+    src:
+        url('fonts/engage-icons.eot?po8poo#iefix') format('embedded-opentype'),
+        url('fonts/engage-icons.ttf?po8poo') format('truetype'),
+        url('fonts/engage-icons.woff?po8poo') format('woff'),
+        url('fonts/engage-icons.svg?po8poo#engage-icons') format('svg');
+    font-weight: normal;
+    font-style: normal;
+    font-display: block;
+}
+
+[class^='icon-'],
+[class*=' icon-'] {
+    /* use !important to prevent issues with browser extensions that change fonts */
+    font-family: 'engage-icons' !important;
+    speak: never;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+
+    /* Better Font Rendering =========== */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-barge-in:before {
+    content: '\e900';
+}
+.icon-coach:before {
+    content: '\e901';
+}
+.icon-monitor:before {
+    content: '\e902';
+}
+.icon-external-link:before {
+    content: '\e903';
+}
+.icon-doc:before {
+    content: '\e904';
+}
+.icon-tick:before {
+    content: '\e905';
+}
+.icon-minus:before {
+    content: '\e906';
+}
+.icon-sync:before {
+    content: '\e907';
+}
+.icon-restart:before {
+    content: '\e908';
+}
+.icon-sorting:before {
+    content: '\e909';
+}
+.icon-time:before {
+    content: '\e90a';
+}
+.icon-sort:before {
+    content: '\e90b';
+}
+.icon-plus:before {
+    content: '\e90c';
+}
+.icon-list:before {
+    content: '\e90d';
+}
+.icon-kebab:before {
+    content: '\e90e';
+}
+.icon-user:before {
+    content: '\e90f';
+}
+.icon-hidepassword:before {
+    content: '\e910';
+}
+.icon-dropdown:before {
+    content: '\e911';
+}
+.icon-download:before {
+    content: '\e912';
+}
+.icon-removetext:before {
+    content: '\e913';
+}
+.icon-calendar:before {
+    content: '\e914';
+}
+.icon-chat-switcher:before {
+    content: '\e915';
+}
+.icon-phone-switcher:before {
+    content: '\e916';
+}
+.icon-agentscripts:before {
+    content: '\e917';
+}
+.icon-agentstats:before {
+    content: '\e918';
+}
+.icon-agenttools:before {
+    content: '\e919';
+}
+.icon-analytics:before {
+    content: '\e91a';
+}
+.icon-appgallery:before {
+    content: '\e91b';
+}
+.icon-applications:before {
+    content: '\e91c';
+}
+.icon-callhistory:before {
+    content: '\e91d';
+}
+.icon-channels:before {
+    content: '\e91e';
+}
+.icon-devtools:before {
+    content: '\e91f';
+}
+.icon-dialpad:before {
+    content: '\e920';
+}
+.icon-digital:before {
+    content: '\e921';
+}
+.icon-hamburger:before {
+    content: '\e922';
+}
+.icon-edit:before {
+    content: '\e923';
+}
+.icon-inbox:before {
+    content: '\e924';
+}
+.icon-internalchat:before {
+    content: '\e925';
+}
+.icon-ivr:before {
+    content: '\e926';
+}
+.icon-information:before {
+    content: '\e927';
+}
+.icon-leftchevron:before {
+    content: '\e928';
+}
+.icon-more:before {
+    content: '\e929';
+}
+.icon-mytasks:before {
+    content: '\e92a';
+}
+.icon-outbounddialer:before {
+    content: '\e92b';
+}
+.icon-play:before {
+    content: '\e92c';
+}
+.icon-scheduledcallbacks:before {
+    content: '\e92d';
+}
+.icon-rightchevron:before {
+    content: '\e92e';
+}
+.icon-search:before {
+    content: '\e92f';
+}
+.icon-settings:before {
+    content: '\e930';
+}
+.icon-routing:before {
+    content: '\e931';
+}
+.icon-agentchat:before {
+    content: '\e932';
+}
+.icon-addnew:before {
+    content: '\e933';
+}
+.icon-diallead:before {
+    content: '\e934';
+}
+.icon-listview:before {
+    content: '\e935';
+}
+.icon-close:before {
+    content: '\e936';
+}
+.icon-manualpass:before {
+    content: '\e937';
+}
+.icon-stackview:before {
+    content: '\e938';
+}
+.icon-downchevron:before {
+    content: '\e939';
+}
+.icon-expand:before {
+    content: '\e93a';
+}
+.icon-filter:before {
+    content: '\e93b';
+}
+.icon-inboundcall:before {
+    content: '\e93c';
+}
+.icon-showpassword:before {
+    content: '\e93d';
+}
+.icon-listlogs:before {
+    content: '\e93e';
+}
+.icon-merge:before {
+    content: '\e93f';
+}
+.icon-outboundcall:before {
+    content: '\e940';
+}
+.icon-import:before {
+    content: '\e941';
+}
+.icon-requeue:before {
+    content: '\e942';
+}
+.icon-shuffle:before {
+    content: '\e943';
+}
+.icon-trashcan:before {
+    content: '\e944';
+}
+.icon-tag:before {
+    content: '\e945';
+}
+.icon-new_nav-folders:before {
+    content: '\e946';
+}
+.icon-upchevron:before {
+    content: '\e947';
+}
+.icon-agentnote:before {
+    content: '\e948';
+}
+.icon-agentvoice:before {
+    content: '\e949';
+}
+.icon-back:before {
+    content: '\e94a';
+}
+.icon-complete:before {
+    content: '\e94b';
+}
+.icon-disposition:before {
+    content: '\e94c';
+}
+.icon-hold:before {
+    content: '\e94d';
+}
+.icon-mute:before {
+    content: '\e94e';
+}
+.icon-record:before {
+    content: '\e94f';
+}
+.icon-transfer:before {
+    content: '\e950';
+}
+.icon-supervisor:before {
+    content: '\e951';
+}
+.icon-users:before {
+    content: '\e952';
+}
+.icon-searchalt:before {
+    content: '\e953';
+}
+.icon-arrow-icon:before {
+    content: '\e954';
+}
+.icon-manualpass_filled:before {
+    content: '\e955';
+}
+.icon-outboundcall-filled:before {
+    content: '\e956';
+}
+.icon-inboundcall-filled:before {
+    content: '\e957';
+}
+.icon-internet:before {
+    content: '\e958';
+}
+.icon-emptystate-scripts:before {
+    content: '\e959';
+}
+.icon-expand-details:before {
+    content: '\e95a';
+}
+.icon-collapse-details:before {
+    content: '\e95b';
+}
+.icon-copy:before {
+    content: '\e95c';
+}
+.icon-emptystate-callinprogress:before {
+    content: '\e95d';
+}
+.icon-emptystate-calls:before {
+    content: '\e95e';
+}
+.icon-timer:before {
+    content: '\e95f';
+}
+.icon-table:before {
+    content: '\e960';
+}
+.icon-graph:before {
+    content: '\e961';
+}
+.icon-gear-outlined:before {
+    content: '\e962';
+}
+.icon-gear-filled:before {
+    content: '\e963';
+}
+.icon-close-2:before {
+    content: '\e964';
+}
+.icon-caret-right:before {
+    content: '\e965';
+}

@@ -1,0 +1,27 @@
+.application-wrapper {
+    height: 100%;
+    width: 100%;
+
+    display: flex;
+    flex-flow: column;
+}
+
+.application-wrapper .top-nav-wrapper {
+    order: 0;
+    flex: none;
+    height: 66px;
+}
+
+.application-wrapper .main-wrapper {
+    order: 1;
+    flex: 1;
+
+    display: flex;
+    flex-flow: row;
+    overflow-y: auto;
+}
+
+.application-wrapper .main-wrapper .side-nav-wrapper {
+    order: 0;
+    flex: 0 1;
+}

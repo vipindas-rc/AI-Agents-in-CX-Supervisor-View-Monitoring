@@ -1,0 +1,29 @@
+<svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g filter="url(#filter0_d_2242_25788)">
+        <rect x="4" y="2" width="18" height="18" rx="9" fill="white" shape-rendering="crispEdges"/>
+        <path
+            d="M13 2C17.9706 2 22 6.02943 22 11C22 15.9706 17.9706 20 13 20C8.02943 20 4 15.9706 4 11C4 6.02943 8.02943 2 13 2ZM13 3.28571C8.73979 3.28571 5.28571 6.73979 5.28571 11C5.28571 15.2602 8.73979 18.7143 13 18.7143C17.2602 18.7143 20.7143 15.2602 20.7143 11C20.7143 6.73979 17.2602 3.28571 13 3.28571Z"
+            fill="#E60000"/>
+        <path
+            d="M16 11C16 9.3434 14.6566 8 13 8C11.3434 8 10 9.3434 10 11C10 12.6566 11.3434 14 13 14C14.6566 14 16 12.6566 16 11Z"
+            fill="#E60000"/>
+        <g filter="url(#filter1_d_2242_25788)">
+            <path
+                d="M17 11C17 8.7912 15.2088 7 13 7C10.7912 7 9 8.7912 9 11C9 13.2088 10.7912 15 13 15C15.2088 15 17 13.2088 17 11Z"
+                fill="#E60000">
+                <animate attributeName="opacity" values="0;1;0" keyTimes="0;0.5;1" dur="1.6s" begin="0.001s"
+                         repeatCount="indefinite" calcMode="spline" keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/>
+            </path>
+        </g>
+    </g>
+    <defs>
+        <filter id="filter0_d_2242_25788" x="0" y="0" width="26" height="26" filterUnits="userSpaceOnUse"
+                color-interpolation-filters="sRGB">
+            <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#0040DD" flood-opacity="0.2"/>
+        </filter>
+        <filter id="filter1_d_2242_25788" x="5" y="3" width="16" height="16" filterUnits="userSpaceOnUse"
+                color-interpolation-filters="sRGB">
+            <feDropShadow dx="0" dy="0" stdDeviation="2" flood-color="#E60000" flood-opacity="0.7"/>
+        </filter>
+    </defs>
+</svg>

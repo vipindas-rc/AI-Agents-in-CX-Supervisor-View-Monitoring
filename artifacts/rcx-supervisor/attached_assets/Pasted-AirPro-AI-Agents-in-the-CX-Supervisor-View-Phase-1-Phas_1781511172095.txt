@@ -1,0 +1,84 @@
+AirPro AI Agents in the CX Supervisor View
+Phase 1 & Phase 2 Plan — as presented by Nicole Quan
+Sourced from the kickoff transcript and the INIT-28001 / INIT-28002 spec wiki
+Prepared for Vipindas S  •  Internal working document
+
+Priority key:  P0 = committed scope    P1 = stretch / strong candidate    P2 = exploratory
+Plan Overview & Guiding Principles
+Nicole framed two initiatives — Phase 1 (Visibility/Observability, INIT-28001) and Phase 2 (Monitoring, INIT-28002) — with a third (Intervention / Collaborative Feedback, INIT-28028) deferred until technical discovery on the first two is complete. The plan is governed by a small set of principles she repeated throughout:
+Minimal UI change. Adopt the exact existing supervisor formatting; introduce no new layout. The supervisor panel will be rebuilt (React → Spring) and ~10 supervisor initiatives will eventually force a structural rebuild, so nothing should be built that gets redone.
+Effort goes to the backend. The biggest piece is tapping into engagements running in the Workflow and extracting the same kinds of metrics/info already used for Q campaigns, manual outbound, and digital.
+Scope is in Workflow Studio only. Only AirPro agents actually configured in Workflow Studio are in scope — just the configured ones (not all published Nova workers), and explicitly NOT the Phase-0 “third-party IVA via CP URL” demo agents.
+November is a target, not a guarantee. The Nov GA date is an optimistic QBR goal; something must be shown (possibly a POC or closed beta), with scope/fidelity negotiated after technical discovery. Quality over speed.
+Legacy is the integration target. Supervisor Assist work targets the legacy SA until further notice; the new SA dashboard lands ~Q3 and will coexist long-term.
+Phase 1 — Visibility / Observability (INIT-28001)
+Goal: AirPro agents and their interactions appear in the supervisor dashboard with real-time metrics (state, duration, current interactions), using the existing format — so a supervisor sees AI agents alongside humans.
+Agent List View — field mapping
+
+
+States
+Engaged — handling interactions (set automatically).
+Available — on and ready/idle (same term as human agents).
+Inactive — the new AI-specific “off” state; the equivalent of logged-out. The agent can’t self-activate, so a supervisor turns it on. Inactive agents still show in the list.
+Pending Inactive — transitional: if set Inactive while Engaged, it keeps current engagements, takes no new work, and goes fully Inactive once they disconnect or transfer (drain).
+Filters (the net-new UI items)
+Agent Type P0 — Air / Human / All (on Agent List and Interactions tabs).
+Active / Inactive / All P0 — shown only when Air agents are visible. (“Active” = on, i.e. Engaged or Available.)
+States, Channels — same as human.
+Supervisor actions
+Change agent state P0 (Nicole open to P1 after technical discovery) — toggle Available ↔ Inactive only (Engaged is automatic). Shows Pending Inactive when toggled mid-engagement. It is a supervisor action, not admin scheduling; it is the middle ground between fully unassigning an agent and engagement (e.g. temporary cost/capacity control).
+Requeue P0 — move an interaction off the AI agent to another queue/resource (the Phase-1 way to hand a conversation elsewhere). Same as human.
+Hang up P0 — supervisor ends/disconnects the interaction. Same as human.
+Interactions Tab
+Channel, Categories, Interaction Duration, From, Subject — same as human.
+Product — add “Workflow” as a value.
+Agent — AirPro ID.  Pending Disposition — N/A.
+Filters — States / Channels / Categories (same as human) + Agent Type (Air / Human / All).
+Actions — Requeue, Hang up.
+Admin
+Single checkbox P0 on agent roles: allow a supervisor to view AirPro agents — all-or-nothing (Nova has no granular access model). No new admin portal; enabling/disabling agents reuses Workflow Studio.
+Phase-1 stretch (P1 — may move to INIT-28002)
+P1  Transcripts — same as human.
+P1  Category Alerts — same as human.
+P1  Supervisor Assist — same as human.
+The big lift
+Backend work to tap into engagements running in the Workflow and extract the metrics/info above. The digital worker is a different entity (not in the existing reporting/data model), so this is the substantive engineering effort behind “same as human.”
+Phase 2 — Monitoring, Voice & Digital (INIT-28002)
+Goal: Access the interactions taking place in the Workflow and surface them live to supervisors — monitor AI conversations, see new AI signals, and (stretch) intervene. The Phase-1 P1 items become P0 here.
+P0 — committed scope
+P0  Transcripts, Category Alerts, Supervisor Assist — same as human (carried up from Phase 1).
+P0  Voice Monitoring — same as human (listen-in + transcript).
+P0  Digital Monitoring (net-new) — AI conversations have no UI, so a supervisor-facing rendering of the live conversation must be built. This is the largest genuinely new piece.
+P0  New field — Confidence score — real-time (AI agents).
+P0  New field — Sentiment — real-time, for both AirPro and human-handled interactions (populate the human side wherever sentiment is already recorded).
+P1 — intervention stretch
+P1  Pause & Barge (digital and voice) — one combined action: the supervisor stops the AI agent and takes over, then can unpause and hand it back. Never “just pause.”
+Requires a handoff phrase. Digital may be seamless/anonymous (customer needn’t notice); voice is noticeable, so a customizable phrase is needed (e.g. “let me loop in one of my coworkers”). Open: anonymous vs named barge.
+To hand to another agent/queue instead of taking over yourself, use Requeue. Transfer does not exist today and would come in a later initiative.
+P2 — exploratory
+P2  Coaching (digital and voice) — real-time training / steering when the AI goes off course. Furthest out; depends on whether AirPro/Nova can accept live feedback (Nova reportedly exploring agent states / automatic coaching).
+Priorities at a Glance
+
+Out of Scope / Deferred
+Phase 3 — Intervention / Collaborative Feedback (INIT-28028): coach live, barge & take over, and send feedback to AirPro to improve the AI. Deferred until technical discovery on Phases 1–2 is done.
+Transfer: does not exist today; planned for a later initiative.
+Phase-0 third-party-IVA agents (CP URL): out of scope — only Workflow Studio agents count.
+Structural supervisor rebuild (React → Spring): a separate, larger effort; ownership under discussion (Carill / Sergey). These initiatives are intentionally kept low-impact ahead of it.
+Granular / source-based access and per-sub-account scoping: not in Phase 1 (Nova limitation); possible future once Nova supports it.
+Open Items Nicole Flagged
+Confidence & Sentiment phase: the INIT-28001 ticket references them on interactions, but the spec wiki lists them as Phase-2 “New Fields.” Confirm which phase owns them.
+Skill label: is there an AI-agent equivalent to surface (Workflow?).
+Utilization: does it apply to AI; meaningful definition? Likely N/A for Phase 1.
+Sub-account classification: Nova has no sub-account concept — grouping per sub-account, and whether a state change bleeds across sub-accounts.
+Change-agent-state priority: stays P0 or moves to P1 after technical discovery.
+State wording: confirm the ready state is “Available” (matching humans), with “Active” used only as the filter bucket.
+November deliverable: POC vs closed beta vs GA — and the design fidelity that implies.
+Validation & Sources
+How this was validated: each line was cross-checked against the kickoff transcript and the two spec wiki pages Nicole authored (INIT-28001 Observability and INIT-28002 Monitoring); priorities (P0/P1/P2) are taken directly from those pages. Where the transcript and a ticket disagree (confidence/sentiment phase), it is flagged as an open item rather than resolved. The document was schema-validated after generation.
+Note: the Confluence wiki was read directly in the browser (the available token authenticates Jira only). INIT-28001 also carries a comment marking it a test ticket — worth confirming it is the live tracking item.
+Sources
+INIT-28001 — AI Agents in CX Supervisor View (Observability)
+INIT-28002 — Monitoring (Voice, Digital)
+Wiki — INIT-28001 Observability (field mapping)
+Wiki — INIT-28002 Monitoring (field mapping)
+Wiki — AirPro Agents in CX Supervisor View (context)

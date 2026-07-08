@@ -1,0 +1,289 @@
+@import url("https://fonts.googleapis.com/css?family=Lato:var(--caption-2-font-weight),var(--headline-2-font-weight),var(--caption-1-font-weight),500,700,var(--button-font-weight)|Inter:var(--detail-font-weight),var(--main-text-font-weight),var(--descriptor-font-weight),var(--subtitle-mini-font-weight),var(--descriptor-mini-font-weight),var(--descriptor-mini-semi-bold-font-weight)");
+
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .all-\[unset\] {
+    all: unset;
+  }
+}
+
+:root {
+  --actiongraylight: rgba(102, 102, 102, 1);
+  --body-1-font-family: "Lato", Helvetica;
+  --body-1-font-size: 14px;
+  --body-1-font-style: normal;
+  --body-1-font-weight: 400;
+  --body-1-letter-spacing: 0px;
+  --body-1-line-height: 20px;
+  --button-font-family: "Lato", Helvetica;
+  --button-font-size: 14px;
+  --button-font-style: normal;
+  --button-font-weight: 700;
+  --button-letter-spacing: 0px;
+  --button-line-height: 20px;
+  --caption-1-font-family: "Lato", Helvetica;
+  --caption-1-font-size: 12px;
+  --caption-1-font-style: normal;
+  --caption-1-font-weight: 400;
+  --caption-1-letter-spacing: 0px;
+  --caption-1-line-height: 16px;
+  --caption-2-font-family: "Lato", Helvetica;
+  --caption-2-font-size: 12px;
+  --caption-2-font-style: normal;
+  --caption-2-font-weight: 700;
+  --caption-2-letter-spacing: 0px;
+  --caption-2-line-height: 16px;
+  --descriptor-font-family: "Inter", Helvetica;
+  --descriptor-font-size: 12px;
+  --descriptor-font-style: normal;
+  --descriptor-font-weight: 400;
+  --descriptor-letter-spacing: 0px;
+  --descriptor-line-height: 18px;
+  --descriptor-mini-font-family: "Inter", Helvetica;
+  --descriptor-mini-font-size: 12px;
+  --descriptor-mini-font-style: normal;
+  --descriptor-mini-font-weight: 500;
+  --descriptor-mini-letter-spacing: 0px;
+  --descriptor-mini-line-height: 17px;
+  --descriptor-mini-semi-bold-font-family: "Inter", Helvetica;
+  --descriptor-mini-semi-bold-font-size: 12px;
+  --descriptor-mini-semi-bold-font-style: normal;
+  --descriptor-mini-semi-bold-font-weight: 600;
+  --descriptor-mini-semi-bold-letter-spacing: 0px;
+  --descriptor-mini-semi-bold-line-height: 17px;
+  --detail-font-family: "Inter", Helvetica;
+  --detail-font-size: 10px;
+  --detail-font-style: normal;
+  --detail-font-weight: 500;
+  --detail-letter-spacing: 0px;
+  --detail-line-height: 10px;
+  --headertext: rgba(255, 255, 255, 1);
+  --headertexthint: rgba(255, 255, 255, 0.48);
+  --headline-2-font-family: "Lato", Helvetica;
+  --headline-2-font-size: 24px;
+  --headline-2-font-style: normal;
+  --headline-2-font-weight: 700;
+  --headline-2-letter-spacing: 0px;
+  --headline-2-line-height: 32px;
+  --main-text-font-family: "Inter", Helvetica;
+  --main-text-font-size: 14px;
+  --main-text-font-style: normal;
+  --main-text-font-weight: 400;
+  --main-text-letter-spacing: 0px;
+  --main-text-line-height: 20px;
+  --mobile-descriptorminisemibold-font-family: "Inter", Helvetica;
+  --mobile-descriptorminisemibold-font-size: 12px;
+  --mobile-descriptorminisemibold-font-style: normal;
+  --mobile-descriptorminisemibold-font-weight: 600;
+  --mobile-descriptorminisemibold-letter-spacing: 0px;
+  --mobile-descriptorminisemibold-line-height: 16px;
+  --navb-02: rgba(249, 249, 249, 1);
+  --navf-04: rgba(18, 18, 18, 1);
+  --navline: rgba(229, 229, 229, 1);
+  --neutralf-06: rgba(18, 18, 18, 1);
+  --shadow-1:
+    0px 2px 1px -1px rgba(0, 0, 0, 0.12), 0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 1px 3px 0px rgba(0, 0, 0, 0.2);
+  --shadow-4:
+    0px 1px 10px 0px rgba(0, 0, 0, 0.12), 0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --subtitle-mini-font-family: "Inter", Helvetica;
+  --subtitle-mini-font-size: 13px;
+  --subtitle-mini-font-style: normal;
+  --subtitle-mini-font-weight: 500;
+  --subtitle-mini-letter-spacing: 0px;
+  --subtitle-mini-line-height: 19px;
+  --tabdefault: rgba(18, 18, 18, 1);
+}
+
+:root {
+  --animate-spin: spin 1s linear infinite;
+}
+
+.animate-fade-in {
+  animation: fade-in 1s var(--animation-delay, 0s) ease forwards;
+}
+
+.animate-fade-up {
+  animation: fade-up 1s var(--animation-delay, 0s) ease forwards;
+}
+
+.animate-marquee {
+  animation: marquee var(--duration) infinite linear;
+}
+
+.animate-marquee-vertical {
+  animation: marquee-vertical var(--duration) linear infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 8s infinite;
+}
+
+.animate-spin {
+  animation: var(--animate-spin);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@keyframes image-glow {
+  0% {
+    opacity: 0;
+    animation-timing-function: cubic-bezier(0.74, 0.25, 0.76, 1);
+  }
+
+  10% {
+    opacity: 0.7;
+    animation-timing-function: cubic-bezier(0.12, 0.01, 0.08, 0.99);
+  }
+
+  to {
+    opacity: 0.4;
+  }
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade-up {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes shimmer {
+  0%,
+  90%,
+  to {
+    background-position: calc(-100% - var(--shimmer-width)) 0;
+  }
+
+  30%,
+  60% {
+    background-position: calc(100% + var(--shimmer-width)) 0;
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translate(0);
+  }
+
+  to {
+    transform: translateX(calc(-100% - var(--gap)));
+  }
+}
+
+@keyframes marquee-vertical {
+  0% {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(calc(-100% - var(--gap)));
+  }
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 47.4% 11.2%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+
+    --card: transparent;
+    --card-foreground: 222.2 47.4% 11.2%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 210 40% 98%;
+
+    --ring: 215 20.2% 65.1%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 224 71% 4%;
+    --foreground: 213 31% 91%;
+
+    --muted: 223 47% 11%;
+    --muted-foreground: 215.4 16.3% 56.9%;
+
+    --accent: 216 34% 17%;
+    --accent-foreground: 210 40% 98%;
+
+    --popover: 224 71% 4%;
+    --popover-foreground: 215 20.2% 65.1%;
+
+    --border: 216 34% 17%;
+    --input: 216 34% 17%;
+
+    --card: transparent;
+    --card-foreground: 213 31% 91%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 1.2%;
+
+    --secondary: 222.2 47.4% 11.2%;
+    --secondary-foreground: 210 40% 98%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+
+    --ring: 216 34% 17%;
+
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
+  }
+}

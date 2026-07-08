@@ -1,0 +1,185 @@
+{
+    "GENERICS": {
+        "ACTIONS": {
+            "DECREASE_VALUE": "Diminuer la valeur",
+            "INCREASE_VALUE": "Augmenter la valeur"
+        },
+        "LABELS": {
+            "INPUT_MULTI_VALUE": "Valeurs multiples",
+            "MULTI_VALUE": "(Valeurs multiples)",
+            "NO_OPTIONS_TEXT": "Aucune option",
+            "SELECTED": "sélectionné",
+            "SELECTED_plural": "sélectionné"
+        },
+        "MESSAGES": {
+            "SELECT_PLACEHOLDER": "Sélectionner",
+            "SELECT_ALL": "Sélectionner tout",
+            "DESELECT_ALL": "Dessélectionner tout",
+            "NO_RESULTS_FOUND": "Aucun résultat trouvé",
+            "NOTHING_AVAILABLE": "Aucun élément disponible",
+            "LOADING": "Chargement en cours…"
+        }
+    },
+    "EXTERNAL_CREDENTIALS": {
+        "TITLE": "Identifiants externes",
+        "NEW": "Nouvel identifiant",
+        "EDIT": "Modifier l’identifiant",
+        "SAVE": "Enregistrer",
+        "CANCEL": "Annuler",
+        "OTHER_PARAMS": {
+            "TITLE": "Autres paramètres"
+        },
+        "FIELDS": {
+            "NAME": "Nom",
+            "AUTH_TYPE": "Type d’authentification",
+            "DESCRIPTION": "Description",
+            "USERNAME": "Nom d’utilisateur",
+            "PASSWORD": "Mot de passe",
+            "GRANT_TYPE": "Type d’autorisation",
+            "CLIENT_ID": "ID du client",
+            "SECRET": "Clé secrète",
+            "SUPPLY_IN": "Fourniture des identifiants du client en",
+            "TOKEN_ENDPOINT": "Point d’extrémité du jeton",
+            "SCOPE": "Portée",
+            "API_KEY": "Clé",
+            "ALGORITHM": "Algorithme",
+            "PAYLOAD": "Données utiles",
+            "EXPIRATION_TIME": "Délai d’expiration (secondes)",
+            "REQUEST_HEADER_PREFIX": "Préfixe d’en-tête de demande",
+            "QUERY_PARAM_NAME": "Nom du paramètre de requête",
+            "JWT_HEADERS": "En-têtes JWT",
+            "PRIVATE_KEY": "Clé privée",
+            "INCLUDE_ISSUED_AT": "Inclure Délivré à",
+            "ADD_JWT_TOKEN_TO": "Ajouter le jeton JWT à",
+            "SECRET_BASE64_ENCODED": "Secret chiffré en base64",
+            "SELECT_UPLOAD_FILE": "Sélectionner un fichier à téléverser",
+            "ASSERTION": "Assertion",
+            "CUSTOM_TEMPLATE_PARAMS": "Variables d’authentification",
+            "ALLOWED_BASE_URL": "URL de base autorisée"
+        },
+        "VALIDATIONS": {
+            "REQUIRED": "Ce champ est obligatoire"
+        },
+        "TOOLTIPS": {
+            "EDIT": "Modifier les détails",
+            "DELETE": "Supprimer l’identifiant externe",
+            "ALGORITHM": "Algorithme utilisé pour générer la signature JWT",
+            "SECRET": "Secret utilisé pour générer la signature JWT",
+            "PAYLOAD": "L’objet JSON qui contient la réclamation transmise par le JWT",
+            "REQUEST_HEADER_PREFIX": "Le préfixe ajouté à l’en-tête d’autorisation dans la demande",
+            "QUERY_PARAM_NAME": "Paramètres ajoutés à l’URL",
+            "JWT_HEADERS": "Ces valeurs seront ajoutées aux en-têtes JWT.",
+            "EXPIRATION_TIME": "Le temps avant que le jeton ne soit automatiquement actualisé",
+            "PRIVATE_KEY": "Clé privée pour générer la signature JWT, au format PEM PKCS#1 ou PKCS#8",
+            "ALLOWED_BASE_URL": "L’URL de base est utilisée pour valider l’URL de la demande, par exemple : .xxx. Si vous avez plusieurs URL, séparez-les par des points-virgules. "
+        },
+        "OPTIONS": {
+            "BASIC": "De base",
+            "OAUTH": "OAuth2",
+            "API_KEY": "Clé API",
+            "JWT": "JWT",
+            "CUSTOM_AUTH": "Authentification personnalisée",
+            "CLIENT_CREDENTIALS": "Identifiants du client",
+            "JWT_BEARER": "Support JWT",
+            "PASSWORD": "Mot de passe",
+            "BODY": "Corps",
+            "QUERY_PARAMS": "Paramètres des requêtes",
+            "HEADER": "En-tête"
+        },
+        "ALGORITHMS": {
+            "HS256": "HS256",
+            "HS384": "HS384",
+            "HS512": "HS512",
+            "RS256": "RS256",
+            "RS384": "RS384",
+            "RS512": "RS512",
+            "PS256": "PS256",
+            "PS384": "PS384",
+            "PS512": "PS512",
+            "ES256": "ES256",
+            "ES384": "ES384",
+            "ES512": "ES512"
+        },
+        "DESTINATION": {
+            "REQUEST_HEADER": "En-tête de demande",
+            "QUERY_PARAM": "Paramètre de requête"
+        },
+        "MESSAGES": {
+            "ADD_ERROR": "Nous éprouvons des difficultés à ajouter votre nouvel identifiant. Veuillez réessayer.",
+            "ADD_SUCCESS": "Le nouvel identifiant a bien été ajouté.",
+            "INVALID_KEY_FORMAT": "Format de clé non valide. Veuillez vérifier.",
+            "INVALID_JSON_FORMAT": "Format JSON non valide. Veuillez vérifier.",
+            "MAX_SIZE_EXCEED": "La clé doit être inférieure à 1 Mo. Veuillez vérifier.",
+            "EXPIRATION_TIME_RANGE": "L’heure d’expiration doit être définie entre 1 et 24 heures.",
+            "INVALID_BASE_URL_FORMAT": "URL de base invalide. Veuillez vérifier."
+        }
+    },
+    "FEEDBACK": {
+        "MENU_BUTTON": "Signaler un problème",
+        "MODAL": {
+            "TITLE": "Signaler un problème",
+            "DEFAULT_INPUT_TITLE": "Problème avec l’application d’agent RCX",
+            "DEFAULT_INPUT_TITLE_FOR_CRM": "Problème avec RingCX pour {{CRMPlatform}}",
+            "PLACEHOLDER_DESCRIPTION": "Entrer une brève description du problème…",
+            "REPORT_INFO": "Veuillez signaler les problèmes techniques ici. Si vous souhaitez obtenir une réponse du Service à la clientèle, veuillez plutôt <support_link>demander de l’aide</support_link>.",
+            "LABEL_DESCRIPTION": "Décrire le problème",
+            "WHEN": {
+                "LABEL": "Moment où le problème est survenu?",
+                "PLACEHOLDER": "Sélectionner le moment où le problème est survenu",
+                "OPTIONS": {
+                    "30_MIN": "Dans les 30 dernières minutes",
+                    "1_HOUR": "Dans la dernière heure",
+                    "2_HOURS": "Dans les deux dernières heures",
+                    "MORE": "Il y a plus de deux heures"
+                }
+            },
+            "FILES": {
+                "MAX_FILES_ERROR": "Le nombre total de fichiers dépasse {{count}}. Veuillez sélectionner moins de fichiers et réessayer.",
+                "MAX_SIZE_ERROR": "La taille de la pièce jointe doit être de {{size}} Mo ou moins. Veuillez choisir d’autres fichiers."
+            },
+            "TERMS": "En cliquant sur Envoyer, vous acceptez d’autoriser RingCentral à accéder à certaines informations relatives aux journaux à des fins de dépannage et de gestion des erreurs. Pour obtenir plus de renseignements sur la manière dont RingCentral traite les données personnelles, veuillez consulter nos <tos_link>Conditions d’utilisation</tos_link> et <privacy_link>Avis de confidentialité</privacy_link>.",
+            "VALIDATION": {
+                "REQUIRED": "Ce champ est obligatoire"
+            },
+            "BANNER": {
+                "SUCCESS": "Problème signalé avec succès",
+                "ERROR": "Impossible de signaler un problème"
+            },
+            "INTERNAL_ERROR": "Une erreur interne s’est produite. Veuillez réessayer.",
+            "BUTTON": {
+                "SEND": "Envoyer",
+                "CANCEL": "Annuler"
+            }
+        }
+    },
+    "FILES_UPLOAD_INPUT": {
+        "SELECT_UPLOAD_FILE": "Sélectionner un fichier à téléverser",
+        "DELETE": "Supprimer",
+        "DELETE_ALL": "Tout supprimer",
+        "FILES_UPLOADED": "{{count}} fichier téléversé",
+        "FILES_UPLOADED_plural": "{{count}} fichiers téléversés",
+        "MAX_FILES_REACHED": "Nombre maximum de fichiers téléversés"
+    },
+    "VARIABLES_LIST": {
+        "NAME": "Nom",
+        "VALUE": "Valeur",
+        "ADD": "Ajouter une variable",
+        "TOOLTIPS": {
+            "DELETE_VARIABLE": "Supprimer la variable"
+        }
+    },
+    "ARIA_LABELS": {
+        "APP_SWITCHER": "Sélecteur d’applications",
+        "CLEAR_DATE": "Effacer la date",
+        "CLEAR_TIME": "Effacer l’heure",
+        "MENU": "Menu",
+        "MAIN_NAVIGATION": "Navigation principale",
+        "SUBMENU": "Sous-menu",
+        "CLOSE": "Fermer",
+        "MINUS": "Moins",
+        "PLUS": "Plus",
+        "TEXT_INPUT": "Saisie de texte",
+        "MULTI_VALUE_INPUT": "Saisie de valeurs multiples",
+        "MORE_INFO": "Plus de renseignements"
+    }
+}
