@@ -36,7 +36,7 @@ export type MonitoringDialpadProps = {
   assetBasePath?: string;
 };
 
-type Phase = "listening" | "barged" | "takenOver";
+type Phase = "listening" | "barged" | "takenOver" | "transferring";
 
 const DEFAULT_CUSTOMER_PHONE = "(360) 765-2456";
 const MONITORING_TOOLTIP = "Unavailable when monitoring";
@@ -289,17 +289,23 @@ export function MonitoringDialpad({
 }: MonitoringDialpadProps) {
   const assets = buildMonitorAssets(assetBasePath);
   const [phase, setPhase] = useState<Phase>("listening");
+  // The monitoring phase we were in before opening the transfer surface, so
+  // backing out of Transfer returns there instead of a taken-over call.
+  const [preTransferPhase, setPreTransferPhase] =
+    useState<Phase>("listening");
   const [seconds, setSeconds] = useState(0);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [supervisorUnmuted, setSupervisorUnmuted] = useState(false);
   const [takeoverView, setTakeoverView] = useState<"call" | "transfer">("call");
   const { offset, onDragPointerDown } = useDragPosition();
 
+  const isTakeoverSurface = phase === "takenOver" || phase === "transferring";
+
   useEffect(() => {
-    if (phase === "takenOver") return;
+    if (isTakeoverSurface) return;
     const id = window.setInterval(() => setSeconds((s) => s + 1), 1000);
     return () => window.clearInterval(id);
-  }, [phase]);
+  }, [isTakeoverSurface]);
 
   useEffect(() => {
     if (!snackbarVisible) return;
@@ -326,15 +332,25 @@ export function MonitoringDialpad({
     onToast?.(`You've taken over the call from ${agentName}`);
   };
 
+  // Transfer opens the transfer surface without committing a takeover, so the
+  // supervisor can back out and land right back in monitoring. The takeover is
+  // only committed if they actually complete a transfer.
   const handleTransfer = () => {
     setSnackbarVisible(false);
+    setPreTransferPhase(phase);
     setTakeoverView("transfer");
-    setPhase("takenOver");
-    onToast?.(`You've taken over the call from ${agentName}`);
+    setPhase("transferring");
+  };
+
+  // Back from the transfer surface: return to the monitoring state we came from.
+  const handleTransferBack = () => {
+    setTakeoverView("call");
+    setPhase(preTransferPhase);
+    if (preTransferPhase === "barged") setSnackbarVisible(true);
   };
 
   /* ---------- taken-over: swap to the existing active-call dialpad ---------- */
-  if (phase === "takenOver") {
+  if (isTakeoverSurface) {
     return (
       <div
         className="fixed z-[9998]"
@@ -359,6 +375,15 @@ export function MonitoringDialpad({
             assetBasePath={assetBasePath}
             onToast={(t) => onToast?.(t.description ? `${t.title} — ${t.description}` : t.title)}
             onCallEnd={onClose}
+            onTransferBack={
+              phase === "transferring" ? handleTransferBack : undefined
+            }
+            // Once the supervisor takes a real transfer action (warm/ask-first
+            // or an immediate transfer), the takeover is committed: leave the
+            // reversible "transferring" state so a later in-dialer Back no
+            // longer bounces back to monitoring.
+            onTransferStart={() => setPhase("takenOver")}
+            onTransferComplete={() => setPhase("takenOver")}
           />
         </div>
       </div>

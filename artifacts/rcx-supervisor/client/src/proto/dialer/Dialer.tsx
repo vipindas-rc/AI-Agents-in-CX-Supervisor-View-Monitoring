@@ -70,6 +70,13 @@ export type DialerProps = DialerEventHandlers & {
    * "Transfer" action that is already mid-call).
    */
   initialView?: "call" | "transfer" | "warm" | "conference";
+  /**
+   * Called when the user presses Back at the root of the transfer view. When
+   * provided, it overrides the default (returning to the internal call view),
+   * letting a host that launched the dialer directly into transfer (e.g. the
+   * monitoring dialpad) intercept Back and return to its own surface.
+   */
+  onTransferBack?: () => void;
 };
 
 /* -------------------- DEFAULTS -------------------- */
@@ -695,6 +702,7 @@ export function Dialer(props: DialerProps): JSX.Element {
     onRecordingChange,
     manageCallMode = "v1",
     initialView = "call",
+    onTransferBack,
   } = props;
 
   const assets = buildAssets(assetBasePath);
@@ -822,6 +830,7 @@ export function Dialer(props: DialerProps): JSX.Element {
   const viewRef = useRef(view);
   const dialedRef = useRef(dialed);
   const enteredRef = useRef(enteredNumber);
+  const transferBackRef = useRef<() => void>(() => {});
   viewRef.current = view;
   dialedRef.current = dialed;
   enteredRef.current = enteredNumber;
@@ -868,7 +877,7 @@ export function Dialer(props: DialerProps): JSX.Element {
           setDialed(true);
         }
       } else if (e.key === "Escape") {
-        if (inTransfer) setView("call");
+        if (inTransfer) transferBackRef.current();
       }
     };
     window.addEventListener("keydown", onKey);
@@ -911,6 +920,18 @@ export function Dialer(props: DialerProps): JSX.Element {
     resetTransferState();
     setView("call");
   };
+  // Back from the transfer root: if a host launched us directly into transfer
+  // (e.g. the monitoring dialpad), let it reclaim control instead of falling
+  // through to the internal call view.
+  const handleTransferBack = () => {
+    if (onTransferBack) {
+      resetTransferState();
+      onTransferBack();
+      return;
+    }
+    goBackToCall();
+  };
+  transferBackRef.current = handleTransferBack;
   const handleDial = () => {
     if (enteredNumber.length > 0) setDialed(true);
   };
@@ -1015,7 +1036,7 @@ export function Dialer(props: DialerProps): JSX.Element {
               isSearchMode={isSearchMode}
               selectedContactId={selectedContactId}
               transferReady={transferReady}
-              onBack={goBackToCall}
+              onBack={handleTransferBack}
               onBackspace={handleBackspace}
               onDial={handleDial}
               onDigit={handleDigit}

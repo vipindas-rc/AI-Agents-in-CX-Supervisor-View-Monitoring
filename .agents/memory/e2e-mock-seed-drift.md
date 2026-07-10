@@ -5,3 +5,6 @@ description: Why the Playwright suite breaks after task merges that touch superv
 Rule: after any merged task that edits `supervisorMock.ts` seed pools (HUMAN_STATES/AIR_STATES), re-run `pnpm run test:e2e` — the spec hardcodes seeded agent states by index.
 **Why:** a merge silently removed "Pending Inactive" from the AirPro seed pool (it is now runtime-only, ~3s drain after switching an engaged AirPro agent off), which broke 2 of 4 e2e tests that assumed an agent seeds in that state.
 **How to apply:** disabled-Take-over coverage cannot be asserted e2e without a drain-duration test seam; keep e2e on stable seed invariants only. Also: run playwright with output redirected to a file — bare runs in the sandbox can exit -1 with no output.
+
+## Embedded Dialer host-back pattern
+The vendored `Dialer` manages its own internal `view` state; `initialView` only sets the first view. A host that mounts it directly into transfer (e.g. MonitoringDialpad takeover surface) must pass `onTransferBack` to intercept the transfer-root Back — otherwise Back falls through to the Dialer's internal call view. Keyboard Escape from transfer routes through the same host callback via a ref (keydown listener is mounted once with empty deps).
