@@ -82,7 +82,7 @@ interface AgentTablePanelProps {
   selectedStates?: string[];
   selectedChannels?: string[];
   selectedAgentGroups?: string[];
-  agentTypeFilter?: "All" | "Air" | "Human";
+  agentTypeFilter?: string[];
   statusFilter?: "All" | "Active" | "Inactive";
   visibleColumnIds?: string[];
   selectedAgentIds?: string[];
@@ -106,7 +106,7 @@ export default function AgentTablePanel({
   selectedStates = [],
   selectedChannels = [],
   selectedAgentGroups = [],
-  agentTypeFilter = "All",
+  agentTypeFilter = [] as string[],
   statusFilter = "All",
   visibleColumnIds,
   selectedAgentIds = [],
@@ -241,11 +241,15 @@ export default function AgentTablePanel({
     () =>
       agents
         .filter((a: any) => {
-          if (agentTypeFilter !== "All" && a.agentType !== agentTypeFilter) {
+          if (
+            agentTypeFilter.length > 0 &&
+            !agentTypeFilter.includes(a.agentType)
+          ) {
             return false;
           }
           if (
-            agentTypeFilter === "Air" &&
+            agentTypeFilter.includes("Air") &&
+            !agentTypeFilter.includes("Human") &&
             statusFilter !== "All" &&
             a.status !== statusFilter
           ) {
@@ -290,7 +294,10 @@ export default function AgentTablePanel({
     () =>
       interactions
         .filter((it: any) => {
-          if (agentTypeFilter !== "All" && it.agentType !== agentTypeFilter) {
+          if (
+            agentTypeFilter.length > 0 &&
+            !agentTypeFilter.includes(it.agentType)
+          ) {
             return false;
           }
           return true;
@@ -978,3 +985,9 @@ export default function AgentTablePanel({
     </RcThemeProvider>
   );
 }
+
+export { SupervisorFilter } from "./SupervisorFilter";
+export type {
+  SupervisorFilterProps,
+  SupervisorFilterOption,
+} from "./SupervisorFilter";

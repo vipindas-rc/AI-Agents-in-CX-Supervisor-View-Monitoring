@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useRoute, useSearch } from "wouter";
 
 // Kept in sync with the proto InteractionPreview component's mode union.
@@ -10,18 +10,24 @@ import AgentTablePanel, {
   interactionColumnMeta,
   agentStateOptions,
   agentFilterOptions,
+  SupervisorFilter,
 } from "@proto";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import {
   Tooltip,
   TooltipContent,
@@ -37,11 +43,13 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   ArrowLeft,
+  ChevronDown,
   ListFilter,
   Search as SearchIcon,
   Settings as SettingsIcon,
   ExternalLink,
   Menu as DragHandleIcon,
+  X,
 } from "lucide-react";
 
 // The header/tabs/Filters blue, reused in the table settings dialogs so the
@@ -75,47 +83,6 @@ const CHANNEL_OPTIONS = [
   "SMS",
   "Voice",
 ];
-
-// Inline filter-row dropdown matching the Figma design: white field, light-gray
-// border, gray ghost text for the default "All …" value, dark text once a real
-// option is chosen.
-function FilterDropdown({
-  value,
-  onValueChange,
-  allValue = "All",
-  allLabel,
-  options,
-  testId,
-}: {
-  value: string;
-  onValueChange: (value: string) => void;
-  allValue?: string;
-  allLabel: string;
-  options: { value: string; label: string }[];
-  testId: string;
-}): JSX.Element {
-  const isAll = value === allValue;
-  return (
-    <Select value={value} onValueChange={onValueChange}>
-      <SelectTrigger
-        className={`h-10 w-[300px] shrink-0 rounded border-[#e0e0e0] bg-white px-3 font-main-text text-[14px] ${
-          isAll ? "text-[#a1a1a1]" : "text-[#212121]"
-        }`}
-        data-testid={testId}
-      >
-        <SelectValue placeholder={allLabel} />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value={allValue}>{allLabel}</SelectItem>
-        {options.map((o) => (
-          <SelectItem key={o.value} value={o.value}>
-            {o.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  );
-}
 
 const topTabs = [
   "Active calls",
@@ -181,19 +148,18 @@ const sideSecondaryNav = [
 
 export const SupervisorAgents = (): JSX.Element => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [agentTypeFilter, setAgentTypeFilter] = useState<"All" | "Air" | "Human">(
-    "All",
-  );
-  const [channelFilter, setChannelFilter] = useState<string>("All");
-  const [stateFilter, setStateFilter] = useState<string>("All");
-  // Interactions-tab "All agents" picker: narrows the table to one chosen agent.
-  const [agentFilter, setAgentFilter] = useState<string>("All");
+  // All filter states are string arrays — empty array means "no filter" (show all).
+  const [agentTypeFilter, setAgentTypeFilter] = useState<string[]>([]);
+  const [channelFilter, setChannelFilter] = useState<string[]>([]);
+  const [stateFilter, setStateFilter] = useState<string[]>([]);
+  // Interactions-tab agent picker — empty = show all agents.
+  const [agentFilter, setAgentFilter] = useState<string[]>([]);
 
   // The filter row is closed by default; the "Filters" button toggles it open.
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   // Interactions-tab filters (channel is shared with the Agents tab).
-  const [categoryFilter, setCategoryFilter] = useState<string>("All");
+  const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
 
   // URL-driven tab state (deep-linkable): Interactions is the default landing
   // tab (clean URL, no param); the Agents tab is addressable via ?tab=agents.
@@ -288,23 +254,31 @@ export const SupervisorAgents = (): JSX.Element => {
     [setActiveTab],
   );
 
-  // The State filter offers exactly the states present in the table for the
-  // selected agent type (human states for Human, AirPro states for AirPro).
-  const stateOptionsForType = agentStateOptions[agentTypeFilter] ?? [];
+  // State options constrained by the selected agent types. Empty selection shows
+  // the union of all states. Selecting one type shows only that type's states.
+  const stateOptionsForType = useMemo(() => {
+    if (agentTypeFilter.length === 0) return agentStateOptions.All;
+    return Array.from(
+      new Set(
+        agentTypeFilter.flatMap(
+          (t) => agentStateOptions[t as "Air" | "Human"] ?? [],
+        ),
+      ),
+    );
+  }, [agentTypeFilter]);
 
-  // Agent-type filter (shared by both tabs). Changing it also clamps the Agents
-  // tab State selection to a value valid for the new type.
-  const handleAgentTypeChange = useCallback(
-    (value: string) => {
-      const next = value as "All" | "Air" | "Human";
-      setAgentTypeFilter(next);
-      const valid = agentStateOptions[next] ?? [];
-      if (stateFilter !== "All" && !valid.includes(stateFilter)) {
-        setStateFilter("All");
-      }
-    },
-    [stateFilter],
-  );
+  // Agent-type filter (shared by both tabs). Changing it drops any state
+  // selections that are no longer valid for the new type set.
+  const handleAgentTypeChange = useCallback((values: string[]) => {
+    setAgentTypeFilter(values);
+    if (values.length > 0) {
+      const validStates = new Set(
+        values.flatMap((t) => agentStateOptions[t as "Air" | "Human"] ?? []),
+      );
+      setStateFilter((prev) => prev.filter((s) => validStates.has(s)));
+    }
+    // If no types selected all states are valid — keep existing state selections.
+  }, []);
 
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [visibleCols, setVisibleCols] = useState<Record<string, boolean>>(() =>
@@ -352,11 +326,11 @@ export const SupervisorAgents = (): JSX.Element => {
     });
   };
 
-  const selectedStates = stateFilter !== "All" ? [stateFilter] : [];
-  const selectedChannels = channelFilter !== "All" ? [channelFilter] : [];
-  const selectedCategories =
-    categoryFilter !== "All" ? [categoryFilter] : [];
-  const selectedAgentIds = agentFilter !== "All" ? [agentFilter] : [];
+  // Arrays are now the direct filter state — pass through unchanged.
+  const selectedStates = stateFilter;
+  const selectedChannels = channelFilter;
+  const selectedCategories = categoryFilter;
+  const selectedAgentIds = agentFilter;
   // Order matters: columns render in the saved drag order, Agent column first.
   const visibleColumnIds = colOrder.filter(
     (id) => id === "fullName" || visibleCols[id],
@@ -662,31 +636,31 @@ export const SupervisorAgents = (): JSX.Element => {
               className="flex shrink-0 items-center gap-3 border-b border-[#0000001a] bg-white px-5 py-3"
               data-testid="filter-row"
             >
-              {/* Agents tab: exactly 3 dropdowns — Channel, Agent type, State.
-                  The State options are conditional on the selected Agent type. */}
+              {/* Agents tab: Channel, Agent type, State (State options constrained
+                  by the selected Agent types). */}
               {!isInteractions && (
                 <>
-                  <FilterDropdown
-                    value={channelFilter}
-                    onValueChange={setChannelFilter}
-                    allLabel="All channels"
+                  <SupervisorFilter
+                    values={channelFilter}
+                    onValuesChange={setChannelFilter}
+                    placeholder="All channels"
                     options={CHANNEL_OPTIONS.map((c) => ({
                       value: c,
                       label: c,
                     }))}
                     testId="select-channel"
                   />
-                  <FilterDropdown
-                    value={agentTypeFilter}
-                    onValueChange={handleAgentTypeChange}
-                    allLabel="All agent types"
+                  <SupervisorFilter
+                    values={agentTypeFilter}
+                    onValuesChange={handleAgentTypeChange}
+                    placeholder="All agent types"
                     options={AGENT_TYPE_OPTIONS}
                     testId="select-agent-type"
                   />
-                  <FilterDropdown
-                    value={stateFilter}
-                    onValueChange={setStateFilter}
-                    allLabel="All states"
+                  <SupervisorFilter
+                    values={stateFilter}
+                    onValuesChange={setStateFilter}
+                    placeholder="All states"
                     options={stateOptionsForType.map((s) => ({
                       value: s,
                       label: s,
@@ -695,41 +669,40 @@ export const SupervisorAgents = (): JSX.Element => {
                   />
                 </>
               )}
-              {/* Interactions tab: All agents, All channels, All categories,
-                  All agent types (in that exact order). */}
+              {/* Interactions tab: Agent, Channel, Category, Agent type. */}
               {isInteractions && (
                 <>
-                  <FilterDropdown
-                    value={agentFilter}
-                    onValueChange={setAgentFilter}
-                    allLabel="All agents"
+                  <SupervisorFilter
+                    values={agentFilter}
+                    onValuesChange={setAgentFilter}
+                    placeholder="All agents"
                     options={agentFilterOptions}
                     testId="select-agent"
                   />
-                  <FilterDropdown
-                    value={channelFilter}
-                    onValueChange={setChannelFilter}
-                    allLabel="All channels"
+                  <SupervisorFilter
+                    values={channelFilter}
+                    onValuesChange={setChannelFilter}
+                    placeholder="All channels"
                     options={CHANNEL_OPTIONS.map((c) => ({
                       value: c,
                       label: c,
                     }))}
                     testId="select-channel"
                   />
-                  <FilterDropdown
-                    value={categoryFilter}
-                    onValueChange={setCategoryFilter}
-                    allLabel="All categories"
+                  <SupervisorFilter
+                    values={categoryFilter}
+                    onValuesChange={setCategoryFilter}
+                    placeholder="All categories"
                     options={CATEGORY_OPTIONS.map((c) => ({
                       value: c.id,
                       label: c.label,
                     }))}
                     testId="select-category"
                   />
-                  <FilterDropdown
-                    value={agentTypeFilter}
-                    onValueChange={handleAgentTypeChange}
-                    allLabel="All agent types"
+                  <SupervisorFilter
+                    values={agentTypeFilter}
+                    onValuesChange={handleAgentTypeChange}
+                    placeholder="All agent types"
                     options={AGENT_TYPE_OPTIONS}
                     testId="select-agent-type"
                   />

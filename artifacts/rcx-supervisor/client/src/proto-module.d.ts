@@ -6,7 +6,7 @@ declare module "@proto" {
     selectedStates?: string[];
     selectedChannels?: string[];
     selectedAgentGroups?: string[];
-    agentTypeFilter?: "All" | "Air" | "Human";
+    agentTypeFilter?: string[];
     statusFilter?: "All" | "Active" | "Inactive";
     visibleColumnIds?: string[];
     selectedAgentIds?: string[];
@@ -28,4 +28,18 @@ declare module "@proto" {
   export const interactionColumnMeta: { id: string; label: string }[];
   export const agentStateOptions: Record<"All" | "Air" | "Human", string[]>;
   export const agentFilterOptions: { value: string; label: string }[];
+
+  export interface SupervisorFilterOption {
+    value: string;
+    label: string;
+  }
+  export interface SupervisorFilterProps {
+    values: string[];
+    onValuesChange: (values: string[]) => void;
+    placeholder: string;
+    options: SupervisorFilterOption[];
+    testId?: string;
+    ariaLabel?: string;
+  }
+  export const SupervisorFilter: ComponentType<SupervisorFilterProps>;
 }
