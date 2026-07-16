@@ -618,9 +618,18 @@ export function makeInteractions(_agents?: unknown): any[] {
         // (isCurrentlyMonitoring = !showMonitor || !showCoach || !showBargeIn.)
         // The Monitor/Coach icons are still type-gated to VOICE rows by the renderer.
         showViewInsights: true,
-        showBargeIn: true,
+        // Coach (whisper) and Barge target the human agent on a call, so they
+        // don't apply to AirPro (AI) interactions — supervisors use Take over
+        // instead. Disabled icons carry an explanatory tooltip.
+        showBargeIn: !isAir,
         showMonitor: true,
-        showCoach: true,
+        showCoach: !isAir,
+        ...(isAir
+          ? {
+              bargeInDisabledTooltip: 'Not available for AI agents',
+              coachDisabledTooltip: 'Not available for AI agents',
+            }
+          : {}),
       };
 
       if (isAir) {

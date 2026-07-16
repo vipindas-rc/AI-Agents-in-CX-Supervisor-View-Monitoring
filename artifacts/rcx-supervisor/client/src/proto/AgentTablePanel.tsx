@@ -11,7 +11,7 @@ import { SupervisorAgentList } from "./eag/containers/SupervisorAgentList/Superv
 import { DigitalInteractionTable } from "./eag/components/DigitalInteractionTable/DigitalInteractionTable";
 import AiInsightsPanel from "./eag/components/AiInsightsPanel/AiInsightsPanel";
 import { Dialer } from "./dialer/Dialer";
-import { MonitoringDialpad } from "./dialer/MonitoringDialpad";
+import { MonitoringCallWindow } from "./dialer/MonitoringCallWindow";
 import { ReassignConversationModal } from "./ReassignConversationModal";
 import { InteractionRollupModal } from "./eag/containers/SupervisorAgentList/components/InteractionRollupModal";
 import {
@@ -831,6 +831,7 @@ export default function AgentTablePanel({
                   : "You can only monitor voice calls"
               }
               isMonitoring={insightIsMonitoring}
+              isAiAgent={insightCtx.agentType === "Air"}
               onClose={() => setInsightCtx(null)}
             />
           )}
@@ -889,7 +890,7 @@ export default function AgentTablePanel({
         )}
 
         {monitoredAgentRow && (
-          <MonitoringDialpad
+          <MonitoringCallWindow
             key={monitoredAgentRow.agentId}
             agentName={monitoredAgentRow.fullName}
             agentType={monitoredAgentRow.agentType === "Air" ? "Air" : "Human"}

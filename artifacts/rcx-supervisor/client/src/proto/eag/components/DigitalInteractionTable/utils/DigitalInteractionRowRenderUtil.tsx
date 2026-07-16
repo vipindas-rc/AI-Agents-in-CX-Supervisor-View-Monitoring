@@ -176,6 +176,11 @@ export const _getCoachHoveredMenu = ({
     disabledTooltip?: string;
     disabledTooltipPlacement?: 'left' | 'bottom';
 }) => {
+    // Unavailable hover actions are hidden entirely (e.g. Coach on AI-agent
+    // rows) rather than rendered disabled with a tooltip.
+    if (!showCoach) {
+        return null;
+    }
     monitoredAgent = { ...monitoredAgent, uii: uii };
     return (
         <CoachMenu
@@ -211,6 +216,11 @@ export const _getBargeInHoveredMenu = ({
     disabledTooltip?: string;
     disabledTooltipPlacement?: 'left' | 'bottom';
 }) => {
+    // Unavailable hover actions are hidden entirely (e.g. Barge on AI-agent
+    // rows) rather than rendered disabled with a tooltip.
+    if (!showBargeIn) {
+        return null;
+    }
     monitoredAgent = { ...monitoredAgent, uii: uii };
     return (
         <BargeInMenu

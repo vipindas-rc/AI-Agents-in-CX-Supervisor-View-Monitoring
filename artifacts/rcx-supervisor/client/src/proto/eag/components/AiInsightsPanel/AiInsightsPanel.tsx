@@ -234,6 +234,9 @@ interface AiInsightsPanelProps {
   // True while a monitoring session is active for this interaction; clicking
   // Monitor again stops it (same toggle semantics as the table icon).
   isMonitoring?: boolean;
+  // True when the interaction is handled by an AirPro (AI) agent. Human-speech
+  // metrics (Speech Pace, Talk Ratio) don't apply to AI agents and are hidden.
+  isAiAgent?: boolean;
   onClose: () => void;
 }
 
@@ -250,6 +253,7 @@ const AiInsightsPanel = ({
   monitorDisabled = false,
   monitorDisabledTooltip,
   isMonitoring = false,
+  isAiAgent = false,
   onClose,
 }: AiInsightsPanelProps) => {
   const [tab, setTab] = useState<InsightTab>('notes');
@@ -304,11 +308,18 @@ const AiInsightsPanel = ({
     window.setTimeout(() => setUpdating(false), 1100);
   };
 
+  // Speech Pace and Talk Ratio describe a human speaker's delivery and
+  // conversational balance — they're meaningless for an AI agent, so they're
+  // shown only for human-handled interactions.
   const metrics = [
     { label: 'Sentiment', ...sentimentMetric(sentimentScore) },
     { label: 'Confidence', ...confidenceMetric(confidenceScore) },
-    { label: 'Speech Pace', value: '135 WPM', color: SEVERITY_COLOR.healthy },
-    { label: 'Talk Ratio', value: '49%', color: SEVERITY_COLOR.critical },
+    ...(isAiAgent
+      ? []
+      : [
+          { label: 'Speech Pace', value: '135 WPM', color: SEVERITY_COLOR.healthy },
+          { label: 'Talk Ratio', value: '49%', color: SEVERITY_COLOR.critical },
+        ]),
   ];
 
   // The bounded window of currently-visible turns plus the speaker now "typing".

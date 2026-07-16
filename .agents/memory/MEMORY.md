@@ -5,3 +5,4 @@
 - [Spring icon phantom dependency](spring-icon-phantom-dep.md) — `@ringcentral/spring-icon` can be present in node_modules but unresolvable at build time if not declared in the artifact's own package.json.
 - [E2e vs mock seed drift](e2e-mock-seed-drift.md) — re-run e2e after merges touching supervisorMock seed pools; Pending Inactive is runtime-only now.
 - [Proto component wrapper pattern](proto-component-wrapper-pattern.md) — to use a real proto component in the tsc-checked page: wrap it (with theme providers) inside proto, re-export via @proto barrel, mirror type in proto-module.d.ts.
+- [Figma MCP asset extraction](figma-mcp-asset-extraction.md) — downloadAssets is single-nodeId; exported SVGs embed parent-frame clutter, extract the balanced icon `<g>` + defs.
