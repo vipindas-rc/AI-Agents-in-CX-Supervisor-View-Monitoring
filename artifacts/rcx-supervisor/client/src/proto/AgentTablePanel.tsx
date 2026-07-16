@@ -309,6 +309,14 @@ export default function AgentTablePanel({
             showMonitor: false,
             monitorDisabledTooltip: "You can only monitor voice calls",
           };
+        })
+        // AirPro rows rank above human-agent rows by default so supervisors
+        // see AI interactions first. The table's column-header sort takes over
+        // once the user clicks a column header.
+        .sort((a: any, b: any) => {
+          const aAir = a.agentType === "Air" ? 0 : 1;
+          const bAir = b.agentType === "Air" ? 0 : 1;
+          return aAir - bAir;
         }),
     [interactions, agentTypeFilter],
   );

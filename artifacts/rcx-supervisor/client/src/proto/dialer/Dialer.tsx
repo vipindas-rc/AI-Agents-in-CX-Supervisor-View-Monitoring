@@ -77,11 +77,19 @@ export type DialerProps = DialerEventHandlers & {
    * monitoring dialpad) intercept Back and return to its own surface.
    */
   onTransferBack?: () => void;
+  /**
+   * Hides the "RingCX phone call" window title bar. Use when the dialer is
+   * embedded inside a host window that already renders its own title bar
+   * (e.g. the monitoring call window's transfer overlay).
+   */
+  hideTitleBar?: boolean;
 };
 
 /* -------------------- DEFAULTS -------------------- */
 
 const DEFAULT_CONTACTS: DialerContact[] = [
+  { id: "q1", name: "Call Queue 1", ext: "1", initials: "CQ", avatarBg: "#3690cc" },
+  { id: "q2", name: "Call Queue 2", ext: "2", initials: "CQ", avatarBg: "#3690cc" },
   { id: "c1", name: "James Avila", ext: "97655", initials: "JA", available: true, avatarBg: "#3690cc" },
   { id: "c2", name: "Department JAME_2", phone: "(650) 437-0359", initials: "DJ", avatarBg: "#3690cc" },
   { id: "c3", name: "Department_jame15", phone: "(650) 437-0359", initials: "D", avatarBg: "#3690cc" },
@@ -703,6 +711,7 @@ export function Dialer(props: DialerProps): JSX.Element {
     manageCallMode = "v1",
     initialView = "call",
     onTransferBack,
+    hideTitleBar = false,
   } = props;
 
   const assets = buildAssets(assetBasePath);
@@ -1009,7 +1018,7 @@ export function Dialer(props: DialerProps): JSX.Element {
           style={{ width: 280 }}
           data-testid="dialpad-root"
         >
-          <TitleBar assets={assets} />
+          {!hideTitleBar && <TitleBar assets={assets} />}
           {view === "call" && (
             <CallView
               timer={formatTime(seconds)}

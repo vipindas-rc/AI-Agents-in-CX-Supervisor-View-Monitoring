@@ -24,6 +24,7 @@ import {
 import { Tooltip } from "@ringcx/ui";
 
 import { TypeIcon } from "./eag/containers/Chat/TypeIcon";
+import { SupervisorFilter } from "./SupervisorFilter";
 import type {
   InsightNoteSection,
   InteractionPreviewData,
@@ -39,6 +40,294 @@ export type InteractionPreviewMode = "preview" | "expanded" | "takeover";
 
 const RC_BLUE = "#066fac";
 const FONT = "'Roboto', sans-serif";
+
+// ---------------------------------------------------------------------------
+// Transfer Message Dialog (Figma node 88-27901)
+// ---------------------------------------------------------------------------
+
+const MOCK_QUEUES = [
+  "Billing Support",
+  "Technical Support",
+  "Sales",
+  "General Inquiries",
+  "Returns & Refunds",
+];
+
+const MOCK_SKILLS = [
+  "English",
+  "Spanish",
+  "Billing Expert",
+  "Tier 2",
+  "VIP",
+];
+
+const MOCK_AGENTS = [
+  "Alice Martinez",
+  "Ben Thompson",
+  "Clara Singh",
+  "David Lee",
+  "Eva Novak",
+];
+
+type TransferTab = "queue" | "agent";
+
+function TransferMessageDialog({
+  onCancel,
+  onTransfer,
+}: {
+  onCancel: () => void;
+  onTransfer: (summary: string) => void;
+}) {
+  const [tab, setTab] = useState<TransferTab>("queue");
+  const [selectedQueues, setSelectedQueues] = useState<string[]>([]);
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [selectedAgents, setSelectedAgents] = useState<string[]>([]);
+
+  const canTransfer =
+    tab === "queue" ? selectedQueues.length > 0 : selectedAgents.length > 0;
+
+  const handleTransfer = () => {
+    const summary =
+      tab === "queue"
+        ? `Transferred to queue: ${selectedQueues.join(", ")}`
+        : `Transferred to agent: ${selectedAgents.join(", ")}`;
+    onTransfer(summary);
+  };
+
+  const tabStyle = (active: boolean): React.CSSProperties => ({
+    position: "relative",
+    display: "flex",
+    alignItems: "center",
+    height: 44,
+    padding: "0 16px",
+    border: "none",
+    background: "transparent",
+    cursor: "pointer",
+    fontFamily: FONT,
+    fontSize: 14,
+    fontWeight: active ? 600 : 400,
+    color: active ? RC_BLUE : "#757575",
+    whiteSpace: "nowrap",
+  });
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 10000,
+        background: "rgba(0,0,0,0.4)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+      onClick={onCancel}
+      data-testid="overlay-transfer-message"
+    >
+      <div
+        style={{
+          width: 400,
+          background: "#fff",
+          borderRadius: 8,
+          boxShadow: "0 8px 32px rgba(0,0,0,0.22)",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+        }}
+        onClick={(e) => e.stopPropagation()}
+        data-testid="dialog-transfer-message"
+      >
+        {/* Header */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "16px 20px",
+            borderBottom: "1px solid #e0e0e0",
+          }}
+        >
+          <span style={{ fontFamily: FONT, fontSize: 16, fontWeight: 600, color: "#121212" }}>
+            Transfer message
+          </span>
+          <button
+            type="button"
+            onClick={onCancel}
+            aria-label="Close"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 28,
+              height: 28,
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+              color: "#616161",
+              borderRadius: 4,
+            }}
+            data-testid="button-transfer-dialog-close"
+          >
+            <X size={16} strokeWidth={2} />
+          </button>
+        </div>
+
+        {/* Tabs */}
+        <div style={{ display: "flex", borderBottom: "1px solid #e0e0e0" }}>
+          <button
+            type="button"
+            style={tabStyle(tab === "queue")}
+            onClick={() => setTab("queue")}
+            data-testid="tab-transfer-by-queue"
+          >
+            By queue
+            {tab === "queue" && (
+              <span
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  height: 2,
+                  background: RC_BLUE,
+                  borderRadius: "2px 2px 0 0",
+                }}
+              />
+            )}
+          </button>
+          <button
+            type="button"
+            style={tabStyle(tab === "agent")}
+            onClick={() => setTab("agent")}
+            data-testid="tab-transfer-by-agent"
+          >
+            By agent
+            {tab === "agent" && (
+              <span
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  height: 2,
+                  background: RC_BLUE,
+                  borderRadius: "2px 2px 0 0",
+                }}
+              />
+            )}
+          </button>
+        </div>
+
+        {/* Body */}
+        <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: 16, minHeight: 200 }}>
+          {tab === "queue" ? (
+            <>
+              {/* Queue multi-select — same Filter/MultiSelect as filter dropdowns.
+                  zIndex keeps its open menu above the Skills field below it. */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, position: "relative", zIndex: 2 }}>
+                <label style={{ fontFamily: FONT, fontSize: 13, color: "#757575" }}>
+                  Queue
+                </label>
+                <div data-testid="dropdown-queue-search">
+                  <SupervisorFilter
+                    placeholder="Select a queue..."
+                    options={MOCK_QUEUES.map((q) => ({ value: q, label: q }))}
+                    values={selectedQueues}
+                    onValuesChange={setSelectedQueues}
+                    ariaLabel="Queue"
+                  />
+                </div>
+              </div>
+
+              {/* Requeue Skills multi-select — uses the same Filter/MultiSelect as filter dropdowns */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, position: "relative", zIndex: 1 }}>
+                <label style={{ fontFamily: FONT, fontSize: 13, color: "#757575" }}>
+                  Requeue Skills
+                </label>
+                <div data-testid="dropdown-requeue-skills">
+                  <SupervisorFilter
+                    placeholder="Select skills..."
+                    options={MOCK_SKILLS.map((s) => ({ value: s, label: s }))}
+                    values={selectedSkills}
+                    onValuesChange={setSelectedSkills}
+                    disabled={selectedQueues.length === 0}
+                    ariaLabel="Requeue Skills"
+                  />
+                </div>
+              </div>
+            </>
+          ) : (
+            /* By agent tab */
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <label style={{ fontFamily: FONT, fontSize: 13, color: "#757575" }}>
+                Agent
+              </label>
+              <div data-testid="dropdown-agent-select">
+                <SupervisorFilter
+                  placeholder="Select an agent..."
+                  options={MOCK_AGENTS.map((a) => ({ value: a, label: a }))}
+                  values={selectedAgents}
+                  onValuesChange={setSelectedAgents}
+                  ariaLabel="Agent"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            gap: 12,
+            padding: "14px 20px",
+            borderTop: "1px solid #e0e0e0",
+          }}
+        >
+          <button
+            type="button"
+            onClick={onCancel}
+            style={{
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+              fontFamily: FONT,
+              fontSize: 14,
+              fontWeight: 500,
+              color: RC_BLUE,
+              padding: "0 8px",
+            }}
+            data-testid="button-transfer-cancel"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={canTransfer ? handleTransfer : undefined}
+            disabled={!canTransfer}
+            style={{
+              height: 36,
+              padding: "0 20px",
+              borderRadius: 4,
+              border: "none",
+              background: canTransfer ? RC_BLUE : "#e0e0e0",
+              color: canTransfer ? "#fff" : "#9e9e9e",
+              fontFamily: FONT,
+              fontSize: 14,
+              fontWeight: 500,
+              cursor: canTransfer ? "pointer" : "not-allowed",
+            }}
+            data-testid="button-transfer-confirm"
+          >
+            Transfer
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /**
  * Makes the floating preview popup draggable by its header. Returns the
@@ -704,6 +993,7 @@ export function InteractionPreview({
   // messages. Keeping one ordered feed keeps the chat chronological.
   const [feed, setFeed] = useState<PreviewMessage[]>([]);
   const [draft, setDraft] = useState("");
+  const [transferOpen, setTransferOpen] = useState(false);
   // Index into data.liveScript for the next simulated arrival.
   const liveIdxRef = useRef(0);
   const takeoverMarkedRef = useRef(false);
@@ -1125,10 +1415,32 @@ export function InteractionPreview({
           style={{
             flexShrink: 0,
             display: "flex",
+            alignItems: "center",
             justifyContent: "flex-end",
+            gap: 8,
             padding: "20px 24px",
           }}
         >
+          <button
+            type="button"
+            onClick={() => setTransferOpen(true)}
+            style={{
+              minWidth: 60,
+              height: 36,
+              padding: "0 16px",
+              borderRadius: 10,
+              border: `1px solid ${RC_BLUE}`,
+              background: "#fff",
+              color: RC_BLUE,
+              fontSize: 15,
+              fontWeight: 500,
+              fontFamily: "'Inter', 'Roboto', sans-serif",
+              cursor: "pointer",
+            }}
+            data-testid="button-transfer"
+          >
+            Transfer
+          </button>
           {takeOverDisabled && takeOverDisabledTooltip ? (
             <Tooltip title={takeOverDisabledTooltip} placement="top">
               <span style={{ display: "inline-flex" }}>{takeOverButton}</span>
@@ -1175,46 +1487,74 @@ export function InteractionPreview({
     </button>
   );
 
+  // Injects a "Transferred" system message, closes the Transfer dialog and
+  // the whole interaction preview — the conversation has been handed off.
+  const handleTransferComplete = useCallback(
+    (summary: string) => {
+      setFeed((prev) => [
+        ...prev,
+        { who: "system", text: summary, time: nowLabel() },
+      ]);
+      setTransferOpen(false);
+      onClose();
+    },
+    [onClose],
+  );
+
+  const transferDialog = transferOpen ? (
+    <TransferMessageDialog
+      onCancel={() => setTransferOpen(false)}
+      onTransfer={handleTransferComplete}
+    />
+  ) : null;
+
   // Take-over renders embedded under the Supervisor tab (the page shows a
   // "← Supervisor" back row above it) — no fixed overlay.
   if (isTakeover) {
     return (
-      <div
-        style={{
-          display: "flex",
-          height: "100%",
-          minHeight: 0,
-          background: "#fff",
-        }}
-        data-testid="view-interaction-takeover"
-      >
-        {leftPane}
-        <ContactInfoPane data={data} trailing={contactTrailing} />
-      </div>
+      <>
+        <div
+          style={{
+            display: "flex",
+            height: "100%",
+            minHeight: 0,
+            background: "#fff",
+          }}
+          data-testid="view-interaction-takeover"
+        >
+          {leftPane}
+          <ContactInfoPane data={data} trailing={contactTrailing} />
+        </div>
+        {transferDialog}
+      </>
     );
   }
 
   if (isFullPage) {
     return (
-      <div
-        style={{
-          position: "fixed",
-          inset: 0,
-          zIndex: 9990,
-          display: "flex",
-          background: "#fff",
-        }}
-        data-testid={`view-interaction-${mode}`}
-      >
-        {leftPane}
-        <ContactInfoPane data={data} trailing={contactTrailing} />
-      </div>
+      <>
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 9990,
+            display: "flex",
+            background: "#fff",
+          }}
+          data-testid={`view-interaction-${mode}`}
+        >
+          {leftPane}
+          <ContactInfoPane data={data} trailing={contactTrailing} />
+        </div>
+        {transferDialog}
+      </>
     );
   }
 
   // Floating, non-modal preview: no scrim behind the popup and the page
   // underneath stays clickable. Closing is via the popup's X button.
   return (
+    <>
     <div
       style={{
         position: "fixed",
@@ -1256,5 +1596,7 @@ export function InteractionPreview({
         <ContactInfoPane data={data} trailing={contactTrailing} />
       </div>
     </div>
+    {transferDialog}
+  </>
   );
 }

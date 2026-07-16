@@ -15,6 +15,7 @@ export interface SupervisorFilterProps {
   onValuesChange: (values: string[]) => void;
   placeholder: string;
   options: SupervisorFilterOption[];
+  disabled?: boolean;
   testId?: string;
   ariaLabel?: string;
 }
@@ -28,6 +29,7 @@ export const SupervisorFilter: FC<SupervisorFilterProps> = ({
   onValuesChange,
   placeholder,
   options,
+  disabled = false,
   testId,
   ariaLabel,
 }) => {
@@ -37,7 +39,7 @@ export const SupervisorFilter: FC<SupervisorFilterProps> = ({
         <div data-testid={testId}>
           <Filter
             ariaLabel={ariaLabel ?? placeholder}
-            disabled={false}
+            disabled={disabled}
             openPlaceholder={placeholder}
             closedPlaceholder={placeholder}
             selectedFilters={values}

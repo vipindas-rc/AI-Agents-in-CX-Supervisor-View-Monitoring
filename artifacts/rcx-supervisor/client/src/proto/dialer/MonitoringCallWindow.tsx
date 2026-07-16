@@ -706,7 +706,6 @@ function NotesTranscriptPanel({
   const feed = useTranscriptFeed(agentName);
   const [search, setSearch] = useState("");
   const [paused, setPaused] = useState(false);
-  const [generateAll, setGenerateAll] = useState(false);
   const listRef = useRef<HTMLDivElement | null>(null);
 
   const visible = useMemo(() => {
@@ -781,28 +780,6 @@ function NotesTranscriptPanel({
         )}
       </div>
 
-      <div className="flex items-center justify-between w-full shrink-0 rounded-[8px] border border-[#e0e0e0] px-[12px] py-[8px]">
-        <p className="font-['Lato',sans-serif] text-[14px] leading-[20px] text-[#121212] m-0">
-          Generate notes for all calls
-        </p>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={generateAll}
-          onClick={() => setGenerateAll((v) => !v)}
-          data-testid="switch-generate-notes"
-          aria-label="Generate notes for all calls"
-          className={`relative w-[36px] h-[20px] rounded-full border-none cursor-pointer transition-colors p-0 ${
-            generateAll ? "bg-[#066FAC]" : "bg-[#bdbdbd]"
-          }`}
-        >
-          <span
-            className={`absolute top-[2px] size-[16px] rounded-full bg-white shadow-[0_1px_2px_rgba(0,0,0,0.3)] transition-all ${
-              generateAll ? "left-[18px]" : "left-[2px]"
-            }`}
-          />
-        </button>
-      </div>
     </div>
   );
 }
@@ -969,7 +946,7 @@ export function MonitoringCallWindow({
             <div className="flex flex-1 min-h-0 w-full">
               {/* ---------- LEFT: monitoring dialer ---------- */}
               <div
-                className={`flex flex-col shrink-0 h-full ${panelCollapsed ? "" : "border-r border-[#e0e0e0]"}`}
+                className={`relative flex flex-col shrink-0 h-full ${panelCollapsed ? "" : "border-r border-[#e0e0e0]"}`}
                 style={{ width: LEFT_W }}
                 data-testid="monitoring-dialer-panel"
               >
@@ -1027,68 +1004,82 @@ export function MonitoringCallWindow({
                     />
                   </div>
 
-                  {/* Row 2: Coach / Barge / Take over */}
+                  {/* Row 2: Coach/Barge/Take over (Human) | Take over/Transfer (AI) */}
                   <div className="flex items-start justify-center">
-                    {isHuman && !isBarged ? (
-                      <ActionButton
-                        imgSrc={assets.coach}
-                        imgAlt=""
-                        label="Coach"
-                        onClick={() => onToast?.("Coaching isn't available in this preview")}
-                        testId="button-monitor-coach"
-                      />
-                    ) : (
-                      <UnavailableTooltip
-                        label={isHuman ? MONITORING_TOOLTIP : AI_AGENT_TOOLTIP}
-                      >
-                        <ActionButton
-                          imgSrc={assets.coach}
-                          imgAlt=""
-                          label="Coach"
-                          disabled
-                          testId="button-monitor-coach"
-                        />
-                      </UnavailableTooltip>
-                    )}
                     {isHuman ? (
-                      <ActionButton
-                        imgSrc={assets.barge}
-                        imgAlt=""
-                        label="Barge"
-                        active={isBarged}
-                        onClick={isBarged ? handleStopBarge : handleBarge}
-                        testId="button-monitor-barge"
-                      />
-                    ) : (
-                      <UnavailableTooltip label={AI_AGENT_TOOLTIP}>
+                      <>
+                        {isHuman && !isBarged ? (
+                          <ActionButton
+                            imgSrc={assets.coach}
+                            imgAlt=""
+                            label="Coach"
+                            onClick={() => onToast?.("Coaching isn't available in this preview")}
+                            testId="button-monitor-coach"
+                          />
+                        ) : (
+                          <UnavailableTooltip label={MONITORING_TOOLTIP}>
+                            <ActionButton
+                              imgSrc={assets.coach}
+                              imgAlt=""
+                              label="Coach"
+                              disabled
+                              testId="button-monitor-coach"
+                            />
+                          </UnavailableTooltip>
+                        )}
                         <ActionButton
                           imgSrc={assets.barge}
                           imgAlt=""
                           label="Barge"
-                          disabled
+                          active={isBarged}
+                          onClick={isBarged ? handleStopBarge : handleBarge}
                           testId="button-monitor-barge"
                         />
-                      </UnavailableTooltip>
+                        <ActionButton
+                          imgSrc={assets.takeOver}
+                          imgAlt=""
+                          label="Take over"
+                          onClick={handleTakeOver}
+                          testId="button-monitor-take-over"
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <ActionButton
+                          imgSrc={assets.takeOver}
+                          imgAlt=""
+                          label="Take over"
+                          onClick={handleTakeOver}
+                          testId="button-monitor-take-over"
+                        />
+                        <ActionButton
+                          imgSrc={assets.transfer}
+                          imgAlt=""
+                          label="Transfer"
+                          onClick={() => setTransferOpen(true)}
+                          testId="button-monitor-transfer"
+                        />
+                        {/* Spacer keeps Take over / Transfer aligned under Mute / Keypad */}
+                        <div aria-hidden className="w-[80px]" />
+                      </>
                     )}
-                    <ActionButton
-                      imgSrc={assets.takeOver}
-                      imgAlt=""
-                      label="Take over"
-                      onClick={handleTakeOver}
-                      testId="button-monitor-take-over"
-                    />
                   </div>
 
-                  {/* Row 3: Transfer */}
-                  <div className="flex items-start justify-center">
-                    <ActionButton
-                      imgSrc={assets.transfer}
-                      imgAlt=""
-                      label="Transfer"
-                      onClick={() => setTransferOpen(true)}
-                      testId="button-monitor-transfer"
-                    />
-                  </div>
+                  {/* Row 3: Transfer (Human agents only) */}
+                  {isHuman && (
+                    <div className="flex items-start justify-center">
+                      <ActionButton
+                        imgSrc={assets.transfer}
+                        imgAlt=""
+                        label="Transfer"
+                        onClick={() => setTransferOpen(true)}
+                        testId="button-monitor-transfer"
+                      />
+                      {/* Spacers keep Transfer aligned under Mute / Coach */}
+                      <div aria-hidden className="w-[80px]" />
+                      <div aria-hidden className="w-[80px]" />
+                    </div>
+                  )}
                 </div>
 
                 <div className="mt-auto flex items-center justify-center pb-[24px] w-full">
@@ -1102,6 +1093,38 @@ export function MonitoringCallWindow({
                     <img alt="" className="size-[28px] block" src={assets.hangUp} />
                   </button>
                 </div>
+
+                {/* Transfer workflow — in-window overlay over the left panel so
+                    the notes / transcript panel remains visible behind it.     */}
+                {transferOpen && (
+                  <div
+                    className="absolute inset-0 z-10 bg-white flex flex-col overflow-hidden"
+                    data-testid="overlay-monitor-transfer"
+                  >
+                    <Dialer
+                      initialView="transfer"
+                      manageCallMode="v2"
+                      hideTitleBar
+                      style={{
+                        minHeight: 0,
+                        width: "100%",
+                        background: "transparent",
+                        padding: 0,
+                        flex: 1,
+                      }}
+                      assetBasePath={assetBasePath}
+                      onToast={(t) =>
+                        onToast?.(t.description ? `${t.title} — ${t.description}` : t.title)
+                      }
+                      onTransferBack={() => setTransferOpen(false)}
+                      onTransferComplete={() => {
+                        setTransferOpen(false);
+                        onClose();
+                      }}
+                      onCallEnd={() => setTransferOpen(false)}
+                    />
+                  </div>
+                )}
               </div>
 
               {/* ---------- RIGHT: Smart Notes / Transcript ---------- */}
@@ -1135,45 +1158,6 @@ export function MonitoringCallWindow({
         </div>
       </div>
 
-      {/* Transfer workflow overlay (same dialer flow used by AI Insights). */}
-      {transferOpen && (
-        <div
-          onClick={() => setTransferOpen(false)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.5)",
-            zIndex: 9999,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-          data-testid="overlay-monitor-transfer"
-        >
-          <div onClick={(e) => e.stopPropagation()}>
-            <Dialer
-              initialView="transfer"
-              manageCallMode="v2"
-              style={{
-                minHeight: 0,
-                width: "auto",
-                background: "transparent",
-                padding: 0,
-              }}
-              assetBasePath={assetBasePath}
-              onToast={(t) =>
-                onToast?.(t.description ? `${t.title} — ${t.description}` : t.title)
-              }
-              onTransferBack={() => setTransferOpen(false)}
-              onTransferComplete={() => {
-                setTransferOpen(false);
-                onClose();
-              }}
-              onCallEnd={() => setTransferOpen(false)}
-            />
-          </div>
-        </div>
-      )}
     </TooltipPrimitive.Provider>
   );
 }
