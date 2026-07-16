@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  BookUser,
   ChevronDown,
   ChevronUp,
   Mail,
@@ -13,6 +12,7 @@ import {
   Paperclip,
   PhoneIncoming,
   PhoneOutgoing,
+  RefreshCw,
   Send,
   Smile,
   Sparkles,
@@ -25,9 +25,14 @@ import { Tooltip } from "@ringcx/ui";
 
 import { TypeIcon } from "./eag/containers/Chat/TypeIcon";
 import type {
+  InsightNoteSection,
   InteractionPreviewData,
   PreviewHistoryEntry,
   PreviewMessage,
+} from "./mock/supervisorMock";
+import {
+  INSIGHT_NOTES,
+  INSIGHT_NOTES_UPDATED_AT,
 } from "./mock/supervisorMock";
 
 export type InteractionPreviewMode = "preview" | "expanded" | "takeover";
@@ -396,6 +401,8 @@ function HistoryEntry({
   );
 }
 
+type ContactInfoTab = "contact" | "notes";
+
 function ContactInfoPane({
   data,
   trailing,
@@ -405,6 +412,8 @@ function ContactInfoPane({
   // affordance in the embedded take-over view).
   trailing?: React.ReactNode;
 }) {
+  const [activeTab, setActiveTab] = useState<ContactInfoTab>("contact");
+
   const sectionRow = (
     title: string,
     subtitle: string,
@@ -463,65 +472,199 @@ function ContactInfoPane({
       }}
       data-testid="pane-contact-info"
     >
+      {/* Tabbed header */}
       <div
         style={{
-          height: 64,
+          height: 48,
           flexShrink: 0,
           display: "flex",
-          alignItems: "center",
-          gap: 12,
-          padding: "0 16px",
+          alignItems: "stretch",
           borderBottom: "1px solid rgba(0,0,0,0.1)",
+          padding: "0 16px",
+          gap: 0,
         }}
       >
-        <BookUser size={20} strokeWidth={1.8} color="#121212" />
-        <span
+        <div
           style={{
+            display: "flex",
+            alignItems: "stretch",
             flex: 1,
-            fontSize: 16,
-            fontWeight: 700,
-            color: "#121212",
-            fontFamily: FONT,
+            gap: 0,
           }}
         >
-          Contact info
-        </span>
-        {trailing}
+          {(
+            [
+              { id: "contact", label: "CONTACT INFO" },
+              { id: "notes", label: "NOTES" },
+            ] as { id: ContactInfoTab; label: string }[]
+          ).map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                data-testid={`contact-pane-tab-${tab.id}`}
+                style={{
+                  appearance: "none",
+                  background: "transparent",
+                  border: "none",
+                  borderBottom: isActive
+                    ? `2px solid ${RC_BLUE}`
+                    : "2px solid transparent",
+                  cursor: "pointer",
+                  padding: "0 16px 0 0",
+                  marginRight: 8,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  letterSpacing: "0.06em",
+                  color: isActive ? RC_BLUE : "#72757a",
+                  fontFamily: "'Inter', sans-serif",
+                  whiteSpace: "nowrap",
+                  transition: "color 0.15s, border-color 0.15s",
+                }}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            flexShrink: 0,
+          }}
+        >
+          {trailing}
+        </div>
       </div>
-      {sectionRow(
-        "Interaction",
-        `Queue: ${data.queueName}`,
-        { menu: true, chevron: "down" },
-        "section-interaction",
+
+      {/* Contact info tab content */}
+      {activeTab === "contact" && (
+        <>
+          {sectionRow(
+            "Interaction",
+            `Queue: ${data.queueName}`,
+            { menu: true, chevron: "down" },
+            "section-interaction",
+          )}
+          {sectionRow(
+            data.contactName,
+            data.contactPhone,
+            { menu: true, chevron: "down" },
+            "section-contact",
+          )}
+          {sectionRow(
+            "Interaction history",
+            data.historyCountLabel,
+            { chevron: "up" },
+            "section-history",
+          )}
+          <div
+            style={{
+              flex: 1,
+              minHeight: 0,
+              overflowY: "auto",
+              padding: "16px 16px 0",
+            }}
+          >
+            {data.history.map((entry, i) => (
+              <HistoryEntry
+                key={`${entry.date}-${i}`}
+                entry={entry}
+                isLast={i === data.history.length - 1}
+              />
+            ))}
+          </div>
+        </>
       )}
-      {sectionRow(
-        data.contactName,
-        data.contactPhone,
-        { menu: true, chevron: "down" },
-        "section-contact",
+
+      {/* Notes tab content — mirrors the AI Insights panel's Notes tab styling */}
+      {activeTab === "notes" && (
+        <div
+          style={{
+            flex: 1,
+            minHeight: 0,
+            overflowY: "auto",
+            fontFamily: FONT,
+            display: "flex",
+            flexDirection: "column",
+          }}
+          data-testid="contact-pane-notes"
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 24,
+              padding: "8px 16px",
+              background: "#f5f6f7",
+              boxShadow: "inset 0 1px 0 #eceff1",
+              fontSize: 13,
+              flexShrink: 0,
+            }}
+          >
+            <span
+              style={{ color: "#80868b" }}
+              data-testid="contact-pane-notes-updated"
+            >
+              Last updated at {INSIGHT_NOTES_UPDATED_AT}
+            </span>
+            <button
+              style={{
+                appearance: "none",
+                border: "none",
+                background: "transparent",
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                color: RC_BLUE,
+                fontSize: 13,
+                fontWeight: 500,
+                padding: 0,
+                fontFamily: FONT,
+              }}
+              data-testid="contact-pane-button-update-notes"
+            >
+              <RefreshCw size={14} strokeWidth={2} />
+              Update notes
+            </button>
+          </div>
+          <div style={{ padding: 16 }}>
+            {INSIGHT_NOTES.map((section: InsightNoteSection) => (
+              <div key={section.heading}>
+                <h3
+                  style={{
+                    margin: "0 0 6px",
+                    fontSize: 15,
+                    fontWeight: 700,
+                    color: "#212121",
+                  }}
+                >
+                  {section.heading}
+                </h3>
+                <ul
+                  style={{
+                    margin: "0 0 18px",
+                    paddingLeft: 20,
+                    color: "#3c4043",
+                    fontSize: 14,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {section.bullets.map((bullet, i) => (
+                    <li key={i} style={{ marginBottom: 4 }}>
+                      {bullet}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
-      {sectionRow(
-        "Interaction history",
-        data.historyCountLabel,
-        { chevron: "up" },
-        "section-history",
-      )}
-      <div
-        style={{
-          flex: 1,
-          minHeight: 0,
-          overflowY: "auto",
-          padding: "16px 16px 0",
-        }}
-      >
-        {data.history.map((entry, i) => (
-          <HistoryEntry
-            key={`${entry.date}-${i}`}
-            entry={entry}
-            isLast={i === data.history.length - 1}
-          />
-        ))}
-      </div>
     </div>
   );
 }
