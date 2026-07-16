@@ -29,6 +29,7 @@ import {
 } from "./mock/supervisorMock";
 import {
   InteractionPreview,
+  type ContextHopEvent,
   type InteractionPreviewMode,
 } from "./InteractionPreview";
 
@@ -195,6 +196,28 @@ export default function AgentTablePanel({
   // Take over is immediate and permanent for the prototype — there is no
   // hand-back, so this only ever transitions from null to an engagement id.
   const [bargedId, setBargedId] = useState<string | null>(null);
+  // Runtime hop-log additions per engagement for the Context tab: take over
+  // appends "You", transfers append "Queue - {name}" / "Agent - {name}".
+  const [contextHops, setContextHops] = useState<
+    Record<string, ContextHopEvent[]>
+  >({});
+  const appendContextHop = useCallback(
+    (engagementId: string, event: Omit<ContextHopEvent, "atMs">) => {
+      setContextHops((prev) => {
+        const existing = prev[engagementId] ?? [];
+        // "You" is appended at most once per engagement (take over is
+        // one-way in this prototype).
+        if (event.kind === "you" && existing.some((e) => e.kind === "you")) {
+          return prev;
+        }
+        return {
+          ...prev,
+          [engagementId]: [...existing, { ...event, atMs: Date.now() }],
+        };
+      });
+    },
+    [],
+  );
 
   // The AI Insights panel belongs to the Interactions tab table view: navigating
   // away — to the Agents tab, or into an Interaction preview route — closes it
@@ -390,6 +413,27 @@ export default function AgentTablePanel({
         ? (agents.find((x: any) => x.agentId === monitoredId) as any) ?? null
         : null,
     [agents, monitoredId],
+  );
+
+  // Context tab data for the voice monitoring window. Keyed off the monitored
+  // engagement (or a stable per-agent voice id when monitoring started from
+  // the Agents tab) so hop timers and chips stay stable while the window is
+  // open and runtime hops (take over / transfer) accumulate per engagement.
+  const monitoredContextEngagementId = monitoredAgentRow
+    ? monitoredEngagementId ?? `eng-${monitoredAgentRow.agentId}-voice`
+    : null;
+  const monitoredContextData = useMemo(
+    () =>
+      monitoredAgentRow && monitoredContextEngagementId
+        ? makeInteractionPreview({
+            engagementId: monitoredContextEngagementId,
+            fullName: monitoredAgentRow.fullName,
+            agentType: monitoredAgentRow.agentType,
+            sourceType: "VOICE",
+            sourceName: "Voice",
+          })
+        : null,
+    [monitoredAgentRow, monitoredContextEngagementId],
   );
 
   const onLogOut = useCallback(
@@ -641,8 +685,9 @@ export default function AgentTablePanel({
   const handleTakeOver = useCallback(() => {
     if (!insightCtx) return;
     setBargedId(insightCtx.engagementId);
+    appendContextHop(insightCtx.engagementId, { kind: "you" });
     flashRef.current(`You've taken over from ${insightCtx.agentName}`);
-  }, [insightCtx]);
+  }, [insightCtx, appendContextHop]);
 
   const onInteractionRollupClick = useCallback((e: any, agentId: string) => {
     const el = e?.currentTarget || e?.target;
@@ -744,12 +789,13 @@ export default function AgentTablePanel({
     if (!previewRow) return;
     if (bargedId !== previewRow.engagementId) {
       setBargedId(previewRow.engagementId);
+      appendContextHop(previewRow.engagementId, { kind: "you" });
       flashRef.current(
         `You've taken over from ${previewRow.fullName ?? "Agent"}`,
       );
     }
     onPreviewModeChange?.("takeover");
-  }, [previewRow, bargedId, onPreviewModeChange]);
+  }, [previewRow, bargedId, onPreviewModeChange, appendContextHop]);
 
   return (
     <RcThemeProvider>
@@ -769,6 +815,7 @@ export default function AgentTablePanel({
             <InteractionPreview
               mode="takeover"
               data={previewData}
+              contextHops={contextHops[previewData.engagementId] ?? []}
               takeOverDisabled={previewAgentPendingInactive}
               onClose={() => onPreviewClose?.()}
               onEnlarge={() => onPreviewModeChange?.("expanded")}
@@ -849,6 +896,7 @@ export default function AgentTablePanel({
           <InteractionPreview
             mode={previewMode}
             data={previewData}
+            contextHops={contextHops[previewData.engagementId] ?? []}
             takeOverDisabled={previewAgentPendingInactive}
             takeOverDisabledTooltip={
               previewAgentPendingInactive
@@ -890,7 +938,15 @@ export default function AgentTablePanel({
                     t.description ? `${t.title} — ${t.description}` : t.title,
                   )
                 }
-                onTransferComplete={() => setTransferOpen(false)}
+                onTransferComplete={(target) => {
+                  setTransferOpen(false);
+                  if (insightCtx) {
+                    appendContextHop(insightCtx.engagementId, {
+                      kind: "queue",
+                      name: target,
+                    });
+                  }
+                }}
                 onCallEnd={() => setTransferOpen(false)}
               />
             </div>
@@ -904,6 +960,17 @@ export default function AgentTablePanel({
             agentType={monitoredAgentRow.agentType === "Air" ? "Air" : "Human"}
             onClose={stopMonitoring}
             onToast={(m) => flashRef.current(m)}
+            contextData={monitoredContextData}
+            contextHops={
+              monitoredContextEngagementId
+                ? contextHops[monitoredContextEngagementId] ?? []
+                : []
+            }
+            onContextHop={(event) => {
+              if (monitoredContextEngagementId) {
+                appendContextHop(monitoredContextEngagementId, event);
+              }
+            }}
           />
         )}
 
@@ -913,6 +980,12 @@ export default function AgentTablePanel({
             onCancel={() => setReassignOpen(false)}
             onSave={(agent) => {
               setReassignOpen(false);
+              if (insightCtx) {
+                appendContextHop(insightCtx.engagementId, {
+                  kind: "agent",
+                  name: agent.name,
+                });
+              }
               flashRef.current(`Conversation reassigned to ${agent.name}`);
             }}
           />

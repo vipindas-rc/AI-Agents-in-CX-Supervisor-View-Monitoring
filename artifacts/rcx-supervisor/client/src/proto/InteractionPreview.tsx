@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  Bot,
   ChevronDown,
+  ChevronRight,
   ChevronUp,
+  Headset,
   Mail,
   Maximize2,
   MessageSquareMore,
@@ -690,18 +693,317 @@ function HistoryEntry({
   );
 }
 
-type ContactInfoTab = "contact" | "notes";
+type ContactInfoTab = "contact" | "notes" | "context";
+
+// Runtime hop-log additions: appended when the supervisor takes over ("you")
+// or transfers the interaction to a queue / agent. Owned by the parent panel
+// so the log survives preview <-> take-over remounts.
+export interface ContextHopEvent {
+  kind: "you" | "queue" | "agent";
+  name?: string;
+  atMs: number;
+}
+
+// The running hop's start time must survive remounts (preview popup ->
+// embedded take-over view), so it's anchored per engagement at module level.
+const hopAnchors = new Map<string, number>();
+const hopAnchorFor = (engagementId: string): number => {
+  let anchor = hopAnchors.get(engagementId);
+  if (anchor === undefined) {
+    anchor = Date.now();
+    hopAnchors.set(engagementId, anchor);
+  }
+  return anchor;
+};
+
+// "1m 48s" / "45s" style duration label.
+const hopDuration = (totalSec: number): string => {
+  const sec = Math.max(0, Math.round(totalSec));
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return m > 0 ? `${m}m ${String(s).padStart(2, "0")}s` : `${s}s`;
+};
+
+const contextCardStyle: React.CSSProperties = {
+  background: "#f4f5f7",
+  borderRadius: 12,
+  padding: 16,
+  fontFamily: FONT,
+};
+
+const contextPillStyle: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  background: "#fff",
+  border: "1px solid #e4e6ea",
+  borderRadius: 16,
+  padding: "5px 12px",
+  fontSize: 13,
+  color: "#121212",
+  whiteSpace: "nowrap",
+};
+
+const contextCardTitle = (title: string) => (
+  <div
+    style={{
+      fontSize: 13,
+      fontWeight: 700,
+      color: "#121212",
+      marginBottom: 12,
+    }}
+  >
+    {title}
+  </div>
+);
+
+// The four-card Context view (Figma node 88-63593): caller identity, per-hop
+// conversation summaries with Read more, the live hop-log chip chain, and
+// interaction-data chips.
+export function ContextTabContent({
+  data,
+  extraHops,
+}: {
+  data: InteractionPreviewData;
+  extraHops: ContextHopEvent[];
+}) {
+  const ctx = data.context;
+  const [expanded, setExpanded] = useState<Record<number, boolean>>({});
+
+  // Tick every second so the running hop's duration counts up live.
+  const [now, setNow] = useState(() => Date.now());
+  const hasRunningHop =
+    ctx.hops.some((h) => h.durationSec === undefined) && extraHops.length === 0;
+  useEffect(() => {
+    if (!hasRunningHop) return;
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, [hasRunningHop]);
+
+  // The running seed hop starts `currentHopStartedSecAgo` before the anchor
+  // (first time this engagement's context was rendered). The first runtime
+  // event (take over / transfer) closes it with its duration at that moment.
+  const anchor = hopAnchorFor(data.engagementId);
+  const runningStartMs = anchor - ctx.currentHopStartedSecAgo * 1000;
+  const closedAtMs = extraHops.length > 0 ? extraHops[0]!.atMs : null;
+
+  const hopChips: string[] = ctx.hops.map((hop) => {
+    if (hop.durationSec !== undefined) {
+      return `${hop.label} • ${hopDuration(hop.durationSec)}`;
+    }
+    const endMs = closedAtMs ?? now;
+    return `${hop.label} • ${hopDuration((endMs - runningStartMs) / 1000)}`;
+  });
+  extraHops.forEach((event) => {
+    if (event.kind === "you") hopChips.push("You");
+    else if (event.kind === "queue") hopChips.push(`Queue - ${event.name}`);
+    else hopChips.push(`Agent - ${event.name}`);
+  });
+
+  return (
+    <div
+      style={{
+        flex: 1,
+        minHeight: 0,
+        overflowY: "auto",
+        padding: 16,
+        display: "flex",
+        flexDirection: "column",
+        gap: 12,
+        fontFamily: FONT,
+      }}
+      data-testid="contact-pane-context"
+    >
+      {/* Caller identity */}
+      <div style={contextCardStyle} data-testid="context-card-caller">
+        {contextCardTitle("Caller identity")}
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: "50%",
+              background: "#fff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <UserRound size={20} strokeWidth={1.8} color="#9aa0a6" />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <span
+              style={{ fontSize: 14, fontWeight: 600, color: "#121212" }}
+              data-testid="context-caller-name"
+            >
+              {data.contactName}
+            </span>
+            <span style={{ fontSize: 13, color: "#72757a" }}>
+              {data.contactPhone}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Conversation summary */}
+      <div style={contextCardStyle} data-testid="context-card-summary">
+        {contextCardTitle("Conversation summary")}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {ctx.summaries.map((entry, i) => {
+            const isOpen = Boolean(expanded[i]);
+            return (
+              <div key={i} data-testid={`context-summary-${i}`}>
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: 12 }}
+                >
+                  <div
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: "50%",
+                      background: "#fff",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {entry.kind === "ai" ? (
+                      <Bot size={18} strokeWidth={1.8} color="#616161" />
+                    ) : (
+                      <Headset size={18} strokeWidth={1.8} color="#616161" />
+                    )}
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 1,
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 700,
+                        color: "#121212",
+                      }}
+                    >
+                      {entry.name}
+                    </span>
+                    <span style={{ fontSize: 12, color: "#72757a" }}>
+                      {entry.role}
+                    </span>
+                  </div>
+                </div>
+                <p
+                  style={{
+                    margin: "8px 0 0",
+                    fontSize: 13,
+                    lineHeight: "19px",
+                    color: "#3c4043",
+                    ...(isOpen
+                      ? null
+                      : {
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical" as const,
+                          overflow: "hidden",
+                        }),
+                  }}
+                >
+                  {entry.text}
+                </p>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setExpanded((prev) => ({ ...prev, [i]: !prev[i] }))
+                  }
+                  style={{
+                    appearance: "none",
+                    border: "none",
+                    background: "transparent",
+                    padding: 0,
+                    marginTop: 2,
+                    color: RC_BLUE,
+                    fontSize: 13,
+                    cursor: "pointer",
+                    fontFamily: FONT,
+                  }}
+                  data-testid={`context-summary-toggle-${i}`}
+                >
+                  {isOpen ? "Show less" : "Read more"}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Hop log */}
+      <div style={contextCardStyle} data-testid="context-card-hops">
+        {contextCardTitle("Hop log")}
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            gap: 8,
+            rowGap: 10,
+          }}
+        >
+          {hopChips.map((label, i) => (
+            <span
+              key={i}
+              style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
+            >
+              <span style={contextPillStyle} data-testid={`context-hop-${i}`}>
+                {label}
+              </span>
+              {i < hopChips.length - 1 ? (
+                <ChevronRight size={14} strokeWidth={2} color="#9aa0a6" />
+              ) : null}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Interaction data */}
+      <div style={contextCardStyle} data-testid="context-card-data">
+        {contextCardTitle("Interaction data")}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {ctx.dataChips.map((chip) => (
+            <span key={chip} style={contextPillStyle}>
+              {chip}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function ContactInfoPane({
   data,
   trailing,
+  contextHops = [],
 }: {
   data: InteractionPreviewData;
   // Header action rendered top-right (the close X per Figma, or a collapse
   // affordance in the embedded take-over view).
   trailing?: React.ReactNode;
+  contextHops?: ContextHopEvent[];
 }) {
   const [activeTab, setActiveTab] = useState<ContactInfoTab>("contact");
+
+  // Opening a different interaction resets the pane to its default tab so
+  // stale tab state never carries across interactions.
+  const engagementRef = useRef(data.engagementId);
+  useEffect(() => {
+    if (engagementRef.current !== data.engagementId) {
+      engagementRef.current = data.engagementId;
+      setActiveTab("contact");
+    }
+  }, [data.engagementId]);
 
   const sectionRow = (
     title: string,
@@ -785,6 +1087,7 @@ function ContactInfoPane({
             [
               { id: "contact", label: "CONTACT INFO" },
               { id: "notes", label: "NOTES" },
+              { id: "context", label: "CONTEXT" },
             ] as { id: ContactInfoTab; label: string }[]
           ).map((tab) => {
             const isActive = activeTab === tab.id;
@@ -954,6 +1257,11 @@ function ContactInfoPane({
           </div>
         </div>
       )}
+
+      {/* Context tab content — per-conversation context with a live hop log */}
+      {activeTab === "context" && (
+        <ContextTabContent data={data} extraHops={contextHops} />
+      )}
     </div>
   );
 }
@@ -967,6 +1275,9 @@ export interface InteractionPreviewProps {
   data: InteractionPreviewData;
   takeOverDisabled?: boolean;
   takeOverDisabledTooltip?: string;
+  // Runtime hop-log additions for this engagement (take over / transfers),
+  // owned by the parent so they survive preview <-> take-over remounts.
+  contextHops?: ContextHopEvent[];
   onClose: () => void;
   onEnlarge: () => void;
   onTakeOver: () => void;
@@ -977,6 +1288,7 @@ export function InteractionPreview({
   data,
   takeOverDisabled = false,
   takeOverDisabledTooltip,
+  contextHops,
   onClose,
   onEnlarge,
   onTakeOver,
@@ -1523,7 +1835,7 @@ export function InteractionPreview({
           data-testid="view-interaction-takeover"
         >
           {leftPane}
-          <ContactInfoPane data={data} trailing={contactTrailing} />
+          <ContactInfoPane data={data} trailing={contactTrailing} contextHops={contextHops} />
         </div>
         {transferDialog}
       </>
@@ -1544,10 +1856,11 @@ export function InteractionPreview({
           data-testid={`view-interaction-${mode}`}
         >
           {leftPane}
-          <ContactInfoPane data={data} trailing={contactTrailing} />
+          <ContactInfoPane data={data} trailing={contactTrailing} contextHops={contextHops} />
         </div>
         {transferDialog}
       </>
+
     );
   }
 
@@ -1593,7 +1906,7 @@ export function InteractionPreview({
         data-testid="popup-interaction-preview"
       >
         {leftPane}
-        <ContactInfoPane data={data} trailing={contactTrailing} />
+        <ContactInfoPane data={data} trailing={contactTrailing} contextHops={contextHops} />
       </div>
     </div>
     {transferDialog}

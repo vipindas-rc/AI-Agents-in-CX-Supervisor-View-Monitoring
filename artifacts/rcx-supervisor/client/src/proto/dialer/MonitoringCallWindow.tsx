@@ -4,7 +4,9 @@ import { ActionButton, Dialer, buildAssets, type Assets } from "./Dialer";
 import {
   transcriptTurnAt,
   type TranscriptTurn,
+  type InteractionPreviewData,
 } from "../mock/supervisorMock";
+import { ContextTabContent, type ContextHopEvent } from "../InteractionPreview";
 
 /**
  * Monitoring call window (Figma: mLIWieGGOG574eVKpKA50f, node 49:21797).
@@ -34,10 +36,16 @@ export type MonitoringCallWindowProps = {
   /** Host flash-toast hook for secondary feedback. */
   onToast?: (message: string) => void;
   assetBasePath?: string;
+  /** Per-interaction context (Context tab). Tab is hidden when omitted. */
+  contextData?: InteractionPreviewData | null;
+  /** Runtime hop-log additions owned by the host panel. */
+  contextHops?: ContextHopEvent[];
+  /** Reports live hop events (take over -> "you", transfer -> queue). */
+  onContextHop?: (event: { kind: "you" | "queue"; name?: string }) => void;
 };
 
 type Phase = "listening" | "barged" | "takenOver";
-type PanelTab = "contact" | "notes";
+type PanelTab = "contact" | "notes" | "context";
 
 const DEFAULT_CUSTOMER_PHONE = "(360) 765-2456";
 const MONITORING_TOOLTIP = "Unavailable when monitoring";
@@ -383,10 +391,12 @@ function PanelTabBar({
   assets,
   activeTab,
   onTabChange,
+  showContext = false,
 }: {
   assets: MonitorAssets;
   activeTab: PanelTab;
   onTabChange: (tab: PanelTab) => void;
+  showContext?: boolean;
 }) {
   const tabClass = (active: boolean) =>
     `relative flex h-[44px] items-center gap-[6px] px-[12px] border-none bg-transparent cursor-pointer font-['Lato',sans-serif] text-[14px] leading-[20px] whitespace-nowrap select-none transition-colors ${
@@ -421,6 +431,18 @@ function PanelTabBar({
         Notes and transcripts
         {activeTab === "notes" && underline}
       </button>
+      {showContext && (
+        <button
+          type="button"
+          className={tabClass(activeTab === "context")}
+          onClick={() => onTabChange("context")}
+          data-testid="tab-monitor-context"
+        >
+          <img alt="" className="size-[20px] block" src={assets.globe} />
+          Context
+          {activeTab === "context" && underline}
+        </button>
+      )}
     </div>
   );
 }
@@ -822,6 +844,9 @@ export function MonitoringCallWindow({
   onClose,
   onToast,
   assetBasePath = "/figmaAssets",
+  contextData = null,
+  contextHops = [],
+  onContextHop,
 }: MonitoringCallWindowProps) {
   const assets = buildMonitorAssets(assetBasePath);
   const [phase, setPhase] = useState<Phase>("listening");
@@ -877,6 +902,7 @@ export function MonitoringCallWindow({
   const handleTakeOver = () => {
     setSnackbarVisible(false);
     setPhase("takenOver");
+    onContextHop?.({ kind: "you" });
     onToast?.(`You've taken over the call from ${agentName}`);
   };
 
@@ -1117,7 +1143,8 @@ export function MonitoringCallWindow({
                         onToast?.(t.description ? `${t.title} — ${t.description}` : t.title)
                       }
                       onTransferBack={() => setTransferOpen(false)}
-                      onTransferComplete={() => {
+                      onTransferComplete={(target) => {
+                        if (target) onContextHop?.({ kind: "queue", name: target });
                         setTransferOpen(false);
                         onClose();
                       }}
@@ -1133,7 +1160,12 @@ export function MonitoringCallWindow({
                   className="relative flex flex-col flex-1 min-w-0 h-full"
                   data-testid="monitoring-notes-panel"
                 >
-                  <PanelTabBar assets={assets} activeTab={activeTab} onTabChange={setActiveTab} />
+                  <PanelTabBar
+                    assets={assets}
+                    activeTab={activeTab}
+                    onTabChange={setActiveTab}
+                    showContext={!!contextData}
+                  />
                   {activeTab === "notes" && (
                     <NotesTranscriptPanel
                       assets={assets}
@@ -1143,6 +1175,9 @@ export function MonitoringCallWindow({
                     />
                   )}
                   {activeTab === "contact" && <ContactInfoPanel customerPhone={customerPhone} />}
+                  {activeTab === "context" && contextData && (
+                    <ContextTabContent data={contextData} extraHops={contextHops} />
+                  )}
                   {notesPreview && (
                     <NotesPreviewSheet
                       state={notesPreview}

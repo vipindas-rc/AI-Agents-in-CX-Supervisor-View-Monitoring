@@ -698,7 +698,40 @@ export interface PreviewHistoryEntry {
   duration: string;
 }
 
+// ---------------------------------------------------------------------------
+// "Context" tab content (Figma node 88-63593): caller identity, per-hop
+// conversation summaries, the hop log seed, and interaction-data chips. The
+// hop log here covers only what has really happened so far — for an AI-handled
+// interaction that's the AI routing hop plus the current (still running) skill
+// hop. Live additions (take over -> "You", transfers) are appended at runtime.
+// ---------------------------------------------------------------------------
+
+export interface ContextSummaryEntry {
+  kind: 'ai' | 'human';
+  name: string;
+  role: string;
+  text: string;
+}
+
+export interface ContextHopSeed {
+  kind: 'ai' | 'queue' | 'agent';
+  label: string;
+  // Omitted on the final seed hop = the hop is still running; its duration
+  // ticks live from `currentHopStartedSecAgo`.
+  durationSec?: number;
+}
+
+export interface InteractionContextData {
+  summaries: ContextSummaryEntry[];
+  hops: ContextHopSeed[];
+  // How long ago (in seconds) the current running hop started, relative to
+  // when the interaction context is first shown.
+  currentHopStartedSecAgo: number;
+  dataChips: string[];
+}
+
 export interface InteractionPreviewData {
+  engagementId: string;
   channelLabel: string;
   sourceType: string;
   subject: string;
@@ -717,6 +750,7 @@ export interface InteractionPreviewData {
   // supervisor sees the digital interaction progressing live. Timestamps are
   // stamped by the component at arrival time.
   liveScript: PreviewMessage[];
+  context: InteractionContextData;
 }
 
 const PREVIEW_CUSTOMER = 'Andy Smith';
@@ -768,6 +802,14 @@ const initialsOf = (name: string): string =>
     .map((w) => w[0]!.toUpperCase())
     .join('') || 'A';
 
+// Small deterministic hash so per-interaction context facts (case numbers,
+// hop durations) stay stable across re-renders without storing state.
+const hashOf = (s: string): number => {
+  let h = 0;
+  for (let i = 0; i < s.length; i += 1) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return h;
+};
+
 export function makeInteractionPreview(row: any): InteractionPreviewData {
   // Handling agent identity comes from the row (AirPro "Name (Role)" -> "Name");
   // transcript copy itself is the Figma-literal conversation.
@@ -775,6 +817,12 @@ export function makeInteractionPreview(row: any): InteractionPreviewData {
     ? displayAgentName(row.fullName)
     : 'Remy Murray';
   const agentBadge = initialsOf(agentName);
+  const engagementId = String(row?.engagementId ?? 'eng-preview');
+  // AirPro identity is "Name (Role)" — the role doubles as the skill the AI
+  // is currently handling, so the hop log reads truthfully for this agent.
+  const skillMatch = String(row?.fullName ?? '').match(/\(([^)]+)\)\s*$/);
+  const aiSkill = skillMatch?.[1] ?? 'Customer Support';
+  const seed = hashOf(engagementId);
   const sourceType = String(
     row?.engagementSource?.initialEngagementSourceType ??
       row?.sourceType ??
@@ -783,7 +831,67 @@ export function makeInteractionPreview(row: any): InteractionPreviewData {
   const channelLabel =
     sourceType === 'WEB_CHAT' ? 'Live chat' : String(row?.sourceName ?? 'Chat');
 
+  // Context tab content matches this preview's conversation: the customer is
+  // locked out of their account and the agent verifies + lifts the block.
+  // Hops are truthful for the current handler: an AI agent shows only its AI
+  // hops (routing + current skill); a human agent shows the queue hop that
+  // routed the call plus the human agent's own (still running) hop.
+  const isHuman = row?.agentType === 'Human';
+  const context: InteractionContextData = isHuman
+    ? {
+        summaries: [
+          {
+            kind: 'human',
+            name: agentName,
+            role: 'Agent',
+            text: `Customer reported being unable to access their account. ${agentName} confirmed the account was blocked after several failed sign-in attempts, verified the customer's identity, and lifted the block. Customer confirmed access is restored.`,
+          },
+        ],
+        hops: [
+          {
+            kind: 'queue',
+            label: 'Queue - Customer Support',
+            durationSec: 42 + (seed % 50),
+          },
+          { kind: 'agent', label: `Agent - ${agentName}` },
+        ],
+        currentHopStartedSecAgo: 180 + (seed % 160),
+        dataChips: [
+          `Case ${100000 + (seed % 900000)}`,
+          'Account 56751',
+          'Sign-in blocked',
+          'Block lifted (updated)',
+        ],
+      }
+    : {
+        summaries: [
+          {
+            kind: 'ai',
+            name: agentName,
+            role: 'AIR Pro',
+            text: `Customer reported being unable to access their account. ${agentName} confirmed the account was blocked after several failed sign-in attempts, verified the customer's identity, and lifted the block. Customer confirmed access is restored.`,
+          },
+        ],
+        hops: [
+          {
+            kind: 'ai',
+            label: 'AIR Pro - Welcome & Routing',
+            durationSec: 96 + (seed % 45),
+          },
+          { kind: 'ai', label: `AIR Pro - ${aiSkill}` },
+        ],
+        currentHopStartedSecAgo: 180 + (seed % 160),
+        dataChips: [
+          `Case ${100000 + (seed % 900000)}`,
+          'Account 56751',
+          'Sign-in blocked',
+          'Block lifted (updated)',
+        ],
+      };
+
   return {
+    engagementId,
+    context,
     channelLabel,
     sourceType,
     subject: 'Hello! I have a problem with account. Can you help with it?',
