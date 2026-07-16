@@ -14,3 +14,4 @@ description: How to run browser e2e tests here (NixOS chromium, shared proxy bas
 - Full 4-test suite takes ~1 min; a plain 120s bash timeout can be too tight with retries — run in background or per-test with `--retries=0`.
 - Background runs: a `nohup ... &` job dies (and its log vanishes) when the bash tool session ends. Run detached AND wait in the same command: `setsid nohup pnpm run test:e2e ... > /tmp/x.log 2>&1 < /dev/null & disown; sleep 100; cat /tmp/x.log`.
 - `pnpm run test:e2e -- file.spec.ts` runs the WHOLE e2e dir (the `--` passthrough is ignored as a filter); that's fine — treat it as a full regression run.
+- The floating take-over dialer window overlaps the Active-call right-panel header at its default position and intercepts pointer events. `click({ force: true })` does NOT help (event still goes to the topmost element) — use `locator.dispatchEvent("click")` for panel-header buttons after a take-over.

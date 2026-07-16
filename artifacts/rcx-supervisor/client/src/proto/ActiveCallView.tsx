@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ChevronDown,
   ChevronUp,
@@ -15,6 +15,8 @@ import {
 
 import type { PreviewHistoryEntry } from "./mock/supervisorMock";
 import { makeInteractionPreview } from "./mock/supervisorMock";
+import { ContextTabContent } from "./InteractionPreview";
+import { useActiveCallContext, useContextHops } from "./contextHopStore";
 
 const RC_BLUE = "#066fac";
 const FONT = "'Roboto', sans-serif";
@@ -256,12 +258,37 @@ function FieldRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-export function ActiveCallView(_props: ActiveCallViewProps) {
+export function ActiveCallView({ agentId }: ActiveCallViewProps) {
   const data = makeInteractionPreview(null);
   const [panelOpen, setPanelOpen] = useState(true);
   const [detailsExpanded, setDetailsExpanded] = useState(true);
   const [contactExpanded, setContactExpanded] = useState(true);
   const [historyExpanded, setHistoryExpanded] = useState(true);
+  // Right-panel tab; state lives here (not in the collapsed check) so
+  // collapsing and reopening the panel restores the last-selected tab.
+  const [panelTab, setPanelTab] = useState<"context" | "contact">("context");
+
+  // The take-over registered which voice engagement this Active call came
+  // from; rebuild the same Context interaction data the monitoring window was
+  // showing so hop timers, summaries and chips stay consistent across the
+  // hand-off. Falls back to the stable per-agent voice engagement id used
+  // when monitoring starts from the Agents tab.
+  const activeCallCtx = useActiveCallContext(agentId ?? null);
+  const contextEngagementId =
+    activeCallCtx?.engagementId ??
+    (agentId ? `eng-${agentId}-voice` : "eng-preview");
+  const contextData = useMemo(
+    () =>
+      makeInteractionPreview({
+        engagementId: contextEngagementId,
+        fullName: activeCallCtx?.fullName,
+        agentType: activeCallCtx?.agentType,
+        sourceType: "VOICE",
+        sourceName: "Voice",
+      }),
+    [contextEngagementId, activeCallCtx?.fullName, activeCallCtx?.agentType],
+  );
+  const contextHops = useContextHops(contextEngagementId);
 
   return (
     <div
@@ -358,7 +385,7 @@ export function ActiveCallView(_props: ActiveCallViewProps) {
           }}
           data-testid="pane-activecall-contact"
         >
-          {/* Header: CONTACT INFO tab only (no Agent Assist) + collapse */}
+          {/* Header: CONTEXT + CONTACT INFO tabs (no Agent Assist) + collapse */}
           <div
             style={{
               height: 48,
@@ -369,24 +396,49 @@ export function ActiveCallView(_props: ActiveCallViewProps) {
               padding: "0 16px",
             }}
           >
-            <div style={{ display: "flex", alignItems: "stretch", flex: 1 }}>
-              <span
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  borderBottom: `2px solid ${RC_BLUE}`,
-                  padding: "0 16px 0 0",
-                  fontSize: 12,
-                  fontWeight: 700,
-                  letterSpacing: "0.06em",
-                  color: RC_BLUE,
-                  fontFamily: "'Inter', sans-serif",
-                  whiteSpace: "nowrap",
-                }}
-                data-testid="tab-activecall-contact-info"
-              >
-                CONTACT INFO
-              </span>
+            <div style={{ display: "flex", alignItems: "stretch", flex: 1, gap: 20 }}>
+              {(
+                [
+                  { id: "context", label: "CONTEXT", testId: "tab-activecall-context" },
+                  {
+                    id: "contact",
+                    label: "CONTACT INFO",
+                    testId: "tab-activecall-contact-info",
+                  },
+                ] as const
+              ).map((tab) => {
+                const active = panelTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setPanelTab(tab.id)}
+                    style={{
+                      appearance: "none",
+                      border: "none",
+                      background: "transparent",
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      padding: 0,
+                      borderBottom: active
+                        ? `2px solid ${RC_BLUE}`
+                        : "2px solid transparent",
+                      fontSize: 12,
+                      fontWeight: 700,
+                      letterSpacing: "0.06em",
+                      color: active ? RC_BLUE : "#616161",
+                      fontFamily: "'Inter', sans-serif",
+                      whiteSpace: "nowrap",
+                    }}
+                    data-testid={tab.testId}
+                    aria-selected={active}
+                    role="tab"
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
             </div>
             <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
               <button
@@ -408,6 +460,18 @@ export function ActiveCallView(_props: ActiveCallViewProps) {
             </div>
           </div>
 
+          {panelTab === "context" ? (
+            <div
+              style={{
+                flex: 1,
+                minHeight: 0,
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              <ContextTabContent data={contextData} extraHops={contextHops} />
+            </div>
+          ) : (
           <div style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
             {/* Contact accordion */}
             <SectionHeader
@@ -451,6 +515,7 @@ export function ActiveCallView(_props: ActiveCallViewProps) {
               </div>
             ) : null}
           </div>
+          )}
         </div>
       ) : null}
     </div>

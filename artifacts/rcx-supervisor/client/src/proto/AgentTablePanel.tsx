@@ -29,9 +29,13 @@ import {
 } from "./mock/supervisorMock";
 import {
   InteractionPreview,
-  type ContextHopEvent,
   type InteractionPreviewMode,
 } from "./InteractionPreview";
+import {
+  appendContextHop,
+  registerActiveCallContext,
+  useContextHops,
+} from "./contextHopStore";
 
 // Single source of truth for the agent table column ids/labels, derived directly
 // from the proto column definitions. Consumed by the page's settings dialog so
@@ -200,28 +204,11 @@ export default function AgentTablePanel({
   // Take over is immediate and permanent for the prototype — there is no
   // hand-back, so this only ever transitions from null to an engagement id.
   const [bargedId, setBargedId] = useState<string | null>(null);
-  // Runtime hop-log additions per engagement for the Context tab: take over
-  // appends "You", transfers append "Queue - {name}" / "Agent - {name}".
-  const [contextHops, setContextHops] = useState<
-    Record<string, ContextHopEvent[]>
-  >({});
-  const appendContextHop = useCallback(
-    (engagementId: string, event: Omit<ContextHopEvent, "atMs">) => {
-      setContextHops((prev) => {
-        const existing = prev[engagementId] ?? [];
-        // "You" is appended at most once per engagement (take over is
-        // one-way in this prototype).
-        if (event.kind === "you" && existing.some((e) => e.kind === "you")) {
-          return prev;
-        }
-        return {
-          ...prev,
-          [engagementId]: [...existing, { ...event, atMs: Date.now() }],
-        };
-      });
-    },
-    [],
-  );
+  // Runtime hop-log additions per engagement for the Context tab live in the
+  // module-level contextHopStore: take over appends "You", transfers append
+  // "Queue - {name}" / "Agent - {name}". The store is shared with the Active
+  // calls screen (mounted outside this panel), so the hop log survives the
+  // page's switch to the Active calls context after a voice take-over.
 
   // The AI Insights panel belongs to the Interactions tab table view: navigating
   // away — to the Agents tab, or into an Interaction preview route — closes it
@@ -439,6 +426,7 @@ export default function AgentTablePanel({
         : null,
     [monitoredAgentRow, monitoredContextEngagementId],
   );
+  const monitoredContextHops = useContextHops(monitoredContextEngagementId);
 
   const onLogOut = useCallback(
     (agentId: string) => {
@@ -773,6 +761,9 @@ export default function AgentTablePanel({
     () => (previewRow ? makeInteractionPreview(previewRow) : null),
     [previewRow],
   );
+  const previewContextHops = useContextHops(
+    previewData?.engagementId ?? null,
+  );
 
   // Take over availability tracks the AI agent's lifecycle: a draining agent
   // (Pending Inactive) can't accept a take-over hand-off.
@@ -819,7 +810,7 @@ export default function AgentTablePanel({
             <InteractionPreview
               mode="takeover"
               data={previewData}
-              contextHops={contextHops[previewData.engagementId] ?? []}
+              contextHops={previewContextHops}
               takeOverDisabled={previewAgentPendingInactive}
               onClose={() => onPreviewClose?.()}
               onEnlarge={() => onPreviewModeChange?.("expanded")}
@@ -900,7 +891,7 @@ export default function AgentTablePanel({
           <InteractionPreview
             mode={previewMode}
             data={previewData}
-            contextHops={contextHops[previewData.engagementId] ?? []}
+            contextHops={previewContextHops}
             takeOverDisabled={previewAgentPendingInactive}
             takeOverDisabledTooltip={
               previewAgentPendingInactive
@@ -965,19 +956,22 @@ export default function AgentTablePanel({
             onClose={stopMonitoring}
             onToast={(m) => flashRef.current(m)}
             contextData={monitoredContextData}
-            contextHops={
-              monitoredContextEngagementId
-                ? contextHops[monitoredContextEngagementId] ?? []
-                : []
-            }
+            contextHops={monitoredContextHops}
             onContextHop={(event) => {
               if (monitoredContextEngagementId) {
                 appendContextHop(monitoredContextEngagementId, event);
               }
             }}
-            onTakeOverCommitted={() =>
-              onTakeOverCommitted?.(monitoredAgentRow.agentId)
-            }
+            onTakeOverCommitted={() => {
+              if (monitoredContextEngagementId) {
+                registerActiveCallContext(monitoredAgentRow.agentId, {
+                  engagementId: monitoredContextEngagementId,
+                  fullName: monitoredAgentRow.fullName,
+                  agentType: monitoredAgentRow.agentType,
+                });
+              }
+              onTakeOverCommitted?.(monitoredAgentRow.agentId);
+            }}
           />
         )}
 

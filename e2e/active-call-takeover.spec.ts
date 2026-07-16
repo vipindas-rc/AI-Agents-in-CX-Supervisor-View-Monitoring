@@ -51,13 +51,39 @@ test("take over switches to Active calls with details + contact info", async ({ 
   await expect(view.getByText("(720) 715-9212")).toBeVisible();
   await expect(view.getByText("May 13, 2024 03:15PM")).toBeVisible();
 
-  // Right panel: CONTACT INFO only (no Agent Assist)
+  // Right panel: CONTEXT + CONTACT INFO tabs (no Agent Assist). Context is
+  // the default and shows the shared four-card content with the take-over
+  // "You" hop appended to the hop log.
+  await expect(view.getByTestId("tab-activecall-context")).toBeVisible();
   await expect(view.getByTestId("tab-activecall-contact-info")).toBeVisible();
   await expect(view.getByText("Agent Assist")).toHaveCount(0);
-  await expect(view.getByText("Rafael Mobley")).toBeVisible();
+  await expect(view.getByTestId("context-card-caller")).toBeVisible();
+  await expect(view.getByTestId("context-card-summary")).toBeVisible();
+  await expect(view.getByTestId("context-card-hops")).toBeVisible();
+  await expect(view.getByTestId("context-card-data")).toBeVisible();
+  await expect(view.getByTestId("context-card-hops")).toContainText("You");
+
+  // Contact info tab still shows the profile + interaction history.
+  // dispatchEvent: the floating (draggable) take-over dialer window can
+  // overlap the panel header at its default position and intercept real
+  // pointer events; in the product the supervisor just drags it aside.
+  await view
+    .getByTestId("tab-activecall-contact-info")
+    .dispatchEvent("click");
   await expect(view.getByTestId("section-activecall-history")).toContainText(
     "Interaction history",
   );
+  await expect(view.getByText("Rafael Mobley")).toBeVisible();
+
+  // Collapse and reopen the panel: the last-selected tab is restored.
+  await view
+    .getByTestId("button-activecall-collapse-panel")
+    .dispatchEvent("click");
+  await expect(view.getByTestId("tab-activecall-contact-info")).toHaveCount(0);
+  await view
+    .getByTestId("button-activecall-open-panel")
+    .dispatchEvent("click");
+  await expect(view.getByTestId("section-activecall-history")).toBeVisible();
 
   // The floating take-over dialer stays open above the new view
   await expect(page.getByTestId("monitoring-dialpad-takeover")).toBeVisible();
