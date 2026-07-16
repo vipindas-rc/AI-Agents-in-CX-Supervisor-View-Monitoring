@@ -99,6 +99,9 @@ interface AgentTablePanelProps {
   onPreviewOpen?: (engagementId: string) => void;
   onPreviewModeChange?: (mode: InteractionPreviewMode) => void;
   onPreviewClose?: () => void;
+  // Fired when a voice take-over commits so the page can switch to the
+  // Active calls context for that agent's call.
+  onTakeOverCommitted?: (agentId: string) => void;
 }
 
 export default function AgentTablePanel({
@@ -121,6 +124,7 @@ export default function AgentTablePanel({
   onPreviewOpen,
   onPreviewModeChange,
   onPreviewClose,
+  onTakeOverCommitted,
 }: AgentTablePanelProps) {
   const [agents, setAgents] = useState(() => makeAgents(25));
   const [interactions, setInteractions] = useState(() => makeInteractions());
@@ -971,6 +975,9 @@ export default function AgentTablePanel({
                 appendContextHop(monitoredContextEngagementId, event);
               }
             }}
+            onTakeOverCommitted={() =>
+              onTakeOverCommitted?.(monitoredAgentRow.agentId)
+            }
           />
         )}
 
@@ -1073,3 +1080,5 @@ export type {
   SupervisorFilterProps,
   SupervisorFilterOption,
 } from "./SupervisorFilter";
+export { ActiveCallView } from "./ActiveCallView";
+export type { ActiveCallViewProps } from "./ActiveCallView";

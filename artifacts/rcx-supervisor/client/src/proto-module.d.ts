@@ -21,6 +21,8 @@ declare module "@proto" {
     onPreviewOpen?: (engagementId: string) => void;
     onPreviewModeChange?: (mode: "preview" | "expanded" | "takeover") => void;
     onPreviewClose?: () => void;
+    // Voice take-over committed — page switches to the Active calls context.
+    onTakeOverCommitted?: (agentId: string) => void;
   }
   const AgentTablePanel: ComponentType<ProtoAgentTablePanelProps>;
   export default AgentTablePanel;
@@ -42,4 +44,9 @@ declare module "@proto" {
     ariaLabel?: string;
   }
   export const SupervisorFilter: ComponentType<SupervisorFilterProps>;
+
+  export interface ActiveCallViewProps {
+    agentId?: string | null;
+  }
+  export const ActiveCallView: ComponentType<ActiveCallViewProps>;
 }

@@ -6,6 +6,7 @@ import { useLocation, useRoute, useSearch } from "wouter";
 type InteractionPreviewMode = "preview" | "expanded" | "takeover";
 
 import AgentTablePanel, {
+  ActiveCallView,
   agentColumnMeta,
   interactionColumnMeta,
   agentStateOptions,
@@ -187,6 +188,32 @@ export const SupervisorAgents = (): JSX.Element => {
   useEffect(() => {
     if (previewRouteMatched && !previewMode) navigate("/");
   }, [previewRouteMatched, previewMode, navigate]);
+
+  // URL-addressable Active calls view (deep-linkable / refresh-safe): after a
+  // voice take-over commits, the page routes to /active-call/:agentId and the
+  // top tab bar switches from "Supervisor" to "Active calls".
+  const [activeCallMatched, activeCallParams] = useRoute(
+    "/active-call/:agentId",
+  );
+  const activeCallAgentId = activeCallMatched
+    ? (activeCallParams?.agentId ?? null)
+    : null;
+
+  const handleTakeOverCommitted = useCallback(
+    (agentId: string) => navigate(`/active-call/${agentId}`),
+    [navigate],
+  );
+
+  // The top tab bar is URL-driven: the Active calls tab is active while the
+  // take-over route is open; clicking Supervisor returns to the table. Other
+  // top tabs are static chrome in this prototype.
+  const topTab = activeCallMatched ? "Active calls" : "Supervisor";
+  const handleTopTabChange = useCallback(
+    (value: string) => {
+      if (value === "Supervisor" && activeCallMatched) navigate("/");
+    },
+    [navigate, activeCallMatched],
+  );
 
   // A preview deep link always belongs to the Interactions tab (preview URLs
   // never carry ?tab=agents, so the URL-derived tab is already Interactions).
@@ -542,7 +569,7 @@ export const SupervisorAgents = (): JSX.Element => {
                 />
               </Button>
             </div>
-            <Tabs defaultValue="Supervisor" className="w-full">
+            <Tabs value={topTab} onValueChange={handleTopTabChange} className="w-full">
               <TabsList className="h-auto justify-start rounded-none border-0 bg-transparent p-0">
                 {topTabs.map((tab) => (
                   <TabsTrigger
@@ -556,7 +583,7 @@ export const SupervisorAgents = (): JSX.Element => {
               </TabsList>
             </Tabs>
           </div>
-          {previewMode === "takeover" ? (
+          {activeCallMatched ? null : previewMode === "takeover" ? (
             // Embedded take-over: the Supervisor header/filters give way to a
             // back row, and the taken-over conversation fills the area below.
             <div
@@ -712,7 +739,21 @@ export const SupervisorAgents = (): JSX.Element => {
           )}
           </>
           )}
-          <div className="min-h-0 flex-1 overflow-hidden">
+          {activeCallMatched ? (
+            // Active calls view for the taken-over voice call. The supervisor
+            // table below stays mounted (zero-height) so the floating take-over
+            // dialer window and monitoring session survive the tab switch.
+            <div className="min-h-0 flex-1 overflow-hidden">
+              <ActiveCallView agentId={activeCallAgentId} />
+            </div>
+          ) : null}
+          <div
+            className={
+              activeCallMatched
+                ? "h-0 overflow-hidden"
+                : "min-h-0 flex-1 overflow-hidden"
+            }
+          >
             <AgentTablePanel
               activeTab={activeTab}
               searchValue={searchQuery}
@@ -731,6 +772,7 @@ export const SupervisorAgents = (): JSX.Element => {
               onPreviewOpen={openPreview}
               onPreviewModeChange={changePreviewMode}
               onPreviewClose={closePreview}
+              onTakeOverCommitted={handleTakeOverCommitted}
             />
           </div>
 

@@ -35,6 +35,11 @@ export type MonitoringCallWindowProps = {
   onClose: () => void;
   /** Host flash-toast hook for secondary feedback. */
   onToast?: (message: string) => void;
+  /**
+   * Fired when a voice take-over commits (the supervisor now owns the call),
+   * so the host page can switch to the Active calls context.
+   */
+  onTakeOverCommitted?: () => void;
   assetBasePath?: string;
   /** Per-interaction context (Context tab). Tab is hidden when omitted. */
   contextData?: InteractionPreviewData | null;
@@ -843,6 +848,7 @@ export function MonitoringCallWindow({
   avatarBg = "#509ac4",
   onClose,
   onToast,
+  onTakeOverCommitted,
   assetBasePath = "/figmaAssets",
   contextData = null,
   contextHops = [],
@@ -904,6 +910,8 @@ export function MonitoringCallWindow({
     setPhase("takenOver");
     onContextHop?.({ kind: "you" });
     onToast?.(`You've taken over the call from ${agentName}`);
+    // Voice take-over committed — the host page switches to Active calls.
+    onTakeOverCommitted?.();
   };
 
   /* ---------- taken-over: swap to the existing active-call dialpad ---------- */
@@ -932,6 +940,9 @@ export function MonitoringCallWindow({
             assetBasePath={assetBasePath}
             onToast={(t) => onToast?.(t.description ? `${t.title} — ${t.description}` : t.title)}
             onCallEnd={onClose}
+            // Completing a transfer hands the call off: close the popout but
+            // leave the page's Active calls context (route) untouched.
+            onTransferComplete={onClose}
           />
         </div>
       </div>
