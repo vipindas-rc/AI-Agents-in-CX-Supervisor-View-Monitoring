@@ -34,6 +34,7 @@ export type DialerEventHandlers = {
   onTransferStart?: (target: string) => void;
   onTransferComplete?: (target: string) => void;
   onTransferCancel?: () => void;
+  onRequeueComplete?: (queueName: string) => void;
   onParticipantAdd?: (participantId: string) => void;
   onParticipantRemove?: (participantId: string) => void;
   onHoldChange?: (party: "customer" | "consult", onHold: boolean) => void;
@@ -69,7 +70,7 @@ export type DialerProps = DialerEventHandlers & {
    * directly into the transfer workflow (e.g. when launched from a host
    * "Transfer" action that is already mid-call).
    */
-  initialView?: "call" | "transfer" | "warm" | "conference";
+  initialView?: "call" | "transfer" | "requeue" | "warm" | "conference";
   /**
    * Called when the user presses Back at the root of the transfer view. When
    * provided, it overrides the default (returning to the internal call view),
@@ -77,6 +78,13 @@ export type DialerProps = DialerEventHandlers & {
    * monitoring dialpad) intercept Back and return to its own surface.
    */
   onTransferBack?: () => void;
+  /**
+   * Called when the user presses Back at the root of the requeue view. When
+   * provided, it overrides the default (returning to the internal call view),
+   * letting a host that launched the dialer directly into requeue (e.g. the
+   * monitoring dialpad) intercept Back and return to its own surface.
+   */
+  onRequeueBack?: () => void;
   /**
    * Hides the "RingCX phone call" window title bar. Use when the dialer is
    * embedded inside a host window that already renders its own title bar
@@ -171,6 +179,9 @@ export type Assets = {
   phoneOutlineSmall: string;
   personSilhouette: string;
   removeMember: string;
+  agentMd: string;
+  previous: string;
+  chooseSkill: string;
 };
 
 export function buildAssets(base: string): Assets {
@@ -212,6 +223,9 @@ export function buildAssets(base: string): Assets {
     phoneOutlineSmall: `${p}/icon-phone-outline-small.svg`,
     personSilhouette: `${p}/icon-person-silhouette.svg`,
     removeMember: `${p}/icon-remove-member.svg`,
+    agentMd: `${p}/icon-agent-md.svg`,
+    previous: `${p}/icon-previous.svg`,
+    chooseSkill: `${p}/icon-choose-skill.svg`,
   };
 }
 
@@ -686,9 +700,296 @@ function TransferFooter({ dialed, onAskFirst, onTransfer, assets }: TransferFoot
   );
 }
 
+/* -------------------- REQUEUE DATA + PIECES -------------------- */
+
+export type RequeueWaitLevel = "ready" | "short" | "long" | "busy" | "first" | "none";
+
+export type RequeueQueue = {
+  id: string;
+  name: string;
+  group: string;
+  waitLevel: RequeueWaitLevel;
+  /** Longest current waiting time, e.g. "53s" — empty for ready/none. */
+  waitTime?: string;
+  availableAgents: number;
+  loggedInAgents: number;
+};
+
+export const DEFAULT_QUEUES: RequeueQueue[] = [
+  { id: "q1", name: "Contact center - Bangkok, Thailand", group: "Language", waitLevel: "ready", availableAgents: 2, loggedInAgents: 10 },
+  { id: "q2", name: "Contact center - Madrid, Spanish", group: "Language", waitLevel: "short", waitTime: "53s", availableAgents: 0, loggedInAgents: 12 },
+  { id: "q3", name: "Contact center - Roma, Italian", group: "Language", waitLevel: "short", waitTime: "1min 32s", availableAgents: 0, loggedInAgents: 10 },
+  { id: "q4", name: "After-sale", group: "Lead Generation", waitLevel: "long", waitTime: "4mins 3s", availableAgents: 0, loggedInAgents: 10 },
+  { id: "q5", name: "Overflow - Night shift", group: "Lead Generation", waitLevel: "none", availableAgents: 0, loggedInAgents: 0 },
+];
+
+const WAIT_BAR_COLORS: Record<RequeueWaitLevel, string> = {
+  ready: "#3f9c46",
+  short: "#e88600",
+  long: "#ea1a1a",
+  busy: "#ea1a1a",
+  first: "#e88600",
+  none: "#cbcbcc",
+};
+
+function WaitBars({ level }: { level: RequeueWaitLevel }) {
+  const color = WAIT_BAR_COLORS[level];
+  return (
+    <span className="flex items-end gap-[2px] h-[12px]" aria-hidden="true">
+      <span className="w-[3px] h-[5px] rounded-full" style={{ backgroundColor: color }} />
+      <span className="w-[3px] h-[8px] rounded-full" style={{ backgroundColor: color }} />
+      <span className="w-[3px] h-[12px] rounded-full" style={{ backgroundColor: color }} />
+    </span>
+  );
+}
+
+function queueWaitLabel(q: RequeueQueue): string {
+  if (q.waitLevel === "ready") return "Ready";
+  if (q.waitLevel === "busy") return "Busy";
+  if (q.waitLevel === "first") return "First in line";
+  if (q.waitLevel === "none") return "No agent";
+  return q.waitTime ?? "";
+}
+
+function queueWaitTooltip(q: RequeueQueue): string {
+  switch (q.waitLevel) {
+    case "ready":
+      return "This queue can handle the call immediately.";
+    case "busy":
+      return "No available agent in this queue.";
+    case "first":
+      return "The call will be handled next in this queue.";
+    case "none":
+      return "No logged-in agent in this queue";
+    default:
+      return "Longest wait time";
+  }
+}
+
+function DarkTooltip({ children, content, testId }: { children: React.ReactNode; content: React.ReactNode; testId?: string }) {
+  return (
+    <TooltipPrimitive.Root delayDuration={200}>
+      <TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>
+      <TooltipPrimitive.Portal>
+        <TooltipPrimitive.Content
+          side="bottom"
+          sideOffset={6}
+          className="bg-[#121212] text-white border-none rounded-[4px] px-2 py-1 text-[12px] leading-[16px] font-['Lato',sans-serif] z-[10001] max-w-[220px]"
+          data-testid={testId}
+        >
+          {content}
+        </TooltipPrimitive.Content>
+      </TooltipPrimitive.Portal>
+    </TooltipPrimitive.Root>
+  );
+}
+
+type QueueRowProps = {
+  queue: RequeueQueue;
+  selected: boolean;
+  onSelect: () => void;
+  assets: Assets;
+};
+
+export function QueueRow({ queue, selected, onSelect, assets }: QueueRowProps) {
+  const waitLabel = queueWaitLabel(queue);
+  const waitTooltip = queueWaitTooltip(queue);
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      data-testid={`row-queue-${queue.id}`}
+      className={`w-full flex items-center gap-2 px-4 py-2 border-none cursor-pointer text-left transition-colors ${
+        selected ? "bg-[#e8f2fa]" : "bg-white hover:bg-[#f9f9f9] active:bg-[#f3f3f3]"
+      }`}
+      aria-pressed={selected}
+    >
+      <div className="flex-1 min-w-0 flex flex-col gap-[2px]">
+        <span className="font-['Lato',sans-serif] text-[14px] leading-[20px] text-[#121212] truncate">
+          {queue.name}
+        </span>
+        <div className="flex items-center gap-3">
+          <DarkTooltip content={waitTooltip} testId={`tooltip-wait-${queue.id}`}>
+            <span
+              className="inline-flex items-center gap-[4px] rounded-[100px] cursor-default"
+              data-testid={`status-wait-${queue.id}`}
+            >
+              <WaitBars level={queue.waitLevel} />
+              <span
+                className="font-['Lato',sans-serif] text-[12px] leading-[16px]"
+                style={{ color: queue.waitLevel === "long" ? "#ea1a1a" : "#72757a" }}
+              >
+                {waitLabel}
+              </span>
+            </span>
+          </DarkTooltip>
+          <DarkTooltip
+            content={
+              <span className="block">
+                Available agents: {queue.availableAgents}
+                <br />
+                Logged-in agents: {queue.loggedInAgents}
+              </span>
+            }
+            testId={`tooltip-agents-${queue.id}`}
+          >
+            <span className="inline-flex items-center gap-[4px] cursor-default" data-testid={`status-agents-${queue.id}`}>
+              <img src={assets.agentMd} alt="" className="size-[16px]" />
+              <span className="font-['Lato',sans-serif] text-[12px] leading-[16px] text-[#72757a]">
+                {queue.availableAgents}/{queue.loggedInAgents}
+              </span>
+            </span>
+          </DarkTooltip>
+        </div>
+      </div>
+      <div className="shrink-0 pr-1 flex items-center">
+        {selected && <img src={assets.checkCircle} alt="Selected" className="size-[22px]" />}
+      </div>
+    </button>
+  );
+}
+
+export function QueueList({
+  query,
+  selectedId,
+  onSelect,
+  queues,
+  assets,
+}: {
+  query: string;
+  selectedId: string | null;
+  onSelect: (q: RequeueQueue) => void;
+  queues: RequeueQueue[];
+  assets: Assets;
+}) {
+  const q = query.trim().toLowerCase();
+  const results = q.length === 0 ? queues : queues.filter((it) => it.name.toLowerCase().includes(q));
+  if (results.length === 0) {
+    return (
+      <div className="px-4 py-4 text-center font-['Lato',sans-serif] text-[13px] text-[#666666]" data-testid="text-no-queues">
+        No matching queues
+      </div>
+    );
+  }
+  const groups: Array<{ group: string; items: RequeueQueue[] }> = [];
+  for (const item of results) {
+    const g = groups.find((x) => x.group === item.group);
+    if (g) g.items.push(item);
+    else groups.push({ group: item.group, items: [item] });
+  }
+  return (
+    <div className="w-full flex-1 min-h-0 overflow-y-auto" data-testid="list-queues">
+      {groups.map((g, gi) => (
+        <div key={g.group} className={gi > 0 ? "border-t border-[#ececec]" : ""}>
+          <p className="px-4 pt-2 pb-1 font-['Lato',sans-serif] text-[12px] leading-[16px] text-[#666666]">
+            {g.group}
+          </p>
+          {g.items.map((item) => (
+            <QueueRow
+              key={item.id}
+              queue={item}
+              selected={selectedId === item.id}
+              onSelect={() => onSelect(item)}
+              assets={assets}
+            />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+type RequeueFooterProps = {
+  ready: boolean;
+  onAskFirst: () => void;
+  onRequeue: () => void;
+  assets: Assets;
+};
+
+function RequeueFooter({ ready, onAskFirst, onRequeue, assets }: RequeueFooterProps) {
+  return (
+    <div className="flex items-start justify-center gap-4 pb-5 pt-3 px-4">
+      <FooterButton label="Choose skill" iconSrc={assets.chooseSkill} iconAlt="" disabled testId="button-choose-skill" />
+      <FooterButton label="Ask first" iconSrc={assets.helpCircle} iconAlt="" disabled={!ready} onClick={onAskFirst} testId="button-requeue-ask-first" />
+      <FooterButton label="Requeue" iconSrc={assets.requeue} iconAlt="" disabled={!ready} onClick={onRequeue} testId="button-requeue-confirm" />
+    </div>
+  );
+}
+
+type RequeueViewProps = {
+  searchQuery: string;
+  selectedQueueId: string | null;
+  onBack: () => void;
+  onSearchChange: (val: string) => void;
+  onSelectQueue: (q: RequeueQueue) => void;
+  onAskFirst: () => void;
+  onRequeue: () => void;
+  queues: RequeueQueue[];
+  assets: Assets;
+};
+
+function RequeueView({
+  searchQuery,
+  selectedQueueId,
+  onBack,
+  onSearchChange,
+  onSelectQueue,
+  onAskFirst,
+  onRequeue,
+  queues,
+  assets,
+}: RequeueViewProps) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+  return (
+    <div className="w-full h-[490px] flex flex-col">
+      <div className="bg-[#f3f3f3] px-4 pt-2 pb-3 flex flex-col shrink-0">
+        <p className="font-['Lato',sans-serif] font-bold text-[14px] leading-[20px] text-[#121212] h-[28px] flex items-center">
+          Requeue
+        </p>
+        <div className="flex items-center gap-1 h-[40px] pt-1">
+          <button
+            type="button"
+            onClick={onBack}
+            data-testid="button-requeue-back"
+            className="shrink-0 size-[28px] flex items-center justify-center rounded hover:bg-[#e5e5e5] active:bg-[#d8d8d8] border-none bg-transparent cursor-pointer transition-colors"
+            aria-label="Back to call"
+          >
+            <img src={assets.previous} alt="" className="size-[20px]" />
+          </button>
+          <input
+            ref={inputRef}
+            type="text"
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder="Search by queue name"
+            data-testid="input-requeue-search"
+            className="flex-1 min-w-0 bg-transparent border-none outline-none text-center font-['Lato',sans-serif] text-[15px] leading-[20px] text-[#121212] placeholder:text-[#757575] placeholder:font-normal font-medium px-2"
+            aria-label="Search by queue name"
+          />
+        </div>
+      </div>
+
+      <div className="flex-1 min-h-0 flex flex-col">
+        <QueueList
+          query={searchQuery}
+          selectedId={selectedQueueId}
+          onSelect={onSelectQueue}
+          queues={queues}
+          assets={assets}
+        />
+      </div>
+
+      <RequeueFooter ready={selectedQueueId !== null} onAskFirst={onAskFirst} onRequeue={onRequeue} assets={assets} />
+    </div>
+  );
+}
+
 /* -------------------- ROOT -------------------- */
 
-type View = "call" | "transfer" | "warm" | "conference";
+type View = "call" | "transfer" | "requeue" | "warm" | "conference";
 
 export function Dialer(props: DialerProps): JSX.Element {
   const {
@@ -704,6 +1005,7 @@ export function Dialer(props: DialerProps): JSX.Element {
     onTransferStart,
     onTransferComplete,
     onTransferCancel,
+    onRequeueComplete,
     onParticipantAdd,
     onParticipantRemove,
     onHoldChange,
@@ -711,6 +1013,7 @@ export function Dialer(props: DialerProps): JSX.Element {
     manageCallMode = "v1",
     initialView = "call",
     onTransferBack,
+    onRequeueBack,
     hideTitleBar = false,
   } = props;
 
@@ -725,6 +1028,9 @@ export function Dialer(props: DialerProps): JSX.Element {
   const [warmNumber, setWarmNumber] = useState("");
   const [warmName, setWarmName] = useState("");
   const [selectedContactId, setSelectedContactId] = useState<string | null>(null);
+  const [requeueQuery, setRequeueQuery] = useState("");
+  const [selectedQueueId, setSelectedQueueId] = useState<string | null>(null);
+  const [requeuedBanner, setRequeuedBanner] = useState(false);
   const [holdStartedAt, setHoldStartedAt] = useState<number | null>(null);
   const [holdElapsed, setHoldElapsed] = useState(0);
   const [consultHoldStartedAt, setConsultHoldStartedAt] = useState<number | null>(null);
@@ -840,6 +1146,7 @@ export function Dialer(props: DialerProps): JSX.Element {
   const dialedRef = useRef(dialed);
   const enteredRef = useRef(enteredNumber);
   const transferBackRef = useRef<() => void>(() => {});
+  const requeueBackRef = useRef<() => void>(() => {});
   viewRef.current = view;
   dialedRef.current = dialed;
   enteredRef.current = enteredNumber;
@@ -854,6 +1161,12 @@ export function Dialer(props: DialerProps): JSX.Element {
     const id = window.setInterval(() => setSeconds((s) => s + 1), 1000);
     return () => window.clearInterval(id);
   }, []);
+
+  useEffect(() => {
+    if (!requeuedBanner) return;
+    const id = window.setTimeout(() => setRequeuedBanner(false), 4000);
+    return () => window.clearTimeout(id);
+  }, [requeuedBanner]);
 
   useEffect(() => {
     if (view !== "warm") return;
@@ -887,6 +1200,7 @@ export function Dialer(props: DialerProps): JSX.Element {
         }
       } else if (e.key === "Escape") {
         if (inTransfer) transferBackRef.current();
+        else if (viewRef.current === "requeue") requeueBackRef.current();
       }
     };
     window.addEventListener("keydown", onKey);
@@ -913,6 +1227,10 @@ export function Dialer(props: DialerProps): JSX.Element {
   };
 
   const goToTransfer = () => setView("transfer");
+  const goToRequeue = () => {
+    setRequeuedBanner(false);
+    setView("requeue");
+  };
 
   const resetTransferState = () => {
     setEnteredNumber("");
@@ -920,6 +1238,8 @@ export function Dialer(props: DialerProps): JSX.Element {
     setWarmNumber("");
     setWarmName("");
     setSelectedContactId(null);
+    setRequeueQuery("");
+    setSelectedQueueId(null);
     setHoldStartedAt(null);
     setConsultHoldStartedAt(null);
     setHoldSheetOpen(false);
@@ -941,6 +1261,16 @@ export function Dialer(props: DialerProps): JSX.Element {
     goBackToCall();
   };
   transferBackRef.current = handleTransferBack;
+  // Back from the requeue root: same host-reclaim behavior as transfer.
+  const handleRequeueBack = () => {
+    if (onRequeueBack) {
+      resetTransferState();
+      onRequeueBack();
+      return;
+    }
+    goBackToCall();
+  };
+  requeueBackRef.current = handleRequeueBack;
   const handleDial = () => {
     if (enteredNumber.length > 0) setDialed(true);
   };
@@ -959,6 +1289,34 @@ export function Dialer(props: DialerProps): JSX.Element {
     setHoldStartedAt(Date.now());
     onTransferStart?.(target);
     onHoldChange?.("customer", true);
+  };
+  const selectedQueue = selectedQueueId ? DEFAULT_QUEUES.find((q) => q.id === selectedQueueId) ?? null : null;
+  const handleSelectQueue = (q: RequeueQueue) => {
+    setSelectedQueueId((cur) => (cur === q.id ? null : q.id));
+  };
+  const handleRequeueAskFirst = () => {
+    if (!selectedQueue) return;
+    const target = selectedQueue.name;
+    setWarmNumber(target);
+    setWarmName(selectedQueue.name);
+    setView("warm");
+    setRequeueQuery("");
+    setSelectedQueueId(null);
+    setHoldStartedAt(Date.now());
+    onTransferStart?.(target);
+    onHoldChange?.("customer", true);
+  };
+  const handleRequeueNow = () => {
+    if (!selectedQueue) return;
+    const target = selectedQueue.name;
+    toast({
+      title: "Call requeued",
+      description: `The call is now waiting in ${target}.`,
+    });
+    onRequeueComplete?.(target);
+    resetTransferState();
+    setRequeuedBanner(true);
+    setView("call");
   };
   const handleTransferNow = () => {
     const target = selectedContact?.name ?? formatDialNumber(enteredNumber);
@@ -1014,8 +1372,12 @@ export function Dialer(props: DialerProps): JSX.Element {
         style={style}
       >
         <div
-          className="bg-white flex flex-col items-center overflow-hidden relative rounded-[8px] shadow-[0px_7px_8px_-4px_rgba(0,0,0,0.2),0px_12px_17px_2px_rgba(0,0,0,0.14),0px_5px_22px_4px_rgba(0,0,0,0.12)]"
-          style={{ width: 280 }}
+          className={`bg-white flex flex-col items-center overflow-hidden relative ${
+            hideTitleBar
+              ? "w-full h-full flex-1"
+              : "rounded-[8px] shadow-[0px_7px_8px_-4px_rgba(0,0,0,0.2),0px_12px_17px_2px_rgba(0,0,0,0.14),0px_5px_22px_4px_rgba(0,0,0,0.12)]"
+          }`}
+          style={hideTitleBar ? undefined : { width: 280 }}
           data-testid="dialpad-root"
         >
           {!hideTitleBar && <TitleBar assets={assets} />}
@@ -1026,6 +1388,8 @@ export function Dialer(props: DialerProps): JSX.Element {
               enteredNumber={enteredNumber}
               onToggleKeypad={() => setKeypadOpen((o) => !o)}
               onTransfer={goToTransfer}
+              onRequeue={goToRequeue}
+              requeuedBanner={requeuedBanner}
               onDigit={handleDigit}
               onBackspace={handleBackspace}
               onEndCall={handleEndAll}
@@ -1035,6 +1399,19 @@ export function Dialer(props: DialerProps): JSX.Element {
               onOpenHoldSheet={openHoldSheet}
               holdTriggerRef={holdTriggerRef}
               caller={caller}
+              assets={assets}
+            />
+          )}
+          {view === "requeue" && (
+            <RequeueView
+              searchQuery={requeueQuery}
+              selectedQueueId={selectedQueueId}
+              onBack={handleRequeueBack}
+              onSearchChange={(val) => setRequeueQuery(val)}
+              onSelectQueue={handleSelectQueue}
+              onAskFirst={handleRequeueAskFirst}
+              onRequeue={handleRequeueNow}
+              queues={DEFAULT_QUEUES}
               assets={assets}
             />
           )}
@@ -1914,6 +2291,8 @@ type CallViewProps = {
   enteredNumber: string;
   onToggleKeypad: () => void;
   onTransfer: () => void;
+  onRequeue: () => void;
+  requeuedBanner: boolean;
   onDigit: (d: string) => void;
   onBackspace: () => void;
   onEndCall: () => void;
@@ -1926,11 +2305,22 @@ type CallViewProps = {
   assets: Assets;
 };
 
-function CallView({ timer, keypadOpen, enteredNumber, onToggleKeypad, onTransfer, onDigit, onBackspace, onEndCall, customerOnHold, holdText, holdOverThreshold, onOpenHoldSheet, holdTriggerRef, caller, assets }: CallViewProps) {
+function CallView({ timer, keypadOpen, enteredNumber, onToggleKeypad, onTransfer, onRequeue, requeuedBanner, onDigit, onBackspace, onEndCall, customerOnHold, holdText, holdOverThreshold, onOpenHoldSheet, holdTriggerRef, caller, assets }: CallViewProps) {
   return (
     <div className="w-full h-[490px] flex flex-col">
-      <div className="flex flex-col items-start px-[16px] w-full">
+      <div className="relative flex flex-col items-start px-[16px] w-full">
         <TopStatusRow timer={timer} assets={assets} />
+        {requeuedBanner && (
+          <div
+            className="absolute left-[70px] top-[44px] z-20 bg-[#2f7a39] rounded-[8px] px-4 py-2 shadow-[0_4px_12px_rgba(0,0,0,0.18)]"
+            data-testid="banner-call-requeued"
+            role="status"
+          >
+            <span className="font-['Lato',sans-serif] text-[15px] leading-[20px] text-white whitespace-nowrap">
+              Call requeued
+            </span>
+          </div>
+        )}
         <div className="flex gap-[12px] items-start pb-[12px] pt-[10px] w-full">
           <div
             className="flex items-center justify-center rounded-full size-[48px] shrink-0"
@@ -1981,6 +2371,7 @@ function CallView({ timer, keypadOpen, enteredNumber, onToggleKeypad, onTransfer
               assets={assets}
               keypad={{ onClick: onToggleKeypad, active: keypadOpen }}
               transfer={{ onClick: onTransfer }}
+              requeue={{ onClick: onRequeue }}
               hold={{
                 onClick: onOpenHoldSheet,
                 buttonRef: holdTriggerRef,

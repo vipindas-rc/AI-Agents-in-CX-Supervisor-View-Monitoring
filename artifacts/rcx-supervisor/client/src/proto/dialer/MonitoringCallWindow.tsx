@@ -866,6 +866,9 @@ export function MonitoringCallWindow({
   // Transfer opens the dialer's transfer workflow ("Ask first" warm / blind)
   // in an overlay; completing it hands the call off and ends monitoring.
   const [transferOpen, setTransferOpen] = useState(false);
+  // Requeue opens the dialer's requeue workflow (queue list with wait
+  // indicators) in the same in-window overlay pattern as Transfer.
+  const [requeueOpen, setRequeueOpen] = useState(false);
 
   useEffect(() => {
     if (notesPreview !== "loading") return;
@@ -940,9 +943,10 @@ export function MonitoringCallWindow({
             assetBasePath={assetBasePath}
             onToast={(t) => onToast?.(t.description ? `${t.title} — ${t.description}` : t.title)}
             onCallEnd={onClose}
-            // Completing a transfer hands the call off: close the popout but
-            // leave the page's Active calls context (route) untouched.
+            // Completing a transfer or requeue hands the call off: close the
+            // popout but leave the page's Active calls context (route) untouched.
             onTransferComplete={onClose}
+            onRequeueComplete={onClose}
           />
         </div>
       </div>
@@ -1096,8 +1100,13 @@ export function MonitoringCallWindow({
                           onClick={() => setTransferOpen(true)}
                           testId="button-monitor-transfer"
                         />
-                        {/* Spacer keeps Take over / Transfer aligned under Mute / Keypad */}
-                        <div aria-hidden className="w-[80px]" />
+                        <ActionButton
+                          imgSrc={assets.requeue}
+                          imgAlt=""
+                          label="Requeue"
+                          onClick={() => setRequeueOpen(true)}
+                          testId="button-monitor-requeue"
+                        />
                       </>
                     )}
                   </div>
@@ -1112,8 +1121,14 @@ export function MonitoringCallWindow({
                         onClick={() => setTransferOpen(true)}
                         testId="button-monitor-transfer"
                       />
-                      {/* Spacers keep Transfer aligned under Mute / Coach */}
-                      <div aria-hidden className="w-[80px]" />
+                      <ActionButton
+                        imgSrc={assets.requeue}
+                        imgAlt=""
+                        label="Requeue"
+                        onClick={() => setRequeueOpen(true)}
+                        testId="button-monitor-requeue"
+                      />
+                      {/* Spacer keeps Transfer / Requeue aligned under Mute / Keypad */}
                       <div aria-hidden className="w-[80px]" />
                     </div>
                   )}
@@ -1160,6 +1175,57 @@ export function MonitoringCallWindow({
                         onClose();
                       }}
                       onCallEnd={() => setTransferOpen(false)}
+                    />
+                  </div>
+                )}
+
+                {/* Requeue workflow — same in-window overlay pattern as the
+                    Transfer overlay above.                                   */}
+                {requeueOpen && (
+                  <div
+                    className="absolute inset-0 z-10 bg-white flex flex-col overflow-hidden"
+                    data-testid="overlay-monitor-requeue"
+                  >
+                    <Dialer
+                      initialView="requeue"
+                      manageCallMode="v2"
+                      hideTitleBar
+                      style={{
+                        minHeight: 0,
+                        width: "100%",
+                        background: "transparent",
+                        padding: 0,
+                        flex: 1,
+                      }}
+                      assetBasePath={assetBasePath}
+                      onToast={(t) =>
+                        onToast?.(t.description ? `${t.title} — ${t.description}` : t.title)
+                      }
+                      onRequeueBack={() => setRequeueOpen(false)}
+                      onRequeueComplete={(queueName) => {
+                        if (queueName) onContextHop?.({ kind: "queue", name: queueName });
+                        setRequeueOpen(false);
+                        onClose();
+                        // Re-emit after the host finishes closing (its close path
+                        // flashes "Stopped monitoring" during the next render, which
+                        // would overwrite the requeue confirmation), so the requeue
+                        // toast is the one the supervisor actually sees.
+                        if (queueName) {
+                          window.setTimeout(() => {
+                            onToast?.(
+                              `Call requeued — The call is now waiting in ${queueName}.`,
+                            );
+                          }, 80);
+                        }
+                      }}
+                      // "Ask first" in requeue starts a consult; completing it
+                      // hands the call off the same way a transfer does.
+                      onTransferComplete={(target) => {
+                        if (target) onContextHop?.({ kind: "queue", name: target });
+                        setRequeueOpen(false);
+                        onClose();
+                      }}
+                      onCallEnd={() => setRequeueOpen(false)}
                     />
                   </div>
                 )}
