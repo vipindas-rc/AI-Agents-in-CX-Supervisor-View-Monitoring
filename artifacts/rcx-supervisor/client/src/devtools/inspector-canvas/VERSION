@@ -1,0 +1,14 @@
+inspector-canvas bundle (RingScope inspector + DesignCanvas + CommentLayer)
+version: 3.4.0
+date: 2026-07-20
+includes: pages (DCPage), ModeBar (zoom + page switcher + Cursor/Comment/Dev),
+          comment layer ON by default (drop-pin threads; hosted→published, mock local), HoverOverlay,
+          transition-suppressed state forcing, off-token hex chip,
+          "Copy for agent" handoff spec serializer,
+          data-interaction authored behavior notes (ride the handoff),
+          DCPostIt annotation cards, design-canvas-screens skill, runbook README
+excludes: figma-bridge capture (stubbed), hard Spring import (stubbed)
+
+# Bump `version` whenever the bundle is regenerated. The runbook's
+# "Detect & update any existing install" step compares this against the
+# VERSION already present in the project to decide replace vs skip.

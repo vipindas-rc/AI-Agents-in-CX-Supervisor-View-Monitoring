@@ -106,6 +106,7 @@ const VirtualScroll = forwardRef<HTMLDivElement, IVirtualScroll>(
         return (
             <VirtualScrollStyled
                 tabIndex={-1}
+                data-dc-allow-scroll=""
                 ref={ref}
                 width={width}
                 height={height}

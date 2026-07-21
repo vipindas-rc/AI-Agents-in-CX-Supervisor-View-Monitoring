@@ -6,6 +6,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 
 import { SupervisorAgents } from "@/pages/SupervisorAgents";
+import { CanvasView } from "./CanvasView";
+
+// ?canvas opens the Figma-like review canvas instead of the normal app.
+// Evaluated once at load — entering/leaving canvas mode is a full page load.
+const isCanvasMode = new URLSearchParams(window.location.search).has("canvas");
 
 function Router() {
   return (
@@ -31,7 +36,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
-        <Router />
+        {isCanvasMode ? <CanvasView /> : <Router />}
       </TooltipProvider>
     </QueryClientProvider>
   );

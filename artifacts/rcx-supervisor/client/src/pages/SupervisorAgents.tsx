@@ -147,7 +147,18 @@ const sideSecondaryNav = [
   },
 ];
 
-export const SupervisorAgents = (): JSX.Element => {
+interface SupervisorAgentsProps {
+  // When set, the tab is pinned (used by the design-canvas artboards so each
+  // frame stays frozen on its own tab instead of following the live URL).
+  fixedTab?: "Agents" | "Interactions";
+  // Injected by wouter when this page is used as a <Route component>; the page
+  // reads route state via hooks instead, so this is unused.
+  params?: Record<string, string | undefined>;
+}
+
+export const SupervisorAgents = ({
+  fixedTab,
+}: SupervisorAgentsProps = {}): JSX.Element => {
   const [searchQuery, setSearchQuery] = useState("");
   // All filter states are string arrays — empty array means "no filter" (show all).
   const [agentTypeFilter, setAgentTypeFilter] = useState<string[]>([]);
@@ -218,13 +229,17 @@ export const SupervisorAgents = (): JSX.Element => {
   // A preview deep link always belongs to the Interactions tab (preview URLs
   // never carry ?tab=agents, so the URL-derived tab is already Interactions).
   const activeTab: "Agents" | "Interactions" =
-    !previewRouteMatched && new URLSearchParams(search).get("tab") === "agents"
+    fixedTab ??
+    (!previewRouteMatched && new URLSearchParams(search).get("tab") === "agents"
       ? "Agents"
-      : "Interactions";
+      : "Interactions");
   const isInteractions = activeTab === "Interactions";
 
   const setActiveTab = useCallback(
     (value: "Agents" | "Interactions") => {
+      // Canvas artboards are pinned to a tab — ignore tab-change attempts so
+      // the two frames never drift off their frozen states.
+      if (fixedTab) return;
       const params = new URLSearchParams(window.location.search);
       if (value === "Agents") {
         params.set("tab", "agents");
@@ -236,7 +251,7 @@ export const SupervisorAgents = (): JSX.Element => {
       const base = previewRouteMatched ? "/" : pathname;
       navigate(qs ? `${base}?${qs}` : base);
     },
-    [navigate, pathname, previewRouteMatched],
+    [navigate, pathname, previewRouteMatched, fixedTab],
   );
 
   const openPreview = useCallback(
@@ -378,7 +393,10 @@ export const SupervisorAgents = (): JSX.Element => {
 
   return (
     <main className="flex h-screen w-full flex-col overflow-hidden bg-white">
-      <header className="flex h-14 w-full shrink-0 items-center border-b border-[#0000001f] bg-white">
+      <header
+        data-name="App bar"
+        className="flex h-14 w-full shrink-0 items-center border-b border-[#0000001f] bg-white"
+      >
         <div className="relative flex h-full w-full items-center bg-[url('/figmaAssets/appbar-bg.svg')] bg-cover bg-center px-4 pl-5">
           <div className="flex items-center gap-4">
             <button type="button" className="relative">
@@ -489,7 +507,10 @@ export const SupervisorAgents = (): JSX.Element => {
         </div>
       </header>
       <div className="flex min-h-0 flex-1">
-        <aside className="flex w-20 shrink-0 flex-col justify-between border-r border-neutral-200 bg-navb-02 py-4">
+        <aside
+          data-name="Side nav"
+          className="flex w-20 shrink-0 flex-col justify-between border-r border-neutral-200 bg-navb-02 py-4"
+        >
           <nav className="flex flex-col">
             {sidePrimaryNav.map((item) => (
               <button
@@ -602,7 +623,10 @@ export const SupervisorAgents = (): JSX.Element => {
             </div>
           ) : (
           <>
-          <div className="relative flex shrink-0 items-center border-b border-[#0000001a] px-5 py-3">
+          <div
+            data-name="Supervisor toolbar"
+            className="relative flex shrink-0 items-center border-b border-[#0000001a] px-5 py-3"
+          >
             <h2 className="shrink-0 font-subtitle-mini text-[15px] font-semibold leading-[var(--subtitle-mini-line-height)] text-[#121212]">
               Supervisor
             </h2>
@@ -748,6 +772,9 @@ export const SupervisorAgents = (): JSX.Element => {
             </div>
           ) : null}
           <div
+            data-name={
+              isInteractions ? "Interaction table" : "Agent table"
+            }
             className={
               activeCallMatched
                 ? "h-0 overflow-hidden"

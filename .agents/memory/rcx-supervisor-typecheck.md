@@ -16,3 +16,7 @@ description: How typechecking works (and pre-fails) in the rcx-supervisor artifa
 **Duplicate-@types lesson:** rcx-supervisor is the only React 18 artifact in a React 19 workspace, so two `@types/react` versions must coexist. pnpm hoists an arbitrary one into `.pnpm/node_modules`, which lucide-react's d.ts resolves — fixed by tsconfig `paths` pinning `react`/`react-dom` to the artifact's local `node_modules/@types`. Keep that pin; removing it re-breaks ~110 ui/* files. Also keep `@types/node` on `catalog:` everywhere — a mismatched pin splits vite into two typed instances and breaks vite.config plugin types.
 
 - rcx-supervisor is skipped by root typecheck entirely (no `typecheck` script, only `check`).
+
+## Inspector-canvas bundle
+- The vendored inspector-canvas bundle (`client/src/devtools/inspector-canvas/`) is excluded from tsc like the proto tree — it targets a looser TS config and fails under this artifact strict settings. Imports still type via its `DesignCanvas.d.ts`.
+- The canvas entry is `?canvas` at the app root; artboards pin the tab via `SupervisorAgents fixedTab` prop. Artboard ids `agents`/`interactions` and canvasId `rc:rcx-supervisor:main-7kq` are permanent comment anchors — never change them.

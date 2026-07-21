@@ -132,6 +132,9 @@ export default defineConfig({
     },
     dedupe: ["react", "react-dom", "styled-components"],
   },
+  // Keep function/class names so the inspector's hierarchy tree shows real
+  // component names instead of minified ones.
+  esbuild: { keepNames: true },
   define: {
     "process.env": {},
     "process.env.NODE_ENV": JSON.stringify(
