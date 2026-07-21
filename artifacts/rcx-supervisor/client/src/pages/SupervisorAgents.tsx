@@ -215,6 +215,15 @@ export const SupervisorAgents = ({
     [navigate],
   );
 
+  // Closing the taken-over call window ends the Active calls context — the
+  // top tab bar returns to Supervisor automatically.
+  const handleMonitoringWindowClosed = useCallback(
+    (agentId: string) => {
+      if (activeCallMatched && agentId === activeCallAgentId) navigate("/");
+    },
+    [activeCallMatched, activeCallAgentId, navigate],
+  );
+
   // The top tab bar is URL-driven: the Active calls tab is active while the
   // take-over route is open; clicking Supervisor returns to the table. Other
   // top tabs are static chrome in this prototype.
@@ -800,6 +809,7 @@ export const SupervisorAgents = ({
               onPreviewModeChange={changePreviewMode}
               onPreviewClose={closePreview}
               onTakeOverCommitted={handleTakeOverCommitted}
+              onMonitoringWindowClosed={handleMonitoringWindowClosed}
             />
           </div>
 

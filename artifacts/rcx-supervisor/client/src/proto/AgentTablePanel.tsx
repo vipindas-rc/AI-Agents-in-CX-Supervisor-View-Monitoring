@@ -106,6 +106,9 @@ interface AgentTablePanelProps {
   // Fired when a voice take-over commits so the page can switch to the
   // Active calls context for that agent's call.
   onTakeOverCommitted?: (agentId: string) => void;
+  // Fired when the floating call window closes so the page can leave the
+  // Active calls context if it was showing this agent's taken-over call.
+  onMonitoringWindowClosed?: (agentId: string) => void;
 }
 
 export default function AgentTablePanel({
@@ -129,6 +132,7 @@ export default function AgentTablePanel({
   onPreviewModeChange,
   onPreviewClose,
   onTakeOverCommitted,
+  onMonitoringWindowClosed,
 }: AgentTablePanelProps) {
   const [agents, setAgents] = useState(() => makeAgents(25));
   const [interactions, setInteractions] = useState(() => makeInteractions());
@@ -871,16 +875,6 @@ export default function AgentTablePanel({
               confidenceScore={insightRow?.confidenceScore ?? null}
               isBarged={isBarged}
               takeoverSubject={takeoverSubject}
-              onTransfer={handleTransfer}
-              onTakeOver={handleTakeOver}
-              onMonitor={handleInsightMonitor}
-              monitorDisabled={!insightMonitorEnabled}
-              monitorDisabledTooltip={
-                insightMonitorEnabled
-                  ? undefined
-                  : "You can only monitor voice calls"
-              }
-              isMonitoring={insightIsMonitoring}
               isAiAgent={insightCtx.agentType === "Air"}
               onClose={() => setInsightCtx(null)}
             />
@@ -954,6 +948,9 @@ export default function AgentTablePanel({
             agentName={monitoredAgentRow.fullName}
             agentType={monitoredAgentRow.agentType === "Air" ? "Air" : "Human"}
             onClose={stopMonitoring}
+            onTakenOverCallEnded={() =>
+              onMonitoringWindowClosed?.(monitoredAgentRow.agentId)
+            }
             onToast={(m) => flashRef.current(m)}
             contextData={monitoredContextData}
             contextHops={monitoredContextHops}

@@ -106,6 +106,26 @@ test("Supervisor tab returns to the table; deep link is refresh-safe", async ({ 
   await expect(page.getByTestId("view-active-call")).toHaveCount(0);
 });
 
+test("ending the taken-over call returns to the Supervisor tab", async ({ page }) => {
+  await takeOver(page);
+  await expect(page).toHaveURL(/\/active-call\//);
+  const dialer = page.getByTestId("monitoring-dialpad-takeover");
+  await expect(dialer).toBeVisible();
+
+  // End the call from the popout dialer (confirm if the end-call sheet opens)
+  await dialer.getByTestId("button-end-call").first().click();
+  const confirm = page.getByTestId("button-end-call-confirm");
+  if (await confirm.count()) await confirm.click();
+
+  // Popout is gone and the page is back on the Supervisor tab
+  await expect(page.getByTestId("monitoring-dialpad-takeover")).toHaveCount(0);
+  await expect(page).toHaveURL(/\/(\?.*)?$/);
+  await expect(
+    page.getByRole("tab", { name: "Supervisor" }),
+  ).toHaveAttribute("data-state", "active");
+  await expect(page.getByTestId("view-active-call")).toHaveCount(0);
+});
+
 test("completing a transfer from the take-over dialer stays in Active calls", async ({ page }) => {
   await takeOver(page);
   const dialer = page.getByTestId("monitoring-dialpad-takeover");

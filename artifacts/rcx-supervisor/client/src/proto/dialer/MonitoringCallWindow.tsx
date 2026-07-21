@@ -6,7 +6,11 @@ import {
   type TranscriptTurn,
   type InteractionPreviewData,
 } from "../mock/supervisorMock";
-import { ContextTabContent, type ContextHopEvent } from "../InteractionPreview";
+import {
+  ContextTabContent,
+  ContactInfoSections,
+  type ContextHopEvent,
+} from "../InteractionPreview";
 
 /**
  * Monitoring call window (Figma: mLIWieGGOG574eVKpKA50f, node 49:21797).
@@ -40,6 +44,9 @@ export type MonitoringCallWindowProps = {
    * so the host page can switch to the Active calls context.
    */
   onTakeOverCommitted?: () => void;
+  // Fired when the taken-over call is ended from the popout dialer (End
+  // call), as opposed to being handed off via transfer/requeue.
+  onTakenOverCallEnded?: () => void;
   assetBasePath?: string;
   /** Per-interaction context (Context tab). Tab is hidden when omitted. */
   contextData?: InteractionPreviewData | null;
@@ -811,7 +818,27 @@ function NotesTranscriptPanel({
   );
 }
 
-function ContactInfoPanel({ customerPhone }: { customerPhone: string }) {
+// Contact info tab: renders the exact same section-row layout as the digital
+// Interaction preview's Contact info pane (shared ContactInfoSections), so
+// voice and digital surfaces stay consistent. Falls back to a minimal
+// phone-only view when no preview data is available.
+function ContactInfoPanel({
+  customerPhone,
+  contextData,
+}: {
+  customerPhone: string;
+  contextData?: InteractionPreviewData | null;
+}) {
+  if (contextData) {
+    return (
+      <div
+        className="flex flex-col flex-1 min-h-0 w-full"
+        data-testid="monitoring-contact-info"
+      >
+        <ContactInfoSections data={contextData} />
+      </div>
+    );
+  }
   return (
     <div className="flex flex-col flex-1 min-h-0 w-full px-[16px] pt-[12px] gap-[12px]">
       <h2 className="font-['Lato',sans-serif] font-bold text-[16px] leading-[24px] text-[#121212] m-0">
@@ -824,14 +851,6 @@ function ContactInfoPanel({ customerPhone }: { customerPhone: string }) {
           </p>
           <p className="font-['Lato',sans-serif] text-[14px] leading-[20px] text-[#121212] m-0">
             {customerPhone}
-          </p>
-        </div>
-        <div>
-          <p className="font-['Lato',sans-serif] text-[12px] leading-[16px] text-[#666666] m-0">
-            Name
-          </p>
-          <p className="font-['Lato',sans-serif] text-[14px] leading-[20px] text-[#121212] m-0">
-            Sam Carter
           </p>
         </div>
       </div>
@@ -849,6 +868,7 @@ export function MonitoringCallWindow({
   onClose,
   onToast,
   onTakeOverCommitted,
+  onTakenOverCallEnded,
   assetBasePath = "/figmaAssets",
   contextData = null,
   contextHops = [],
@@ -942,7 +962,12 @@ export function MonitoringCallWindow({
             style={{ minHeight: 0, width: "auto", background: "transparent", padding: 0 }}
             assetBasePath={assetBasePath}
             onToast={(t) => onToast?.(t.description ? `${t.title} — ${t.description}` : t.title)}
-            onCallEnd={onClose}
+            // Ending the call closes the popout AND leaves the Active calls
+            // context — the page returns to the Supervisor tab.
+            onCallEnd={() => {
+              onClose();
+              onTakenOverCallEnded?.();
+            }}
             // Completing a transfer or requeue hands the call off: close the
             // popout but leave the page's Active calls context (route) untouched.
             onTransferComplete={onClose}
@@ -1251,7 +1276,12 @@ export function MonitoringCallWindow({
                       onPreviewNotes={() => setNotesPreview("loading")}
                     />
                   )}
-                  {activeTab === "contact" && <ContactInfoPanel customerPhone={customerPhone} />}
+                  {activeTab === "contact" && (
+                    <ContactInfoPanel
+                      customerPhone={customerPhone}
+                      contextData={contextData}
+                    />
+                  )}
                   {activeTab === "context" && contextData && (
                     <ContextTabContent data={contextData} extraHops={contextHops} />
                   )}

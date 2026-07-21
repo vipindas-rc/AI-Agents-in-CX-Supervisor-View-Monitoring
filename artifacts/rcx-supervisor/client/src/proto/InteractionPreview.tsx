@@ -982,29 +982,11 @@ export function ContextTabContent({
   );
 }
 
-function ContactInfoPane({
-  data,
-  trailing,
-  contextHops = [],
-}: {
-  data: InteractionPreviewData;
-  // Header action rendered top-right (the close X per Figma, or a collapse
-  // affordance in the embedded take-over view).
-  trailing?: React.ReactNode;
-  contextHops?: ContextHopEvent[];
-}) {
-  const [activeTab, setActiveTab] = useState<ContactInfoTab>("contact");
-
-  // Opening a different interaction resets the pane to its default tab so
-  // stale tab state never carries across interactions.
-  const engagementRef = useRef(data.engagementId);
-  useEffect(() => {
-    if (engagementRef.current !== data.engagementId) {
-      engagementRef.current = data.engagementId;
-      setActiveTab("contact");
-    }
-  }, [data.engagementId]);
-
+// Shared "Contact info" tab body: the Interaction / contact / history section
+// rows plus the scrolling history feed. Exported so voice surfaces (the
+// monitoring call window) can render the exact same contact info layout as
+// the digital interaction preview.
+export function ContactInfoSections({ data }: { data: InteractionPreviewData }) {
   const sectionRow = (
     title: string,
     subtitle: string,
@@ -1049,6 +1031,69 @@ function ContactInfoPane({
       </div>
     </div>
   );
+
+  return (
+    <>
+      {sectionRow(
+        "Interaction",
+        `Queue: ${data.queueName}`,
+        { menu: true, chevron: "down" },
+        "section-interaction",
+      )}
+      {sectionRow(
+        data.contactName,
+        data.contactPhone,
+        { menu: true, chevron: "down" },
+        "section-contact",
+      )}
+      {sectionRow(
+        "Interaction history",
+        data.historyCountLabel,
+        { chevron: "up" },
+        "section-history",
+      )}
+      <div
+        style={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: "auto",
+          padding: "16px 16px 0",
+        }}
+      >
+        {data.history.map((entry, i) => (
+          <HistoryEntry
+            key={`${entry.date}-${i}`}
+            entry={entry}
+            isLast={i === data.history.length - 1}
+          />
+        ))}
+      </div>
+    </>
+  );
+}
+
+function ContactInfoPane({
+  data,
+  trailing,
+  contextHops = [],
+}: {
+  data: InteractionPreviewData;
+  // Header action rendered top-right (the close X per Figma, or a collapse
+  // affordance in the embedded take-over view).
+  trailing?: React.ReactNode;
+  contextHops?: ContextHopEvent[];
+}) {
+  const [activeTab, setActiveTab] = useState<ContactInfoTab>("contact");
+
+  // Opening a different interaction resets the pane to its default tab so
+  // stale tab state never carries across interactions.
+  const engagementRef = useRef(data.engagementId);
+  useEffect(() => {
+    if (engagementRef.current !== data.engagementId) {
+      engagementRef.current = data.engagementId;
+      setActiveTab("contact");
+    }
+  }, [data.engagementId]);
 
   return (
     <div
@@ -1132,44 +1177,7 @@ function ContactInfoPane({
       </div>
 
       {/* Contact info tab content */}
-      {activeTab === "contact" && (
-        <>
-          {sectionRow(
-            "Interaction",
-            `Queue: ${data.queueName}`,
-            { menu: true, chevron: "down" },
-            "section-interaction",
-          )}
-          {sectionRow(
-            data.contactName,
-            data.contactPhone,
-            { menu: true, chevron: "down" },
-            "section-contact",
-          )}
-          {sectionRow(
-            "Interaction history",
-            data.historyCountLabel,
-            { chevron: "up" },
-            "section-history",
-          )}
-          <div
-            style={{
-              flex: 1,
-              minHeight: 0,
-              overflowY: "auto",
-              padding: "16px 16px 0",
-            }}
-          >
-            {data.history.map((entry, i) => (
-              <HistoryEntry
-                key={`${entry.date}-${i}`}
-                entry={entry}
-                isLast={i === data.history.length - 1}
-              />
-            ))}
-          </div>
-        </>
-      )}
+      {activeTab === "contact" && <ContactInfoSections data={data} />}
 
       {/* Notes tab content — mirrors the AI Insights panel's Notes tab styling */}
       {activeTab === "notes" && (

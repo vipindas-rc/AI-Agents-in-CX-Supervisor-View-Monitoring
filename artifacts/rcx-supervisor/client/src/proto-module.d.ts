@@ -23,6 +23,9 @@ declare module "@proto" {
     onPreviewClose?: () => void;
     // Voice take-over committed — page switches to the Active calls context.
     onTakeOverCommitted?: (agentId: string) => void;
+    // Floating call window closed — page leaves the Active calls context
+    // if it was showing this agent's taken-over call.
+    onMonitoringWindowClosed?: (agentId: string) => void;
   }
   const AgentTablePanel: ComponentType<ProtoAgentTablePanelProps>;
   export default AgentTablePanel;

@@ -57,7 +57,13 @@ test("voice monitor opens the new 800x534 call window with live transcript", asy
 
   // Tab switching
   await page.getByTestId("tab-monitor-contact").click();
-  await expect(page.getByText("Contact info").nth(1)).toBeVisible();
+  // Contact tab now mirrors the digital Interaction preview's Contact info
+  // pane (shared ContactInfoSections): section rows + interaction history.
+  await expect(page.getByTestId("monitoring-contact-info")).toBeVisible();
+  await expect(page.getByTestId("section-interaction")).toBeVisible();
+  await expect(page.getByTestId("section-contact")).toBeVisible();
+  await expect(page.getByTestId("section-history")).toBeVisible();
+  await expect(page.getByTestId("row-history-entry").first()).toBeVisible();
   await page.getByTestId("tab-monitor-notes").click();
   await expect(page.getByText("Notes and transcript", { exact: true })).toBeVisible();
 

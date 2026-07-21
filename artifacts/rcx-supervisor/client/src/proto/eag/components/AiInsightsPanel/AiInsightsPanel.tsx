@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { RcIcon } from '@ringcentral/juno';
-import { MonitorCall } from '@ringcentral/juno-icon';
 import { CaretDownMd } from '@ringcentral/spring-icon';
 
 import {
@@ -12,13 +10,8 @@ import {
 } from '../../../mock/supervisorMock';
 import { getScoreSeverity } from '../DigitalInteractionTable/components/ScoreIndicator';
 import { AiCheckAreaChecked, AiCheckAreaUnchecked } from './ChecklistIcons';
-import { Tooltip } from '@ringcx/ui';
 
 import {
-  ActionButton,
-  ActionIcon,
-  ActionLabel,
-  ActionSlot,
   Avatar,
   BargeBanner,
   ChecklistAnswers,
@@ -36,8 +29,6 @@ import {
   ChecklistSectionTitles,
   CloseButton,
   Content,
-  ControlBar,
-  ControlRow,
   EntryHead,
   EntryMain,
   EntryName,
@@ -177,41 +168,6 @@ const RefreshSvg = () => (
   </svg>
 );
 
-// Transfer glyph — exact vector from the Figma "Control" footer (node 21:67367).
-const TransferGlyph = () => (
-  <svg
-    width='18'
-    height='14'
-    viewBox='0 0 17.3962 13.0175'
-    fill='none'
-    xmlns='http://www.w3.org/2000/svg'
-    aria-hidden
-  >
-    <path
-      d='M12.1475 13.0175L11.0725 11.9694L13.8387 9.13312H0V7.63312H17.3962L12.1462 13.0169L12.1475 13.0175ZM12.1475 0L11.0725 1.04813L13.8387 3.88437H0V5.38437H17.3962L12.1462 0.000624955L12.1475 0Z'
-      fill='currentColor'
-    />
-  </svg>
-);
-
-// Take-over glyph — exact vector from the Figma "Control" footer (node 21:67370).
-const TakeOverGlyph = () => (
-  <svg
-    width='18'
-    height='18'
-    viewBox='0 0 28 28'
-    fill='none'
-    xmlns='http://www.w3.org/2000/svg'
-    aria-hidden
-  >
-    <path
-      d='M8.95901 14.2701L8.96389 14.2711C9.71471 14.546 10.2477 15.2244 10.3116 16.0299L10.3184 16.193L10.3155 16.318V16.3287C10.3156 17.0454 10.7637 17.6552 11.3916 17.8981L11.4073 17.9039L11.4229 17.9088L11.5489 17.9498L11.5635 17.9547L11.5782 17.9576C12.094 18.0911 12.8508 18.2555 13.6465 18.3131L13.9893 18.3307H14.003C14.9013 18.3353 15.7971 18.2419 16.6748 18.0533L16.6817 18.0524C17.2318 17.9266 17.6581 17.4834 17.7539 16.9235L17.7578 16.9039L17.7598 16.8844L17.7705 16.7682L17.7725 16.7496L17.7735 16.732L17.7813 16.4918C17.8088 15.6416 18.3474 14.9226 19.0996 14.6324L19.2666 14.5768L22.1699 13.7301L22.2412 14.0065L22.2578 14.0709L22.2901 14.1305C23.0943 15.6193 23.1958 17.0168 22.6797 18.2184L22.6651 18.2526C22.4606 18.7058 22.1838 19.124 21.8467 19.4899L21.5459 19.7965C21.1119 20.198 20.6233 20.5504 20.0948 20.8395L20.0713 20.8512L20.0498 20.8629C18.4769 21.7194 16.4589 22.1924 14.3252 22.193L13.8721 22.1861H13.8731C11.9117 22.1275 10.0855 21.6744 8.61331 20.9469C7.13638 20.217 6.05091 19.2294 5.50686 18.1236C5.03997 17.174 4.70542 15.6017 6.00686 13.5602L6.00589 13.5592L6.21389 13.235L8.95901 14.2701ZM16.877 7.65685L16.5948 7.93908L14.1494 5.49377V14.0123H13.7491V5.59826L12.8106 6.53673L11.4053 7.93908L11.1231 7.65685L14 4.77697L16.877 7.65685Z'
-      stroke='currentColor'
-      strokeWidth='1.1'
-    />
-  </svg>
-);
-
 interface AiInsightsPanelProps {
   agentName: string;
   isVoice: boolean;
@@ -223,17 +179,6 @@ interface AiInsightsPanelProps {
   // Label for the agent being taken over from — 'AI' for Air agents, 'agent'
   // for human agents — used in the active-takeover wording.
   takeoverSubject?: string;
-  onTransfer?: () => void;
-  onTakeOver?: () => void;
-  onMonitor?: () => void;
-  // Mirrors the table's hover Monitor icon gating: the button always renders
-  // but is disabled (with an explanatory tooltip) when the interaction can't
-  // be monitored — e.g. a digital conversation handled by a human agent.
-  monitorDisabled?: boolean;
-  monitorDisabledTooltip?: string;
-  // True while a monitoring session is active for this interaction; clicking
-  // Monitor again stops it (same toggle semantics as the table icon).
-  isMonitoring?: boolean;
   // True when the interaction is handled by an AirPro (AI) agent. Human-speech
   // metrics (Speech Pace, Talk Ratio) don't apply to AI agents and are hidden.
   isAiAgent?: boolean;
@@ -247,12 +192,6 @@ const AiInsightsPanel = ({
   confidenceScore,
   isBarged = false,
   takeoverSubject = 'AI',
-  onTransfer,
-  onTakeOver,
-  onMonitor,
-  monitorDisabled = false,
-  monitorDisabledTooltip,
-  isMonitoring = false,
   isAiAgent = false,
   onClose,
 }: AiInsightsPanelProps) => {
@@ -280,7 +219,14 @@ const AiInsightsPanel = ({
     setCount(STREAM_START);
   }, [isVoice, agentName]);
 
+  // Transcripts are voice-only: digital interactions never show one, so the
+  // tab falls back to Notes and the live stream doesn't run at all.
   useEffect(() => {
+    if (!isVoice) setTab((t) => (t === 'transcript' ? 'notes' : t));
+  }, [isVoice]);
+
+  useEffect(() => {
+    if (!isVoice) return;
     const id = window.setInterval(
       () => setCount((c) => c + 1),
       STREAM_INTERVAL_MS
@@ -326,7 +272,9 @@ const AiInsightsPanel = ({
   const start = Math.max(0, count - STREAM_WINDOW);
   const visibleIndexes: number[] = [];
   for (let i = start; i < count; i += 1) visibleIndexes.push(i);
-  const nextSpeaker = transcriptTurnAt(count, { isVoice, agentName, tone });
+  const nextSpeaker = isVoice
+    ? transcriptTurnAt(count, { isVoice, agentName, tone })
+    : null;
 
   return (
     <PanelOverlay onClick={onClose} data-testid='overlay-ai-insights'>
@@ -367,14 +315,16 @@ const AiInsightsPanel = ({
           >
             Notes
           </TabPill>
-          <TabPill
-            role='tab'
-            $active={tab === 'transcript'}
-            onClick={() => setTab('transcript')}
-            data-testid='tab-transcript'
-          >
-            Transcript
-          </TabPill>
+          {isVoice && (
+            <TabPill
+              role='tab'
+              $active={tab === 'transcript'}
+              onClick={() => setTab('transcript')}
+              data-testid='tab-transcript'
+            >
+              Transcript
+            </TabPill>
+          )}
           <TabPill
             role='tab'
             $active={tab === 'checklist'}
@@ -418,7 +368,7 @@ const AiInsightsPanel = ({
             </>
           )}
 
-          {tab === 'transcript' && (
+          {tab === 'transcript' && isVoice && nextSpeaker && (
             <TranscriptBody data-testid='body-transcript'>
               {visibleIndexes.map((absIndex) => {
                 const turn = transcriptTurnAt(absIndex, { isVoice, agentName, tone });
@@ -541,60 +491,6 @@ const AiInsightsPanel = ({
           </BargeBanner>
         )}
 
-        <ControlBar>
-          <ControlRow>
-            {onMonitor &&
-              (() => {
-                const monitorButton = (
-                  <ActionButton
-                    type='button'
-                    $active={isMonitoring}
-                    disabled={monitorDisabled}
-                    onClick={monitorDisabled ? undefined : onMonitor}
-                    data-testid='button-monitor'
-                  >
-                    <ActionIcon $active={isMonitoring}>
-                      <RcIcon symbol={MonitorCall} size='small' />
-                    </ActionIcon>
-                    <ActionLabel>
-                      {isMonitoring ? 'Monitoring' : 'Monitor'}
-                    </ActionLabel>
-                  </ActionButton>
-                );
-                // Disabled buttons don't fire hover events, so the tooltip
-                // wraps a span — same pattern as the table's Monitor icon.
-                return monitorDisabled && monitorDisabledTooltip ? (
-                  <Tooltip title={monitorDisabledTooltip} placement='top'>
-                    <ActionSlot>{monitorButton}</ActionSlot>
-                  </Tooltip>
-                ) : (
-                  monitorButton
-                );
-              })()}
-            <ActionButton
-              type='button'
-              onClick={onTransfer}
-              data-testid='button-transfer'
-            >
-              <ActionIcon>
-                <TransferGlyph />
-              </ActionIcon>
-              <ActionLabel>Transfer</ActionLabel>
-            </ActionButton>
-            <ActionButton
-              type='button'
-              $active={isBarged}
-              disabled={isBarged}
-              onClick={isBarged ? undefined : onTakeOver}
-              data-testid='button-take-over'
-            >
-              <ActionIcon $active={isBarged}>
-                <TakeOverGlyph />
-              </ActionIcon>
-              <ActionLabel>{isBarged ? 'Taken over' : 'Take over'}</ActionLabel>
-            </ActionButton>
-          </ControlRow>
-        </ControlBar>
       </Panel>
     </PanelOverlay>
   );
