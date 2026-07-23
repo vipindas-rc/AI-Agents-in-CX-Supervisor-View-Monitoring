@@ -1633,6 +1633,32 @@ export function InteractionPreview({
           </div>
         </div>
         <MessageSquareMore size={28} strokeWidth={1.6} color="#c056cf" />
+        {/* Take-over has no window header, so when the details pane is
+            hidden its reopen affordance sits inline at the end of the
+            subject row instead of a separate side rail. */}
+        {isTakeover && tabsCollapsed ? (
+          <button
+            type="button"
+            onClick={() => setTabsCollapsed(false)}
+            aria-label="Show details"
+            title="Show details"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 28,
+              height: 28,
+              borderRadius: 6,
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+              color: "#121212",
+            }}
+            data-testid="button-expand-tabs"
+          >
+            <PanelRightClose size={16} strokeWidth={2} />
+          </button>
+        ) : null}
       </div>
       {/* Transcript */}
       <div
@@ -1858,11 +1884,10 @@ export function InteractionPreview({
     </button>
   );
 
-  // Collapsed state: in preview/expanded the reopen affordance lives in the
-  // window header (after the close icon), so the pane disappears entirely.
-  // The embedded take-over view has no header, so it keeps a slim rail with
-  // the reopen button instead.
-  const rightPaneWidth = !tabsCollapsed ? 430 : isTakeover ? 44 : 0;
+  // Collapsed state: the pane disappears entirely in every mode. The reopen
+  // affordance lives in the window header (preview/expanded) or inline at the
+  // end of the subject row (take-over, which has no header).
+  const rightPaneWidth = !tabsCollapsed ? 430 : 0;
   const rightPane = (
     <div
       style={{
@@ -1886,45 +1911,6 @@ export function InteractionPreview({
           // (the collapse icon lines up with the message icon at its end).
           headerHeight={isTakeover ? 64 : 73}
         />
-      ) : isTakeover ? (
-        <div
-          style={{
-            width: 44,
-            flexShrink: 0,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            // Centers the 28px reopen button within the 64px subject row so
-            // it aligns with the message icon at the row's end.
-            paddingTop: 18,
-            borderLeft: "1px solid rgba(0,0,0,0.1)",
-            background: "#fff",
-            minHeight: 0,
-          }}
-          data-testid="rail-tabs-collapsed"
-        >
-          <button
-            type="button"
-            onClick={() => setTabsCollapsed(false)}
-            aria-label="Show details"
-            title="Show details"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: 28,
-              height: 28,
-              borderRadius: 6,
-              border: "none",
-              background: "transparent",
-              cursor: "pointer",
-              color: "#121212",
-            }}
-            data-testid="button-expand-tabs"
-          >
-            <PanelRightClose size={16} strokeWidth={2} />
-          </button>
-        </div>
       ) : null}
     </div>
   );

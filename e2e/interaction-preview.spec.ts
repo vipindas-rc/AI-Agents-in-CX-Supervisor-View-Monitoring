@@ -173,13 +173,13 @@ test.describe("digital interaction preview flow", () => {
     await page.getByTestId("button-expand-tabs").click();
     await expect(tabsPane).toBeVisible();
 
-    // Takeover mode has no window header, so a slim rail hosts the reopen
-    // affordance instead.
+    // Takeover mode has no window header; the pane hides entirely (no side
+    // rail) and the reopen icon sits inline at the end of the subject row.
     await page.getByTestId("button-take-over").click();
     await expect(page.getByTestId("view-interaction-takeover")).toBeVisible();
     await page.getByTestId("button-collapse-tabs").click();
     await expect(tabsPane).not.toBeVisible();
-    await expect(page.getByTestId("rail-tabs-collapsed")).toBeVisible();
+    await expect(page.getByTestId("rail-tabs-collapsed")).not.toBeVisible();
     await page.getByTestId("button-expand-tabs").click();
     await expect(tabsPane).toBeVisible();
   });
