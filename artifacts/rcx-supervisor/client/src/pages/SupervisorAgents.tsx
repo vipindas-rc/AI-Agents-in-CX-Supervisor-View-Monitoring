@@ -430,6 +430,22 @@ export const SupervisorAgents = ({
     ],
   );
 
+  // Shared upstream filters (agent type, channel) can change on the Agents
+  // tab, where interaction pruning must not run. Prune once on entering the
+  // Interactions tab so any selections invalidated elsewhere are cleaned up.
+  useEffect(() => {
+    if (isInteractions) {
+      pruneInteractionDownstream(
+        agentTypeFilter,
+        agentFilter,
+        channelFilter,
+        categoryFilter,
+      );
+    }
+    // Only on tab entry — in-tab changes prune via their own handlers.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isInteractions]);
+
   const handleInteractionsChannelChange = useCallback(
     (values: string[]) => {
       pruneInteractionDownstream(
@@ -813,7 +829,7 @@ export const SupervisorAgents = ({
                 <>
                   <SupervisorFilter
                     values={channelFilter}
-                    onValuesChange={handleInteractionsChannelChange}
+                    onValuesChange={setChannelFilter}
                     placeholder="All channels"
                     options={CHANNEL_OPTIONS.map((c) => ({
                       value: c,
@@ -823,7 +839,7 @@ export const SupervisorAgents = ({
                   />
                   <SupervisorFilter
                     values={agentTypeFilter}
-                    onValuesChange={handleInteractionsAgentTypeChange}
+                    onValuesChange={handleAgentTypeChange}
                     placeholder="All agent types"
                     options={AGENT_TYPE_OPTIONS}
                     testId="select-agent-type"
