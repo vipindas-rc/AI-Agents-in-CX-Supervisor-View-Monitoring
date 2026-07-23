@@ -9,9 +9,11 @@ import {
   Maximize2,
   MessageSquareMore,
   Mic,
+  Minimize2,
   MoreVertical,
   NotebookPen,
   PanelRightClose,
+  PanelRightOpen,
   Paperclip,
   PhoneIncoming,
   PhoneOutgoing,
@@ -1076,12 +1078,16 @@ function ContactInfoPane({
   data,
   trailing,
   contextHops = [],
+  headerHeight = 48,
 }: {
   data: InteractionPreviewData;
   // Header action rendered top-right (the close X per Figma, or a collapse
   // affordance in the embedded take-over view).
   trailing?: React.ReactNode;
   contextHops?: ContextHopEvent[];
+  // Tab-row height; the windowed preview passes the preview header's height
+  // so the tab underline aligns with the header's bottom edge.
+  headerHeight?: number;
 }) {
   const [activeTab, setActiveTab] = useState<ContactInfoTab>("contact");
 
@@ -1114,7 +1120,7 @@ function ContactInfoPane({
           and a 2px active underline in the co-branding blue. */}
       <div
         style={{
-          height: 48,
+          height: headerHeight,
           flexShrink: 0,
           display: "flex",
           alignItems: "stretch",
@@ -1296,6 +1302,9 @@ export interface InteractionPreviewProps {
   contextHops?: ContextHopEvent[];
   onClose: () => void;
   onEnlarge: () => void;
+  // Returns the window from expanded/fullscreen back to the floating preview
+  // (its previous size and drag position are preserved while mounted).
+  onRestore?: () => void;
   onTakeOver: () => void;
 }
 
@@ -1307,10 +1316,16 @@ export function InteractionPreview({
   contextHops,
   onClose,
   onEnlarge,
+  onRestore,
   onTakeOver,
 }: InteractionPreviewProps) {
   const isFullPage = mode !== "preview";
   const isTakeover = mode === "takeover";
+
+  // Collapsible tabs pane (Contact Info / Notes / Context). Collapsing hides
+  // the whole pane, leaving only the interaction preview; a slim rail with a
+  // reopen affordance remains so the pane can be restored in any mode.
+  const [tabsCollapsed, setTabsCollapsed] = useState(false);
 
   // Floating preview popup is movable by its header (like the monitoring
   // dialpad); the offset persists while the popup stays mounted.
@@ -1484,15 +1499,51 @@ export function InteractionPreview({
             >
               Interaction preview
             </span>
-            {mode === "preview" ? (
+            {mode === "expanded" ? (
+              <button
+                type="button"
+                onClick={onRestore ?? onClose}
+                aria-label="Exit full screen"
+                title="Exit full screen"
+                style={iconButtonStyle}
+                data-testid="button-restore"
+              >
+                <Minimize2 size={16} strokeWidth={2} />
+              </button>
+            ) : (
               <button
                 type="button"
                 onClick={onEnlarge}
-                aria-label="Expand"
+                aria-label="Full screen"
+                title="Full screen"
                 style={iconButtonStyle}
                 data-testid="button-enlarge"
               >
                 <Maximize2 size={16} strokeWidth={2} />
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close"
+              title="Close"
+              style={iconButtonStyle}
+              data-testid="button-close-preview"
+            >
+              <X size={16} strokeWidth={2} />
+            </button>
+            {/* When the details pane is hidden, its reopen affordance moves
+                into the header, after the close icon. */}
+            {tabsCollapsed ? (
+              <button
+                type="button"
+                onClick={() => setTabsCollapsed(false)}
+                aria-label="Show details"
+                title="Show details"
+                style={iconButtonStyle}
+                data-testid="button-expand-tabs"
+              >
+                <PanelRightClose size={16} strokeWidth={2} />
               </button>
             ) : null}
           </div>
@@ -1781,29 +1832,14 @@ export function InteractionPreview({
     </div>
   );
 
-  // Both surfaces render the same 28px icon button with the same 16px
-  // collapse glyph per the Figma header spec — the preview keeps its close
-  // behavior, the embedded take-over view is a passive collapse affordance.
-  const contactTrailing = isTakeover ? (
-    <span
-      aria-hidden="true"
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        width: 28,
-        height: 28,
-        color: "#121212",
-      }}
-      data-testid="icon-collapse-contact"
-    >
-      <PanelRightClose size={16} strokeWidth={2} />
-    </span>
-  ) : (
+  // The trailing icon in the tabs row collapses the whole tabs pane in every
+  // mode (preview, expanded, take-over). Closing the window is the header X.
+  const contactTrailing = (
     <button
       type="button"
-      onClick={onClose}
-      aria-label="Close"
+      onClick={() => setTabsCollapsed(true)}
+      aria-label="Hide details"
+      title="Hide details"
       style={{
         display: "inline-flex",
         alignItems: "center",
@@ -1816,10 +1852,81 @@ export function InteractionPreview({
         cursor: "pointer",
         color: "#121212",
       }}
-      data-testid="button-close-preview"
+      data-testid="button-collapse-tabs"
     >
-      <PanelRightClose size={16} strokeWidth={2} />
+      <PanelRightOpen size={16} strokeWidth={2} />
     </button>
+  );
+
+  // Collapsed state: in preview/expanded the reopen affordance lives in the
+  // window header (after the close icon), so the pane disappears entirely.
+  // The embedded take-over view has no header, so it keeps a slim rail with
+  // the reopen button instead.
+  const rightPaneWidth = !tabsCollapsed ? 430 : isTakeover ? 44 : 0;
+  const rightPane = (
+    <div
+      style={{
+        width: rightPaneWidth,
+        flexShrink: 0,
+        minHeight: 0,
+        display: "flex",
+        overflow: "hidden",
+        // Soft slide: the pane eases in and out instead of popping.
+        transition: "width 260ms cubic-bezier(0.4, 0, 0.2, 1)",
+      }}
+      data-testid="wrapper-tabs-pane"
+    >
+      {!tabsCollapsed ? (
+        <ContactInfoPane
+          data={data}
+          trailing={contactTrailing}
+          contextHops={contextHops}
+          // The windowed preview header is 73px tall; the embedded take-over
+          // view has no header, so its tab row matches the 64px subject row
+          // (the collapse icon lines up with the message icon at its end).
+          headerHeight={isTakeover ? 64 : 73}
+        />
+      ) : isTakeover ? (
+        <div
+          style={{
+            width: 44,
+            flexShrink: 0,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            // Centers the 28px reopen button within the 64px subject row so
+            // it aligns with the message icon at the row's end.
+            paddingTop: 18,
+            borderLeft: "1px solid rgba(0,0,0,0.1)",
+            background: "#fff",
+            minHeight: 0,
+          }}
+          data-testid="rail-tabs-collapsed"
+        >
+          <button
+            type="button"
+            onClick={() => setTabsCollapsed(false)}
+            aria-label="Show details"
+            title="Show details"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 28,
+              height: 28,
+              borderRadius: 6,
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+              color: "#121212",
+            }}
+            data-testid="button-expand-tabs"
+          >
+            <PanelRightClose size={16} strokeWidth={2} />
+          </button>
+        </div>
+      ) : null}
+    </div>
   );
 
   // Injects a "Transferred" system message, closes the Transfer dialog and
@@ -1858,7 +1965,7 @@ export function InteractionPreview({
           data-testid="view-interaction-takeover"
         >
           {leftPane}
-          <ContactInfoPane data={data} trailing={contactTrailing} contextHops={contextHops} />
+          {rightPane}
         </div>
         {transferDialog}
       </>
@@ -1879,7 +1986,7 @@ export function InteractionPreview({
           data-testid={`view-interaction-${mode}`}
         >
           {leftPane}
-          <ContactInfoPane data={data} trailing={contactTrailing} contextHops={contextHops} />
+          {rightPane}
         </div>
         {transferDialog}
       </>
@@ -1915,7 +2022,10 @@ export function InteractionPreview({
       <div
         style={{
           display: "flex",
-          width: 1030,
+          // Hiding the details pane shrinks the popup to just the interaction
+          // preview — no leftover white space where the pane used to be.
+          width: tabsCollapsed ? 600 : 1030,
+          transition: "width 260ms cubic-bezier(0.4, 0, 0.2, 1)",
           maxWidth: "calc(100vw - 40px)",
           height: "min(700px, calc(100vh - 40px))",
           borderRadius: 10,
@@ -1929,7 +2039,7 @@ export function InteractionPreview({
         data-testid="popup-interaction-preview"
       >
         {leftPane}
-        <ContactInfoPane data={data} trailing={contactTrailing} contextHops={contextHops} />
+        {rightPane}
       </div>
     </div>
     {transferDialog}

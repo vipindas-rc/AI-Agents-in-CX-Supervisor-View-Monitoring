@@ -916,6 +916,7 @@ export default function AgentTablePanel({
             }
             onClose={() => onPreviewClose?.()}
             onEnlarge={() => onPreviewModeChange?.("expanded")}
+            onRestore={() => onPreviewModeChange?.("preview")}
             onTakeOver={handlePreviewTakeOver}
           />
         )}

@@ -148,4 +148,66 @@ test.describe("digital interaction preview flow", () => {
     await expect(page.getByTestId("view-interaction-expanded")).toBeVisible();
     await expect(page.getByTestId("button-take-over")).toBeVisible();
   });
+
+  test("tabs pane collapses and reopens in preview, expanded, and takeover modes", async ({
+    page,
+  }) => {
+    await page.goto(`/interactions/${NINA_ENGAGEMENT}/preview`);
+
+    const tabsPane = page.getByTestId("pane-contact-info");
+    await expect(tabsPane).toBeVisible();
+
+    // Preview mode: collapse hides the tabs pane entirely; the reopen icon
+    // appears in the window header, after the close icon.
+    await page.getByTestId("button-collapse-tabs").click();
+    await expect(tabsPane).not.toBeVisible();
+    await expect(page.getByTestId("rail-tabs-collapsed")).not.toBeVisible();
+    await page.getByTestId("button-expand-tabs").click();
+    await expect(tabsPane).toBeVisible();
+
+    // Expanded mode keeps the same collapse behavior.
+    await page.getByTestId("button-enlarge").click();
+    await expect(page.getByTestId("view-interaction-expanded")).toBeVisible();
+    await page.getByTestId("button-collapse-tabs").click();
+    await expect(tabsPane).not.toBeVisible();
+    await page.getByTestId("button-expand-tabs").click();
+    await expect(tabsPane).toBeVisible();
+
+    // Takeover mode has no window header, so a slim rail hosts the reopen
+    // affordance instead.
+    await page.getByTestId("button-take-over").click();
+    await expect(page.getByTestId("view-interaction-takeover")).toBeVisible();
+    await page.getByTestId("button-collapse-tabs").click();
+    await expect(tabsPane).not.toBeVisible();
+    await expect(page.getByTestId("rail-tabs-collapsed")).toBeVisible();
+    await page.getByTestId("button-expand-tabs").click();
+    await expect(tabsPane).toBeVisible();
+  });
+
+  test("expanded mode shows restore and close controls; restore returns to preview", async ({
+    page,
+  }) => {
+    await page.goto(`/interactions/${NINA_ENGAGEMENT}/preview`);
+    await expect(page.getByTestId("popup-interaction-preview")).toBeVisible();
+
+    // Enlarge -> expanded; the restore (minimize) control stays visible.
+    await page.getByTestId("button-enlarge").click();
+    await expect(page.getByTestId("view-interaction-expanded")).toBeVisible();
+    const restore = page.getByTestId("button-restore");
+    await expect(restore).toBeVisible();
+
+    // Restore returns to the floating preview popup and the /preview URL.
+    await restore.click();
+    await expect(page.getByTestId("popup-interaction-preview")).toBeVisible();
+    await expect(page).toHaveURL(/\/interactions\/eng-1023-\d+\/preview/);
+
+    // Close (X) is available in expanded mode too, and closes the window.
+    await page.getByTestId("button-enlarge").click();
+    await expect(page.getByTestId("view-interaction-expanded")).toBeVisible();
+    await page.getByTestId("button-close-preview").click();
+    await expect(page).not.toHaveURL(/\/interactions\//);
+    await expect(
+      page.getByTestId("view-interaction-expanded"),
+    ).not.toBeVisible();
+  });
 });
