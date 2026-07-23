@@ -33,6 +33,14 @@ declare module "@proto" {
   export const interactionColumnMeta: { id: string; label: string }[];
   export const agentStateOptions: Record<"All" | "Air" | "Human", string[]>;
   export const agentFilterOptions: { value: string; label: string }[];
+  export interface InteractionFilterMetaRow {
+    agentId: string;
+    fullName: string;
+    agentType: string;
+    sourceName: string;
+    categoryIds: string[];
+  }
+  export const interactionFilterMeta: InteractionFilterMetaRow[];
 
   export interface SupervisorFilterOption {
     value: string;

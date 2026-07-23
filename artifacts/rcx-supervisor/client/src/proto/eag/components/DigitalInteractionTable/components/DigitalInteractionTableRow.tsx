@@ -2,11 +2,7 @@ import type { FC } from 'react';
 import { Fragment, useMemo, useState } from 'react';
 
 import { CategoriesCell } from './CategoriesCell';
-import {
-    ScoreIndicator,
-    getScoreSeverity,
-    worstSeverity,
-} from './ScoreIndicator';
+import { ScoreIndicator } from './ScoreIndicator';
 import type { AIFeature } from '../../../common/services/transport/aiFeatures';
 import { INTERACTION_SOURCES } from '../../../constants/app';
 import { INTERACTION_CELL } from '../../../constants/testIds';
@@ -169,15 +165,6 @@ export const DigitalInteractionTableRow: FC<{
         monitoredAgent.uii === engagementId &&
         !isSelfAgent;
 
-    // An interaction is flagged when its (real-time) confidence or sentiment
-    // crosses an alert threshold — the proactive-intervention signal. The row's
-    // treatment reflects the worse of the two signals (critical red / warning
-    // orange).
-    const alertSeverity = worstSeverity(
-        getScoreSeverity('confidence', confidenceScore),
-        getScoreSeverity('sentiment', sentimentScore)
-    );
-
     const getColumnValue = useMemo(
         () => (columnName: string) => {
             switch (columnName) {
@@ -221,7 +208,6 @@ export const DigitalInteractionTableRow: FC<{
                 isInfoToolTipVisible={isInfoToolTipVisible}
                 isHighlighted={isHighlighted}
                 isSelected={isSelected}
-                alertSeverity={alertSeverity}
                 onClick={
                     canOpenInsights
                         ? () => viewInsight(agentId, engagementId)

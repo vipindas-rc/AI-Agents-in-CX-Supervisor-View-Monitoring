@@ -81,39 +81,16 @@ export const SupervisorRowWrapper = styled.div<{
     isInfoToolTipVisible?: boolean;
     isHighlighted?: boolean;
     isSelected?: boolean;
-    alertSeverity?: 'critical' | 'warning' | null;
 }>`
     background-color: ${({ theme, isInfoToolTipVisible }) =>
         isInfoToolTipVisible ? theme.colors.gray[50] : theme.colors.gray[0]};
 
-    /* Flagged rows get a thin colored strip on the left edge instead of a
-       full-row tint, so they stay noticeable without washing out the row.
-       Using an inset box-shadow keeps cell layout/column alignment untouched
-       (no extra column, no width change). */
-    box-shadow: inset 2px 0 0 0 transparent;
-
-    /* Ease the flagged-state flip so live score crossings fade in/out rather
-       than snapping (low-distraction real-time updates). */
-    transition:
-        background-color 0.5s ease,
-        box-shadow 0.5s ease;
+    transition: background-color 0.5s ease;
 
     ${({ isHighlighted }) =>
         isHighlighted &&
         css`
             animation: ${interactionHighlightBlink} 0.9s ease-in-out 3;
-        `}
-
-    ${({ alertSeverity }) =>
-        alertSeverity === 'warning' &&
-        css`
-            box-shadow: inset 2px 0 0 0 #ed6c02;
-        `}
-
-    ${({ alertSeverity }) =>
-        alertSeverity === 'critical' &&
-        css`
-            box-shadow: inset 2px 0 0 0 #d32f2f;
         `}
 
     ${({ isSelected, theme }) =>

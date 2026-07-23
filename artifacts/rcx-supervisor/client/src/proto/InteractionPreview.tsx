@@ -1108,14 +1108,17 @@ function ContactInfoPane({
       }}
       data-testid="pane-contact-info"
     >
-      {/* Tabbed header */}
+      {/* Tabbed header — matches the Figma header spec (node 227-27275):
+          48px tabs, 12px/600 uppercase labels with 0.2px tracking, centered
+          within 100–240px tab wrappers, a full-width 1px #e5e5e5 underline,
+          and a 2px active underline in the co-branding blue. */}
       <div
         style={{
           height: 48,
           flexShrink: 0,
           display: "flex",
           alignItems: "stretch",
-          borderBottom: "1px solid rgba(0,0,0,0.1)",
+          borderBottom: "1px solid #e5e5e5",
           padding: "0 16px",
           gap: 0,
         }}
@@ -1149,11 +1152,16 @@ function ContactInfoPane({
                     ? `2px solid ${RC_BLUE}`
                     : "2px solid transparent",
                   cursor: "pointer",
-                  padding: "0 16px 0 0",
-                  marginRight: 8,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minWidth: 100,
+                  maxWidth: 240,
+                  padding: "0 8px",
                   fontSize: 12,
-                  fontWeight: 700,
-                  letterSpacing: "0.06em",
+                  fontWeight: 600,
+                  lineHeight: "15px",
+                  letterSpacing: "0.2px",
                   color: isActive ? RC_BLUE : "#72757a",
                   fontFamily: "'Inter', sans-serif",
                   whiteSpace: "nowrap",
@@ -1773,16 +1781,23 @@ export function InteractionPreview({
     </div>
   );
 
-  // Close X lives in the Contact info pane header per the Figma design. The
-  // embedded take-over view shows a collapse affordance instead (the back
-  // row above the content is the way out of take-over).
+  // Both surfaces render the same 28px icon button with the same 16px
+  // collapse glyph per the Figma header spec — the preview keeps its close
+  // behavior, the embedded take-over view is a passive collapse affordance.
   const contactTrailing = isTakeover ? (
     <span
       aria-hidden="true"
-      style={{ display: "inline-flex", color: "#616161" }}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: 28,
+        height: 28,
+        color: "#121212",
+      }}
       data-testid="icon-collapse-contact"
     >
-      <PanelRightClose size={18} strokeWidth={1.8} />
+      <PanelRightClose size={16} strokeWidth={2} />
     </span>
   ) : (
     <button
@@ -1799,11 +1814,11 @@ export function InteractionPreview({
         border: "none",
         background: "transparent",
         cursor: "pointer",
-        color: "#212121",
+        color: "#121212",
       }}
       data-testid="button-close-preview"
     >
-      <X size={16} strokeWidth={2} />
+      <PanelRightClose size={16} strokeWidth={2} />
     </button>
   );
 

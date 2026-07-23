@@ -81,6 +81,28 @@ export const agentFilterOptions: { value: string; label: string }[] =
     ).entries(),
   ).map(([value, label]) => ({ value, label }));
 
+// Per-row filter metadata for the Interactions tab's cascading filters
+// (Agent type -> Agents -> Channels -> Categories). Each entry mirrors one
+// interaction row's filterable fields so every downstream option set can be
+// derived from the upstream selections.
+export interface InteractionFilterMetaRow {
+  agentId: string;
+  fullName: string;
+  agentType: string;
+  sourceName: string;
+  categoryIds: string[];
+}
+export const interactionFilterMeta: InteractionFilterMetaRow[] =
+  _interactionAgents.map((r) => ({
+    agentId: r.agentId,
+    fullName: r.fullName,
+    agentType: r.agentType,
+    sourceName: r.sourceName,
+    categoryIds: String(r.categoryIds ?? "")
+      .split(",")
+      .filter(Boolean),
+  }));
+
 interface AgentTablePanelProps {
   activeTab?: "Agents" | "Interactions";
   searchValue?: string;

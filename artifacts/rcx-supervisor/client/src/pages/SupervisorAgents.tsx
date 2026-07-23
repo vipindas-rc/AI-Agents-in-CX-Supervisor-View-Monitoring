@@ -10,7 +10,7 @@ import AgentTablePanel, {
   agentColumnMeta,
   interactionColumnMeta,
   agentStateOptions,
-  agentFilterOptions,
+  interactionFilterMeta,
   SupervisorFilter,
 } from "@proto";
 import { Button } from "@/components/ui/button";
@@ -330,6 +330,117 @@ export const SupervisorAgents = ({
     }
     // If no types selected all states are valid — keep existing state selections.
   }, []);
+
+  // ---- Interactions-tab cascading filters ------------------------------
+  // Order: Agent type -> Agents -> Channels -> Categories. Each option set is
+  // derived from the interaction rows that match every upstream selection, and
+  // selections invalidated by an upstream change are pruned.
+  const rowsForTypes = useCallback(
+    (types: string[]) =>
+      interactionFilterMeta.filter(
+        (r) => types.length === 0 || types.includes(r.agentType),
+      ),
+    [],
+  );
+
+  const interactionAgentOptions = useMemo(() => {
+    const rows = rowsForTypes(agentTypeFilter);
+    return Array.from(
+      new Map(rows.map((r) => [r.agentId, r.fullName])).entries(),
+    ).map(([value, label]) => ({ value, label }));
+  }, [agentTypeFilter, rowsForTypes]);
+
+  const interactionChannelOptions = useMemo(() => {
+    const rows = rowsForTypes(agentTypeFilter).filter(
+      (r) => agentFilter.length === 0 || agentFilter.includes(r.agentId),
+    );
+    return Array.from(new Set(rows.map((r) => r.sourceName)));
+  }, [agentTypeFilter, agentFilter, rowsForTypes]);
+
+  const interactionCategoryOptions = useMemo(() => {
+    const rows = rowsForTypes(agentTypeFilter)
+      .filter(
+        (r) => agentFilter.length === 0 || agentFilter.includes(r.agentId),
+      )
+      .filter(
+        (r) =>
+          channelFilter.length === 0 || channelFilter.includes(r.sourceName),
+      );
+    const ids = new Set(rows.flatMap((r) => r.categoryIds));
+    return CATEGORY_OPTIONS.filter((c) => ids.has(c.id));
+  }, [agentTypeFilter, agentFilter, channelFilter, rowsForTypes]);
+
+  // Prunes every downstream selection so it stays valid for the given
+  // upstream state, then commits all three downstream filters.
+  const pruneInteractionDownstream = useCallback(
+    (types: string[], agents: string[], channels: string[], cats: string[]) => {
+      const rows1 = rowsForTypes(types);
+      const validAgents = new Set(rows1.map((r) => r.agentId));
+      const nextAgents = agents.filter((a) => validAgents.has(a));
+      const rows2 = rows1.filter(
+        (r) => nextAgents.length === 0 || nextAgents.includes(r.agentId),
+      );
+      const validChannels = new Set(rows2.map((r) => r.sourceName));
+      const nextChannels = channels.filter((c) => validChannels.has(c));
+      const rows3 = rows2.filter(
+        (r) =>
+          nextChannels.length === 0 || nextChannels.includes(r.sourceName),
+      );
+      const validCats = new Set(rows3.flatMap((r) => r.categoryIds));
+      setAgentFilter(nextAgents);
+      setChannelFilter(nextChannels);
+      setCategoryFilter(cats.filter((c) => validCats.has(c)));
+    },
+    [rowsForTypes],
+  );
+
+  const handleInteractionsAgentTypeChange = useCallback(
+    (values: string[]) => {
+      handleAgentTypeChange(values);
+      pruneInteractionDownstream(
+        values,
+        agentFilter,
+        channelFilter,
+        categoryFilter,
+      );
+    },
+    [
+      handleAgentTypeChange,
+      pruneInteractionDownstream,
+      agentFilter,
+      channelFilter,
+      categoryFilter,
+    ],
+  );
+
+  const handleInteractionsAgentChange = useCallback(
+    (values: string[]) => {
+      pruneInteractionDownstream(
+        agentTypeFilter,
+        values,
+        channelFilter,
+        categoryFilter,
+      );
+    },
+    [
+      pruneInteractionDownstream,
+      agentTypeFilter,
+      channelFilter,
+      categoryFilter,
+    ],
+  );
+
+  const handleInteractionsChannelChange = useCallback(
+    (values: string[]) => {
+      pruneInteractionDownstream(
+        agentTypeFilter,
+        agentFilter,
+        values,
+        categoryFilter,
+      );
+    },
+    [pruneInteractionDownstream, agentTypeFilter, agentFilter, categoryFilter],
+  );
 
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [visibleCols, setVisibleCols] = useState<Record<string, boolean>>(() =>
@@ -702,7 +813,7 @@ export const SupervisorAgents = ({
                 <>
                   <SupervisorFilter
                     values={channelFilter}
-                    onValuesChange={setChannelFilter}
+                    onValuesChange={handleInteractionsChannelChange}
                     placeholder="All channels"
                     options={CHANNEL_OPTIONS.map((c) => ({
                       value: c,
@@ -712,7 +823,7 @@ export const SupervisorAgents = ({
                   />
                   <SupervisorFilter
                     values={agentTypeFilter}
-                    onValuesChange={handleAgentTypeChange}
+                    onValuesChange={handleInteractionsAgentTypeChange}
                     placeholder="All agent types"
                     options={AGENT_TYPE_OPTIONS}
                     testId="select-agent-type"
@@ -729,21 +840,30 @@ export const SupervisorAgents = ({
                   />
                 </>
               )}
-              {/* Interactions tab: Agent, Channel, Category, Agent type. */}
+              {/* Interactions tab: Agent type -> Agents -> Channels ->
+                  Categories. Each filter's options cascade from the upstream
+                  selections, and invalidated selections are pruned. */}
               {isInteractions && (
                 <>
                   <SupervisorFilter
+                    values={agentTypeFilter}
+                    onValuesChange={handleInteractionsAgentTypeChange}
+                    placeholder="All agent types"
+                    options={AGENT_TYPE_OPTIONS}
+                    testId="select-agent-type"
+                  />
+                  <SupervisorFilter
                     values={agentFilter}
-                    onValuesChange={setAgentFilter}
+                    onValuesChange={handleInteractionsAgentChange}
                     placeholder="All agents"
-                    options={agentFilterOptions}
+                    options={interactionAgentOptions}
                     testId="select-agent"
                   />
                   <SupervisorFilter
                     values={channelFilter}
-                    onValuesChange={setChannelFilter}
+                    onValuesChange={handleInteractionsChannelChange}
                     placeholder="All channels"
-                    options={CHANNEL_OPTIONS.map((c) => ({
+                    options={interactionChannelOptions.map((c) => ({
                       value: c,
                       label: c,
                     }))}
@@ -753,18 +873,11 @@ export const SupervisorAgents = ({
                     values={categoryFilter}
                     onValuesChange={setCategoryFilter}
                     placeholder="All categories"
-                    options={CATEGORY_OPTIONS.map((c) => ({
+                    options={interactionCategoryOptions.map((c) => ({
                       value: c.id,
                       label: c.label,
                     }))}
                     testId="select-category"
-                  />
-                  <SupervisorFilter
-                    values={agentTypeFilter}
-                    onValuesChange={handleAgentTypeChange}
-                    placeholder="All agent types"
-                    options={AGENT_TYPE_OPTIONS}
-                    testId="select-agent-type"
                   />
                 </>
               )}
